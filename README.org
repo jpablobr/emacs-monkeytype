@@ -1,0 +1,116 @@
+*Emacs Monkeytype* is a typing game/tutor inspired by [[https://monkeytype.com][monkeytype.com]] but for Emacs.
+
+* Table of Contents                                       :TOC_4_gh:noexport:
+- [[#usage][Usage]]
+- [[#features][Features]]
+  - [[#to-come-prs-welcome][To come... (PRs welcome)]]
+- [[#commands--key-bindings][Commands / Key bindings]]
+- [[#customisation][Customisation]]
+- [[#log][Log]]
+- [[#install][Install]]
+  - [[#required-libraries][Required Libraries]]
+
+* Usage
+
+Use one of the functions to enter in =monkeytype= mode (=monkeytype-region=, =monkeytype-buffer= or =monkeytype-fortune=).
+
+(Note: You should bind these functions to anything you want in your =.emacs=.)
+
+The buffer should look as follows:
+
+  [[file:img/monkeytype-paused.png]]
+
+Then you can either type all the way to the end or stop/finish (=C-c C-C s= / =monkeytype-stop=).
+
+The buffer should look as follows:
+
+  [[file:img/monkeytype-results-without-log.png]]
+
+This results buffer re-renders the typed text highlighting errors and either correct or incorrect corrections
+(highlighted with a different background and slightly different colour).
+
+* Features
+
+  - Type any text you want.
+  - Visual representation of typed text including errors and retries/corrections.
+  - UI customisation.
+  - Auto stop after 5 seconds of no input (=C-c C-c r= [ =monkeytype-resume= ] resumes).
+
+** To come... (PRs welcome)
+
+   - Live WPM (maybe in ModeLine or on a sticky buffer - memory permitting...)
+   - Add "Practice missed words"
+   - Add "Practice missed char combinations" (useful when practising on different layouts)
+   - Save results / history
+
+*Note1*: When using =evil-mode= it's useful to automatically enable =evil-insert= (to start typing right away).
+
+*Note2*: Installing =centered-cursor-mode= is useful for an auto scrolling/paging in multi-page / long texts.
+https://github.com/emacsmirror/centered-cursor-mode
+
+This can then be enabled with a hook in your =.emacs=:
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'monkeytype-mode-hook
+            (lambda ()
+              (centered-cursor-mode)
+              (evil-insert -1)))
+#+END_SRC
+
+* Commands / Key bindings
+
+=monkeytype-mode=
+
+| Key binding | Function             |
+|-------------+----------------------|
+|             | =monkeytype-region=  |
+|             | =monkeytype-buffer=  |
+| C-c C-c f   | =monkeytype-fortune= |
+| C-c C-c p   | =monkeytype-pause=   |
+| C-c C-c r   | =monkeytype-resume=  |
+| C-c C-c s   | =monkeytype-stop=    |
+| C-c C-c t   | =monkeytype-repeat=  |
+
+* Customisation
+
+Customisation in available via =M-x customize= under the monkeytype group
+or by directly modifying the =custom-set-variables= in your =.emacs= file.
+
+#+BEGIN_SRC emacs-lisp
+  (custom-set-variables
+   ;; custom-set-variables was added by Custom.
+   ;; If you edit it by hand, you could mess it up, so be careful.
+   ;; Your init file should contain only one such instance.
+   ;; If there is more than one, they won't work right.
+   '(monkeytype--buffer-face-mode-face '(:family "Menlo" :height 300 :foreground "#c5c8c6"))
+   '(monkeytype--correct-face '(:foreground "#98be65"))
+   '(monkeytype--error-face '(:foreground "#ff6c6b"))
+   '(monkeytype--correction-error-face '(:inherit region :foreground "#ff6c6b"))
+   '(monkeytype--correction-correct-face '(:inherit region :foreground "#98be65"))
+   '(monkeytype--header-1-face '(:foreground "#B7950B" :height 250))
+   '(monkeytype--header-2-face '(:foreground "#F1C40F" :height 200))
+   '(monkeytype--header-3-face '(:foreground "#F1C40F" :height 180))
+   '(monkeytype--treat-newline-as-space t)
+   '(monkeytype--insert-log nil)
+  )
+#+END_SRC
+
+* Log
+
+Logging can be enabled for debugging purposes (see =mt--insert-log= customisation).
+
+When enabled it should look as follows:
+
+  [[file:img/monkeytype-log.png]]
+
+* Install
+
+** Required Libraries
+- ht.el (https://github.com/Wilfred/ht.el)
+
+Drop =monkeytype.el= somewhere in your =load-path=.
+
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "~/emacs.d/vendor")
+  (require 'monkeytype)
+#+END_SRC
