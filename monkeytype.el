@@ -7,7 +7,7 @@
 ;; Version: 0.1.0
 ;; Keywords: games
 ;; URL: http://github.com/jpablobr/emacs-monkeytype
-;; Package-Requires: ((emacs "24.3") (seq "2.19") (ht "2.2"))
+;; Package-Requires: ((emacs "24.3") (seq "2.19") (ht "2.2") (async "1.9.3"))
 
 ;;; Commentary:
 
