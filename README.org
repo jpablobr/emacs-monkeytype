@@ -82,7 +82,7 @@ or by directly modifying the =custom-set-variables= in your =.emacs= file.
    ;; If you edit it by hand, you could mess it up, so be careful.
    ;; Your init file should contain only one such instance.
    ;; If there is more than one, they won't work right.
-   '(monkeytype--buffer-face-mode-face '(:family "Menlo" :height 300 :foreground "#c5c8c6"))
+   '(monkeytype--buffer-face-mode-face '(:family "Menlo" :height 1.6 :foreground "#969896"))
    '(monkeytype--correct-face '(:foreground "#98be65"))
    '(monkeytype--error-face '(:foreground "#ff6c6b"))
    '(monkeytype--correction-error-face '(:inherit region :foreground "#ff6c6b"))
