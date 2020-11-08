@@ -136,6 +136,9 @@
 (defvar monkeytype--current-run-list '())
 (defvar monkeytype--current-run-start-datetime nil)
 (defvar monkeytype--change>ignored-change-counter 0)
+(defvar monkeytype--mistyped-words-list '())
+(defvar monkeytype--chars-to-words-list '())
+(defvar monkeytype--words-list '())
 (make-variable-buffer-local 'monkeytype--change>ignored-change-counter)
 
 (defun monkeytype--run-with-local-idle-timer (secs repeat function &rest args)
@@ -162,6 +165,9 @@ REPEAT FUNCTION ARGS."
   (setq monkeytype--typing-buffer (generate-new-buffer monkeytype--buffer-name))
   (let* ((len (length text)))
     (set-buffer monkeytype--typing-buffer)
+    (setq monkeytype--mistyped-words-list '())
+    (setq monkeytype--chars-to-words-list '())
+    (setq monkeytype--words-list '())
     (setq monkeytype--source-text text)
     (setq monkeytype--source-text-length (length text))
     (setq monkeytype--current-run-list '())
@@ -450,10 +456,40 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
             corrections
             (+ errors corrections))))
 
+;;;; Words
+
+(defun monkeytype--get-words ()
+  "Index words."
+  (let* ((words (split-string monkeytype--source-text "[ \n]")))
+    (setq index 1)
+    (dolist (word words)
+      (add-to-list 'monkeytype--words-list `(,index . ,word))
+      (setq index (+ index 1)))))
+
+(defun monkeytype--get-chars-to-words ()
+  "Associate by index cars to words."
+  (setq word-index 1)
+  (setq char-index 1)
+  (let* ((chars (mapcar 'char-to-string monkeytype--source-text)))
+    (dolist (char chars)
+      (if (string-match "[ \n\t]" char)
+          (progn
+            (setq word-index (+ word-index 1))
+            (setq char-index (+ char-index 1)))
+        (progn
+          (let* ((word  (assoc word-index monkeytype--words-list))
+                 (word (cdr word)))
+            (add-to-list 'monkeytype--chars-to-words-list `(,char-index . ,word))
+            (setq char-index (+ char-index 1))))))))
+
 ;;;; typed text
 
 (defun monkeytype--run-typed-text (run)
   "Final Text for RUN."
+
+  (monkeytype--get-words)
+  (monkeytype--get-chars-to-words)
+
   (let* ((entries (seq-group-by
                    (lambda (entry) (ht-get entry 'source-index))
                    (reverse (ht-get run 'entries))))
@@ -480,6 +516,12 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                                  corrections
                                                  "")))
                                 (format "%s%s%s" propertized-settled propertized-corrections newline))
+                            (progn
+                              (unless (= (ht-get settled 'state) 1)
+                                (unless (string-match "[ \n\t]" (ht-get settled 'source-entry))
+                                  (let* ((char-index (ht-get settled 'source-index))
+                                         (mistyped-word (cdr (assoc char-index monkeytype--chars-to-words-list))))
+                                    (add-to-list 'monkeytype--mistyped-words-list mistyped-word)))))
                             (format "%s%s" propertized-settled newline))))
                       entries
                       "")))
@@ -608,6 +650,16 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
       (message "Monkeytype: Timer will start when you type the first character."))))
 
 ;;;###autoload
+(defun monkeytype-mistyped-words ()
+  "Practice mistyped words."
+  (interactive)
+  (if (> (length monkeytype--mistyped-words-list) 0)
+      (let* ((text (mapconcat (lambda (word) (replace-regexp-in-string " " "" word))
+                              monkeytype--mistyped-words-list " ")))
+        (monkeytype--setup text))
+    (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
+
+;;;###autoload
 (define-minor-mode monkeytype-mode
   "Monkeytype mode is a minor mode for speed/touch typing"
   :lighter " Monkeytype"
@@ -617,6 +669,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
             (define-key map (kbd "C-c C-c s") 'monkeytype-stop)
             (define-key map (kbd "C-c C-c t") 'monkeytype-repeat)
             (define-key map (kbd "C-c C-c f") 'monkeytype-fortune)
+            (define-key map (kbd "C-c C-c m") 'monkeytype-mistyped-words)
             map))
 
 (provide 'monkeytype)

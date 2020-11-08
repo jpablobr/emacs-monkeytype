@@ -29,9 +29,12 @@ The buffer should look as follows:
 This results buffer re-renders the typed text highlighting errors and either correct or incorrect corrections
 (highlighted with a different background and slightly different colour).
 
+At this point you can also practice mistyped words with =monkeytype-mistyped-words= (=C-c C-c m=).
+
 * Features
 
   - Type any text you want.
+  - Practice mistyped words.
   - Visual representation of typed text including errors and retries/corrections.
   - UI customisation.
   - Auto stop after 5 seconds of no input (=C-c C-c r= [ =monkeytype-resume= ] resumes).
@@ -39,7 +42,6 @@ This results buffer re-renders the typed text highlighting errors and either cor
 ** To come... (PRs welcome)
 
    - Live WPM (maybe in ModeLine or on a sticky buffer - memory permitting...)
-   - Add "Practice missed words"
    - Add "Practice missed char combinations" (useful when practising on different layouts)
    - Save results / history
 
@@ -61,15 +63,16 @@ This can then be enabled with a hook in your =.emacs=:
 
 =monkeytype-mode=
 
-| Key binding | Function             |
-|-------------+----------------------|
-|             | =monkeytype-region=  |
-|             | =monkeytype-buffer=  |
-| C-c C-c f   | =monkeytype-fortune= |
-| C-c C-c p   | =monkeytype-pause=   |
-| C-c C-c r   | =monkeytype-resume=  |
-| C-c C-c s   | =monkeytype-stop=    |
-| C-c C-c t   | =monkeytype-repeat=  |
+| Key binding | Function                    |
+|-------------+-----------------------------|
+|             | =monkeytype-region=         |
+|             | =monkeytype-buffer=         |
+| C-c C-c f   | =monkeytype-fortune=        |
+| C-c C-c p   | =monkeytype-pause=          |
+| C-c C-c r   | =monkeytype-resume=         |
+| C-c C-c s   | =monkeytype-stop=           |
+| C-c C-c t   | =monkeytype-repeat=         |
+| C-c C-c m   | =monkeytype-mistyped-words= |
 
 * Customisation
 
