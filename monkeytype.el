@@ -17,9 +17,12 @@
 ;; Features:
 
 ;; - Type any text you want.
-;; - Visual representation of typed text including errors and retries.
+;; - Practice mistyped words.
+;; - Practice troubling/hard key combinations/transitions (useful when practising
+;;   with different keyboard layouts).
+;; - Visual representation of typed text including errors and retries/corrections.
 ;; - UI customisation.
-;; - Auto stops after 5 seconds of no input (monkeytype-resume] resumes).
+;; - Auto stop after 5 seconds of no input (=C-c C-c r= [ =monkeytype-resume= ] resumes).
 
 ;;; License:
 
