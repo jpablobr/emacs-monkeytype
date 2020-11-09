@@ -302,6 +302,14 @@ affected. Only set monkeytype--ignored-change-counter when the
 
 ;;;; Utils:
 
+(defun monkeytype--nshuffle (sequence)
+  "Shuffle given SEQUENCE.
+https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
+  (loop for i from (length sequence) downto 2
+        do (rotatef (elt sequence (random i))
+                    (elt sequence (1- i))))
+  sequence)
+
 (defun monkeytype--add-hooks ()
   "Add hooks."
   (make-local-variable 'after-change-functions)
