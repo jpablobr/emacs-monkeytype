@@ -42,7 +42,7 @@ At this point you can also practice mistyped words with =monkeytype-mistyped-wor
 ** To come... (PRs welcome)
 
    - Live WPM (maybe in ModeLine or on a sticky buffer - memory permitting...)
-   - Add "Practice missed char combinations" (useful when practising on different layouts)
+   - Add "Practice missed char combinations" (useful when practising with different keyboard layouts)
    - Save results / history
 
 *Note1*: When using =evil-mode= it's useful to automatically enable =evil-insert= (to start typing right away).
