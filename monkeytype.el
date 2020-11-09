@@ -106,6 +106,11 @@
   :type 'boolean
   :group 'monkeytype-mode)
 
+(defcustom monkeytype--minimum-transitions 50
+  "Minimum amount of transitions to practice."
+  :type 'integer
+  :group 'monkeytype-mode)
+
 ;;;; Setup:
 
 (defvar monkeytype--finished nil)
@@ -138,6 +143,7 @@
 (defvar monkeytype--change>ignored-change-counter 0)
 (defvar monkeytype--mistyped-words-list '())
 (defvar monkeytype--chars-to-words-list '())
+(defvar monkeytype--hard-transition-list '())
 (defvar monkeytype--words-list '())
 (make-variable-buffer-local 'monkeytype--change>ignored-change-counter)
 
@@ -166,6 +172,7 @@ REPEAT FUNCTION ARGS."
   (let* ((len (length text)))
     (set-buffer monkeytype--typing-buffer)
     (setq monkeytype--mistyped-words-list '())
+    (setq monkeytype--hard-transition-list '())
     (setq monkeytype--chars-to-words-list '())
     (setq monkeytype--words-list '())
     (setq monkeytype--source-text text)
@@ -528,7 +535,16 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                               (unless (= (ht-get settled 'state) 1)
                                 (unless (string-match "[ \n\t]" (ht-get settled 'source-entry))
                                   (let* ((char-index (ht-get settled 'source-index))
-                                         (mistyped-word (cdr (assoc char-index monkeytype--chars-to-words-list))))
+                                         (mistyped-word (cdr (assoc char-index monkeytype--chars-to-words-list)))
+                                         (hard-transitionp (> char-index 2))
+                                         (hard-transition  (if hard-transitionp
+                                                               (substring monkeytype--source-text (- char-index 2) char-index)))
+                                         (hard-transitionp (if hard-transitionp
+                                                               (and (not (string-match "[ \n\t]" hard-transition))))))
+
+                                    (if hard-transitionp
+                                        (cl-pushnew hard-transition monkeytype--hard-transition-list))
+
                                     (add-to-list 'monkeytype--mistyped-words-list mistyped-word)))))
                             (format "%s%s" propertized-settled newline))))
                       entries
@@ -668,6 +684,20 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
     (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
 
 ;;;###autoload
+(defun monkeytype-hard-transitions ()
+  "Practice hard key combinations/transitions."
+  (interactive)
+  (if (> (length monkeytype--hard-transition-list) 0)
+      (let* ((transitions-count (length monkeytype--hard-transition-list))
+             (append-times (/ monkeytype--minimum-transitions transitions-count))
+             (final-list '()))
+        (progn
+          (dotimes (n append-times)
+            (setq final-list (append final-list monkeytype--hard-transition-list )))
+          (monkeytype--setup (mapconcat 'identity (monkeytype--nshuffle final-list) " "))))
+    (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
+
+;;;###autoload
 (define-minor-mode monkeytype-mode
   "Monkeytype mode is a minor mode for speed/touch typing"
   :lighter " Monkeytype"
@@ -678,6 +708,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
             (define-key map (kbd "C-c C-c t") 'monkeytype-repeat)
             (define-key map (kbd "C-c C-c f") 'monkeytype-fortune)
             (define-key map (kbd "C-c C-c m") 'monkeytype-mistyped-words)
+            (define-key map (kbd "C-c C-c h") 'monkeytype-hard-transitions)
             map))
 
 (provide 'monkeytype)
