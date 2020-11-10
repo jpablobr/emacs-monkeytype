@@ -147,6 +147,7 @@
 (defvar monkeytype--mistyped-words-list '())
 (defvar monkeytype--chars-to-words-list '())
 (defvar monkeytype--hard-transition-list '())
+(defvar monkeytype--chars-list '())
 (defvar monkeytype--words-list '())
 (make-variable-buffer-local 'monkeytype--change>ignored-change-counter)
 
@@ -178,6 +179,7 @@ REPEAT FUNCTION ARGS."
     (setq monkeytype--hard-transition-list '())
     (setq monkeytype--chars-to-words-list '())
     (setq monkeytype--words-list '())
+    (setq monkeytype--chars-list '())
     (setq monkeytype--source-text text)
     (setq monkeytype--source-text-length (length text))
     (setq monkeytype--current-run-list '())
@@ -506,11 +508,22 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
             (add-to-list 'monkeytype--chars-to-words-list `(,char-index . ,word))
             (setq char-index (+ char-index 1))))))))
 
+(defun monkeytype--get-chars ()
+  "Index chars."
+  (let* ((chars (mapcar 'char-to-string monkeytype--source-text))
+         (chars-list '()))
+    (setq index 0)
+    (dolist (char chars)
+      (setq index (+ 1 index))
+      (add-to-list 'chars-list `(,index . ,char)))
+    (setq monkeytype--chars-list (reverse chars-list))))
+
 ;;;; typed text
 
 (defun monkeytype--run-typed-text (run)
   "Final Text for RUN."
 
+  (monkeytype--get-chars)
   (monkeytype--get-words)
   (monkeytype--get-chars-to-words)
 
@@ -525,10 +538,21 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                (source (ht-get settled 'source-entry))
                                (newline (if (string= "\n" source) source ""))
                                (settled-correctp (= (ht-get settled 'state) 1))
-                               (propertized-settled (propertize
-                                                     (format "%s" (ht-get settled 'typed-entry))
-                                                     'face
-                                                     (monkeytype--final-text>typed-entry-face settled-correctp)))
+                               (settled-index (ht-get settled 'source-index))
+                               (source-char-index (car (car monkeytype--chars-list)))
+                               (source-char-entry (cdr (car monkeytype--chars-list)))
+                               (source-skipped-length (if source-char-index (- settled-index source-char-index) 0))
+                               (skipped-text (if (or
+                                                  (string-match "[ \n\t]" source-char-entry)
+                                                  (= source-skipped-length 0))
+                                                 (progn (pop monkeytype--chars-list) "")
+                                               (progn
+                                                 (dotimes (n (+ source-skipped-length 1)) (pop monkeytype--chars-list))
+                                                 (substring monkeytype--source-text (- source-char-index 1) (- settled-index 1)))))
+                               (propertized-settled (concat skipped-text (propertize
+                                                                          (format "%s" (ht-get settled 'typed-entry))
+                                                                          'face
+                                                                          (monkeytype--final-text>typed-entry-face settled-correctp))))
                                (corrections (if correctionsp (butlast tries) nil)))
                           (if correctionsp
                               (let* ((propertized-corrections
