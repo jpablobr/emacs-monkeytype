@@ -200,19 +200,25 @@ REPEAT FUNCTION ARGS."
 
 (defun monkeytype--change (start end change-length)
   "START END CHANGE-LENGTH."
-  (let* ((source-start (1- start))
-         (source-end (1- end))
-         (entry (substring-no-properties (buffer-substring start end)))
-         (source (substring monkeytype--source-text source-start source-end))
-         (deleted-text (substring monkeytype--source-text source-start (+ source-start change-length)))
-         (update (lambda ()
-                   (monkeytype--change>handle-del source-start end deleted-text)
-                   (monkeytype--change>diff source entry start end)
-                   (when (monkeytype--change>add-to-entriesp entry change-length)
-                     (monkeytype--change>add-to-entries source-start entry source)))))
-    (funcall update)
-    (goto-char end)
-    (when (= monkeytype--remaining-counter 0) (monkeytype--handle-complete))))
+
+  ;; HACK: This usually happens when text has been skipped without being typed.
+  ;; Text skipps need to be handled properly
+  (if (< (- end 2) (length monkeytype--source-text))
+      (progn
+        (let* ((source-start (1- start))
+               (source-end (1- end))
+               (entry (substring-no-properties (buffer-substring start end)))
+               (source (substring monkeytype--source-text source-start source-end))
+               (deleted-text (substring monkeytype--source-text source-start (+ source-start change-length)))
+               (update (lambda ()
+                         (monkeytype--change>handle-del source-start end deleted-text)
+                         (monkeytype--change>diff source entry start end)
+                         (when (monkeytype--change>add-to-entriesp entry change-length)
+                           (monkeytype--change>add-to-entries source-start entry source)))))
+          (funcall update)
+          (goto-char end)
+          (when (= monkeytype--remaining-counter 0) (monkeytype--handle-complete))))
+    (monkeytype--handle-complete)))
 
 (defun monkeytype--change>handle-del (source-start end deleted-text)
   "Keep track of statistics when deletion occurs between SOURCE-START and END DELETED-TEXT."
