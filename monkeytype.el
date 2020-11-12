@@ -114,8 +114,23 @@
   :type 'integer
   :group 'monkeytype-mode)
 
+(defcustom monkeytype--mode-line '(:eval (monkeytype--mode-line-status-text))
+  "Monkeytype mode line."
+  :group 'monkeytype
+  :type 'sexp
+  :risky t)
+
+(defcustom monkeytype--mode-line-update-seconds 5
+  "Number of second after each mode-line update.
+
+Reducing the frequency of the updates helps reduce lagging on longer text
+or when typing to fast."
+  :type 'integer
+  :group 'monkeytype-mode)
+
 ;;;; Setup:
 
+(defvar monkeytype--current-entry '())
 (defvar monkeytype--finished nil)
 (make-variable-buffer-local 'monkeytype--finished)
 (defvar monkeytype--start-time nil)
@@ -196,6 +211,8 @@ REPEAT FUNCTION ARGS."
     (monkeytype--add-hooks)
     (monkeytype-mode)
 
+    (monkeytype--report-status)
+
     (message "Monkeytype: Timer will start when you type the first character.")))
 
 ;;;; Change:
@@ -217,10 +234,22 @@ REPEAT FUNCTION ARGS."
                          (monkeytype--change>diff source entry start end)
                          (when (monkeytype--change>add-to-entriesp entry change-length)
                            (monkeytype--change>add-to-entries source-start entry source)))))
+          (monkeytype--update-mode-line)
           (funcall update)
           (goto-char end)
           (when (= monkeytype--remaining-counter 0) (monkeytype--handle-complete))))
     (monkeytype--handle-complete)))
+
+(defun monkeytype--update-mode-line ()
+  "Update mode-line."
+
+  (if monkeytype--mode-line-update-seconds
+      (let ((entry (elt monkeytype--current-run-list 0)))
+        (if (and
+             entry
+             (> (ht-get entry 'elapsed-seconds) monkeytype--mode-line-update-seconds)
+             (= (mod (ffloor (ht-get entry 'elapsed-seconds)) monkeytype--mode-line-update-seconds) 0))
+            (monkeytype--report-status)))))
 
 (defun monkeytype--change>handle-del (source-start end deleted-text)
   "Keep track of statistics when deletion occurs between SOURCE-START and END DELETED-TEXT."
@@ -300,6 +329,7 @@ affected. Only set monkeytype--ignored-change-counter when the
   (remove-hook 'after-change-functions 'monkeytype--change)
   (remove-hook 'first-change-hook 'monkeytype--first-change)
   (monkeytype--add-to-run-list)
+  (monkeytype--report-status)
   (when print-results
     (funcall print-results))
   (read-only-mode))
@@ -307,6 +337,7 @@ affected. Only set monkeytype--ignored-change-counter when the
 (defun monkeytype--handle-complete ()
   "Remove typing hooks from the buffer and print statistics."
   (setq monkeytype--finished t)
+  (monkeytype--report-status)
   (monkeytype--pause-run 'monkeytype--print-results)
   (monkeytype-mode))
 
@@ -683,6 +714,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
   "Pause run."
   (interactive)
   (when monkeytype--start-time (monkeytype--pause-run))
+  (setq monkeytype--current-run-list '())
   (when (not monkeytype--finished)
     (message "Monkeytype: Paused ([C-c C-c r] to resume.)")))
 
@@ -698,12 +730,12 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
   (interactive)
   (when (not monkeytype--finished)
     (progn
-      (setq monkeytype--current-run-list '())
       (switch-to-buffer monkeytype--typing-buffer)
       (set-buffer-modified-p nil)
       (monkeytype--add-hooks)
       (monkeytype-mode)
       (setq buffer-read-only nil)
+      (monkeytype--report-status)
       (message "Monkeytype: Timer will start when you type the first character."))))
 
 ;;;###autoload
@@ -730,10 +762,64 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
           (monkeytype--setup (mapconcat 'identity (monkeytype--nshuffle final-list) " "))))
     (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
 
+;;; Mode-line
+
+(defun monkeytype--report-status ()
+  "Take care of mode-line updating."
+  (setq monkeytype--current-entry (elt monkeytype--current-run-list 0))
+
+  (unless monkeytype--current-entry
+    (setq monkeytype--current-entry
+          (ht ('input-index 0)
+              ('typed-entry "")
+              ('source-entry "")
+              ('source-index 0)
+              ('error-count 0)
+              ('correction-count 0)
+              ('state 0)
+              ('elapsed-seconds 0)
+              ('formatted-seconds (format-seconds "%.2h:%z%.2m:%.2s" 0)))))
+  (force-mode-line-update))
+
+(defun monkeytype--mode-line-status-text ()
+  "Show status in mode line."
+  (let* ((elapsed-seconds (ht-get monkeytype--current-entry 'elapsed-seconds))
+         (elapsed-minutes (monkeytype--seconds-to-minutes elapsed-seconds))
+         (entries (ht-get monkeytype--current-entry 'input-index))
+         (errors (ht-get monkeytype--current-entry 'error-count))
+         (corrections (ht-get monkeytype--current-entry 'correction-count))
+         (words (monkeytype--words entries))
+         (wpm (if (> words 1) (monkeytype--net-wpm words errors elapsed-minutes) 0))
+         (formatted-wpm (format "%d " wpm))
+         (accuracy (if (> words 1) (monkeytype--accuracy entries (- entries errors) corrections) 0))
+         (formatted-accuracy (format "%.2f " accuracy))
+         (elapsed-time (format "%s" (format-seconds "%.2h:%z%.2m:%.2s" elapsed-seconds)))
+         (green '(:foreground "#98be65"))
+         (yellow '(:foreground "yellow"))
+         (light-yellow '(:foreground "#ffeead"))
+         (normal '(:foreground "#c5c8c6"))
+         (orange '(:foreground "#B7950B"))
+         (red '(:foreground "#ff6c6b"))
+         (status (cond
+                  (monkeytype--start-time yellow) ; running
+                  (monkeytype--finished normal) ; finished
+                  ((and (not monkeytype--start-time) (not monkeytype--finished)) normal) ; not-started
+                  ((and monkeytype--finished (not monkeytype--start-time)) light-yellow)))) ; paused
+
+    (concat
+     (propertize "MT[" 'face normal)
+     (propertize "*" 'face status)
+     (propertize formatted-wpm 'face green)
+     (propertize formatted-accuracy 'face normal)
+     (propertize elapsed-time 'face orange)
+     (propertize (format " (%d/" words) 'face normal)
+     (propertize (format "%d" errors) 'face red)
+     (propertize ")]" 'face normal))))
+
 ;;;###autoload
 (define-minor-mode monkeytype-mode
   "Monkeytype mode is a minor mode for speed/touch typing"
-  :lighter " Monkeytype"
+  :lighter monkeytype--mode-line
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-c C-c p") 'monkeytype-pause)
             (define-key map (kbd "C-c C-c r") 'monkeytype-resume)
