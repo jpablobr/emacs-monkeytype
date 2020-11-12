@@ -164,6 +164,7 @@ or when typing to fast."
 (defvar monkeytype--hard-transition-list '())
 (defvar monkeytype--chars-list '())
 (defvar monkeytype--words-list '())
+(defvar monkeytype--previous-last-entry-index nil)
 (make-variable-buffer-local 'monkeytype--change>ignored-change-counter)
 
 (defun monkeytype--run-with-local-idle-timer (secs repeat function &rest args)
@@ -201,6 +202,7 @@ REPEAT FUNCTION ARGS."
     (setq monkeytype--run-list '())
     (setq monkeytype--progress (make-string len 0))
     (setq monkeytype--remaining-counter (length text))
+    (setq monkeytype--previous-last-entry-index nil)
     (erase-buffer)
     (insert monkeytype--source-text)
     (set-buffer-modified-p nil)
@@ -539,22 +541,31 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
             (add-to-list 'monkeytype--chars-to-words-list `(,char-index . ,word))
             (setq char-index (+ char-index 1))))))))
 
-(defun monkeytype--get-chars ()
-  "Index chars."
-  (let* ((chars (mapcar 'char-to-string monkeytype--source-text))
+(defun monkeytype--get-chars (run)
+  "RUN Index chars."
+  (unless monkeytype--previous-last-entry-index
+    (setq monkeytype--previous-last-entry-index 0))
+
+  (let* (
+         (first-entry-index monkeytype--previous-last-entry-index)
+         (last-entry (elt (ht-get run 'entries) 0))
+         (source-text (substring monkeytype--source-text first-entry-index (ht-get last-entry 'source-index)))
+         (chars (mapcar 'char-to-string source-text))
          (chars-list '()))
-    (setq index 0)
+    (setq index first-entry-index)
+
     (dolist (char chars)
       (setq index (+ 1 index))
-      (add-to-list 'chars-list `(,index . ,char)))
-    (setq monkeytype--chars-list (reverse chars-list))))
+      (cl-pushnew `(,index . ,char) chars-list))
+    (setq monkeytype--chars-list (reverse chars-list))
+    (setq monkeytype--previous-last-entry-index (ht-get (elt (ht-get run 'entries) 0) 'source-index))))
 
 ;;;; typed text
 
 (defun monkeytype--run-typed-text (run)
   "Final Text for RUN."
 
-  (monkeytype--get-chars)
+  (monkeytype--get-chars run)
   (monkeytype--get-words)
   (monkeytype--get-chars-to-words)
 
