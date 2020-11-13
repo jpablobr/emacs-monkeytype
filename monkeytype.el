@@ -812,16 +812,10 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
          (light-yellow '(:foreground "#ffeead"))
          (normal '(:foreground "#c5c8c6"))
          (orange '(:foreground "#B7950B"))
-         (red '(:foreground "#ff6c6b"))
-         (status (cond
-                  (monkeytype--start-time yellow) ; running
-                  (monkeytype--finished normal) ; finished
-                  ((and (not monkeytype--start-time) (not monkeytype--finished)) normal) ; not-started
-                  ((and monkeytype--finished (not monkeytype--start-time)) light-yellow)))) ; paused
+         (red '(:foreground "#ff6c6b")))
 
     (concat
      (propertize "MT[" 'face normal)
-     (propertize "*" 'face status)
      (propertize formatted-wpm 'face green)
      (propertize formatted-accuracy 'face normal)
      (propertize elapsed-time 'face orange)
