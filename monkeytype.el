@@ -165,6 +165,7 @@ or when typing to fast."
 (defvar monkeytype--chars-list '())
 (defvar monkeytype--words-list '())
 (defvar monkeytype--previous-last-entry-index nil)
+(defvar monkeytype--previous-run-last-entry nil)
 (make-variable-buffer-local 'monkeytype--change>ignored-change-counter)
 
 (defun monkeytype--run-with-local-idle-timer (secs repeat function &rest args)
@@ -203,6 +204,7 @@ REPEAT FUNCTION ARGS."
     (setq monkeytype--progress (make-string len 0))
     (setq monkeytype--remaining-counter (length text))
     (setq monkeytype--previous-last-entry-index nil)
+    (setq monkeytype--previous-run-last-entry nil)
     (erase-buffer)
     (insert monkeytype--source-text)
     (set-buffer-modified-p nil)
@@ -545,10 +547,23 @@ WORDS ERRORS MINUTES SECONDS ENTRIES CORRECTIONS."
   (let* ((last-entry (elt run 0))
          (elapsed-seconds (ht-get last-entry 'elapsed-seconds))
          (elapsed-minutes (monkeytype--seconds-to-minutes elapsed-seconds))
-         (entries (ht-get last-entry 'input-index))
-         (errors (ht-get last-entry 'error-count))
-         (corrections (ht-get last-entry 'correction-count))
+         (entries (if monkeytype--previous-run-last-entry
+                     (-
+                      (ht-get last-entry 'input-index)
+                      (ht-get monkeytype--previous-run-last-entry 'input-index))
+                   (ht-get last-entry 'input-index)))
+         (errors (if monkeytype--previous-run-last-entry
+                     (-
+                      (ht-get last-entry 'error-count)
+                      (ht-get monkeytype--previous-run-last-entry 'error-count))
+                   (ht-get last-entry 'error-count)))
+         (corrections (if monkeytype--previous-run-last-entry
+                     (-
+                      (ht-get last-entry 'correction-count)
+                      (ht-get monkeytype--previous-run-last-entry 'correction-count))
+                   (ht-get last-entry 'correction-count)))
          (words (monkeytype--words entries)))
+    (setq monkeytype--previous-run-last-entry (elt run 0))
     (monkeytype--build-performance-results
      words errors elapsed-minutes elapsed-seconds entries corrections)))
 
