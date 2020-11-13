@@ -166,6 +166,9 @@ or when typing to fast."
 (defvar monkeytype--words-list '())
 (defvar monkeytype--previous-last-entry-index nil)
 (defvar monkeytype--previous-run-last-entry nil)
+(defvar monkeytype--previous-run '())
+(defvar monkeytype--mode-line-previous-run-last-entry nil)
+(defvar monkeytype--paused nil)
 (make-variable-buffer-local 'monkeytype--change>ignored-change-counter)
 
 (defun monkeytype--run-with-local-idle-timer (secs repeat function &rest args)
@@ -205,6 +208,9 @@ REPEAT FUNCTION ARGS."
     (setq monkeytype--remaining-counter (length text))
     (setq monkeytype--previous-last-entry-index nil)
     (setq monkeytype--previous-run-last-entry nil)
+    (setq monkeytype--previous-run '())
+    (setq monkeytype--mode-line-previous-run-last-entry nil)
+    (setq monkeytype--paused nil)
     (erase-buffer)
     (insert monkeytype--source-text)
     (set-buffer-modified-p nil)
@@ -341,8 +347,8 @@ affected. Only set monkeytype--ignored-change-counter when the
 (defun monkeytype--handle-complete ()
   "Remove typing hooks from the buffer and print statistics."
   (setq monkeytype--finished t)
-  (monkeytype--report-status)
   (monkeytype--pause-run 'monkeytype--print-results)
+  (monkeytype--report-status)
   (monkeytype-mode))
 
 (defun monkeytype--add-to-run-list ()
@@ -792,6 +798,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 (defun monkeytype-pause ()
   "Pause run."
   (interactive)
+  (setq monkeytype--paused t)
   (when monkeytype--start-time (monkeytype--pause-run))
   (setq monkeytype--current-run-list '())
   (when (not monkeytype--finished)
@@ -809,6 +816,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
   (interactive)
   (when (not monkeytype--finished)
     (progn
+      (setq monkeytype--paused nil)
       (switch-to-buffer monkeytype--typing-buffer)
       (set-buffer-modified-p nil)
       (monkeytype--add-hooks)
@@ -846,32 +854,61 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 (defun monkeytype--report-status ()
   "Take care of mode-line updating."
   (setq monkeytype--current-entry (elt monkeytype--current-run-list 0))
+  (setq monkeytype--previous-run (elt monkeytype--run-list 0))
 
-  (unless monkeytype--current-entry
-    (setq monkeytype--current-entry
-          (ht ('input-index 0)
-              ('typed-entry "")
-              ('source-entry "")
-              ('source-index 0)
-              ('error-count 0)
-              ('correction-count 0)
-              ('state 0)
-              ('elapsed-seconds 0)
-              ('formatted-seconds (format-seconds "%.2h:%z%.2m:%.2s" 0)))))
+  (when monkeytype--previous-run
+    (setq monkeytype--mode-line-previous-run-last-entry
+          (elt (ht-get monkeytype--previous-run 'entries) 0)))
+
+  (if (or (not monkeytype--current-entry) monkeytype--finished)
+      (setq monkeytype--current-entry
+            (ht ('input-index 0)
+                ('typed-entry "")
+                ('source-entry "")
+                ('source-index 0)
+                ('error-count 0)
+                ('correction-count 0)
+                ('state 0)
+                ('elapsed-seconds 0))))
   (force-mode-line-update))
 
 (defun monkeytype--mode-line-status-text ()
   "Show status in mode line."
   (let* ((elapsed-seconds (ht-get monkeytype--current-entry 'elapsed-seconds))
          (elapsed-minutes (monkeytype--seconds-to-minutes elapsed-seconds))
-         (entries (ht-get monkeytype--current-entry 'input-index))
-         (errors (ht-get monkeytype--current-entry 'error-count))
-         (corrections (ht-get monkeytype--current-entry 'correction-count))
+         (entries (if (and
+                       monkeytype--previous-run
+                       (> (ht-get monkeytype--current-entry 'input-index) 0)
+                       (not monkeytype--paused)
+                       (not monkeytype--finished))
+                      (-
+                       (ht-get monkeytype--current-entry 'input-index)
+                       (ht-get monkeytype--mode-line-previous-run-last-entry 'input-index))
+                    (ht-get monkeytype--current-entry 'input-index)))
+         (errors (if (and
+                      monkeytype--previous-run
+                      (> (ht-get monkeytype--current-entry 'input-index) 0)
+                      (not monkeytype--paused)
+                      (not monkeytype--finished))
+                     (-
+                      (ht-get monkeytype--current-entry 'error-count)
+                      (ht-get monkeytype--mode-line-previous-run-last-entry 'error-count))
+                   (ht-get monkeytype--current-entry 'error-count)))
+         (corrections (if (and
+                           monkeytype--previous-run
+                           (> (ht-get monkeytype--current-entry 'input-index) 0)
+                           (not monkeytype--paused)
+                           (not monkeytype--finished))
+                          (-
+                           (ht-get monkeytype--current-entry 'correction-count)
+                           (ht-get monkeytype--mode-line-previous-run-last-entry 'correction-count))
+                        (ht-get monkeytype--current-entry 'correction-count)))
+
          (words (monkeytype--words entries))
          (wpm (if (> words 1) (monkeytype--net-wpm words errors elapsed-minutes) 0))
          (formatted-wpm (format "%d " wpm))
          (accuracy (if (> words 1) (monkeytype--accuracy entries (- entries errors) corrections) 0))
-         (formatted-accuracy (format "%.2f " accuracy))
+         (formatted-accuracy (format "%d " accuracy))
          (elapsed-time (format "%s" (format-seconds "%.2h:%z%.2m:%.2s" elapsed-seconds)))
          (green '(:foreground "#98be65"))
          (yellow '(:foreground "yellow"))
@@ -886,7 +923,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
      (propertize formatted-accuracy 'face normal)
      (propertize elapsed-time 'face orange)
      (propertize (format " (%d/" words) 'face normal)
-     (propertize (format "%d" errors) 'face red)
+     (propertize (format "%d" errors) 'face (if (> errors 0) red green))
      (propertize ")]" 'face normal))))
 
 ;;;###autoload
