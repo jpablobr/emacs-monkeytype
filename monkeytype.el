@@ -66,19 +66,19 @@
   "Face for text area.")
 
 (defface monkeytype--label-face
-  '((t (:foreground "#969896")))
+  '((t (:foreground "#c5c8c6")))
   "Face for labels.")
 
 (defface monkeytype--correct-face
-  '((t (:foreground "#98be65")))
+  '((t (:foreground "#969896")))
   "Face for correctly typed char.")
 
 (defface monkeytype--error-face
-  '((t (:foreground "#ff6c6b")))
+  '((t (:foreground "#cc6666")))
   "Face for wrongly typed char.")
 
 (defface monkeytype--correction-error-face
-  '((t (:inherit region :foreground "#d54e53")))
+  '((t (:inherit region :foreground "#ff6c6b")))
   "Face for wrongly typed correction.")
 
 (defface monkeytype--correction-correct-face
