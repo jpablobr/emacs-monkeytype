@@ -66,11 +66,11 @@
   "Face for text area.")
 
 (defface monkeytype--label-face
-  '((t (:foreground "#c5c8c6")))
+  '((t (:foreground "#a9a9a9")))
   "Face for labels.")
 
 (defface monkeytype--correct-face
-  '((t (:foreground "#969896")))
+  '((t (:foreground "#666666")))
   "Face for correctly typed char.")
 
 (defface monkeytype--error-face
@@ -86,15 +86,15 @@
   "Face for correctly typed correction.")
 
 (defface monkeytype--header-1-face
-  '((t (:foreground "#c5c8c6" :height 240)))
+  '((t (:foreground "#c5c8c6" :height 1.1)))
   "Runs performance header 1")
 
 (defface monkeytype--header-2-face
-  '((t (:foreground "#B7950B" :height 200)))
+  '((t (:foreground "#B7950B")))
   "Runs performance header 2")
 
 (defface monkeytype--header-3-face
-  '((t (:foreground "#969896" :height 180)))
+  '((t (:foreground "#969896" :height 0.7)))
   "Runs performance header 3")
 
 ;;;; Configurable settings:
@@ -378,7 +378,7 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
     (insert (propertize (format "%s" "\n\nBreakdown by Runs:\n\n") 'face 'monkeytype--header-1-face)))
 
   (dolist (run (reverse monkeytype--run-list))
-    (insert (format "%s:\n" (ht-get  run 'started-at)))
+    (insert (propertize (format "--%s--:\n" (ht-get run 'started-at)) 'face 'monkeytype--header-2-face))
     (insert (monkeytype--run-typed-text run))
     (insert (monkeytype--run-performance-results (ht-get  run 'entries)))
     (insert "\n\n")
@@ -454,22 +454,91 @@ All CHARS count."
 
 ;;;; Performance results
 
-(defvar monkeytype--run-performance-results-format
-  (let* ((top1
-          (propertize "Net WPM: %d" 'face 'monkeytype--header-2-face))
-         (top2
-          (propertize "\nAccuracy: %.2f%%" 'face 'monkeytype--header-2-face))
-         (top3
-          (propertize "\nTotal time: %s" 'face 'monkeytype--header-2-face))
-         (bottom
-          (propertize "\nNet CPM: %d
-Gross WPM: %d
-Gross CPM: %d
-Total chars: %d
-Total words: %d
-Corrections: %d
-Total errors: %d" 'face 'monkeytype--header-3-face)))
-    (concat top1 top2 top3 bottom)))
+(defun monkeytype--run-net-wpm-format (words uncorrected-errors minutes seconds)
+  "Net WPM performance result for total WORDS.
+
+Gross-WPM - (UNCORRECTED-ERRORS / MINUTES).
+Also shows SECONDS right next to WPM."
+  (concat
+   (propertize
+    (format
+     "%.2f/%s"
+     (monkeytype--net-wpm words uncorrected-errors minutes)
+     (format-seconds "%.2h:%z%.2m:%.2s" seconds))
+    'face
+    'monkeytype--header-2-face)
+   (propertize
+    (format "[%.2f - (" (monkeytype--gross-wpm words minutes))
+    'face
+    'monkeytype--header-3-face)
+   (propertize
+    (format "%.2f" uncorrected-errors)
+    'face
+    `(:foreground ,(if
+                       (= uncorrected-errors 0)
+                       "#98be65"
+                     "#cc6666") :height 0.7))
+   (propertize
+    (concat
+     (format " / %.2f)]\n" minutes)
+     "WPM = Gross-WPM - (uncorrected-errors / minutes)")
+    'face
+    'monkeytype--header-3-face)))
+
+(defun monkeytype--run-gross-wpm-format (words minutes)
+  "Gross WPM performance result.
+
+Gross-WPM = WORDS / MINUTES."
+  (concat
+   (propertize
+    (format "%.2f" (monkeytype--gross-wpm words minutes))
+    'face
+    'monkeytype--header-2-face)
+   (propertize
+    (format "[%.2f / %.2f]" words minutes)
+    'face
+    'monkeytype--header-3-face)
+   (propertize
+    "\nGross-WPM = words / minutes"
+    'face
+    'monkeytype--header-3-face)))
+
+(defun monkeytype--run-accuracy-format (chars correct-chars corrections)
+  "CHARS CORRECT-CHARS CORRECTIONS."
+  (concat
+   (propertize
+    (format "%.2f%%" (monkeytype--accuracy chars correct-chars corrections))
+    'face
+    'monkeytype--header-2-face)
+   (propertize
+    (format "[((%.2f - " correct-chars)
+    'face
+    'monkeytype--header-3-face)
+   (propertize
+    (format "%.2f" corrections)
+    'face
+    `(:foreground ,(if
+                       (= corrections 0)
+                       "#98be65"
+                     "#cc6666") :height 0.7))
+   (propertize
+    (format ") / %.2f) * 100]" chars)
+    'face
+    'monkeytype--header-3-face)
+   (propertize
+    "\nAccuracy = ((correct-chars - corrections) / total-chars) * 100"
+    'face
+    'monkeytype--header-3-face)))
+
+(defun monkeytype--build-performance-results (words errors minutes seconds entries corrections)
+  "Build results text.
+WORDS ERRORS MINUTES SECONDS ENTRIES CORRECTIONS."
+  (concat
+   (monkeytype--run-net-wpm-format words errors minutes seconds)
+   "\n\n"
+   (monkeytype--run-accuracy-format entries (- entries errors) corrections)
+   "\n\n"
+   (monkeytype--run-gross-wpm-format words minutes)))
 
 (defun monkeytype--run-performance-results (run)
   "Performance results for RUN."
@@ -480,17 +549,8 @@ Total errors: %d" 'face 'monkeytype--header-3-face)))
          (errors (ht-get last-entry 'error-count))
          (corrections (ht-get last-entry 'correction-count))
          (words (monkeytype--words entries)))
-    (format monkeytype--run-performance-results-format
-            (monkeytype--net-wpm words errors elapsed-minutes)
-            (monkeytype--accuracy entries (- entries errors) corrections)
-            (format-seconds "%.2h:%z%.2m:%.2s" elapsed-seconds)
-            (monkeytype--net-cpm entries errors elapsed-minutes)
-            (monkeytype--gross-wpm words elapsed-minutes)
-            (monkeytype--gross-cpm entries elapsed-minutes)
-            entries
-            words
-            corrections
-            (+ errors corrections))))
+    (monkeytype--build-performance-results
+     words errors elapsed-minutes elapsed-seconds entries corrections)))
 
 (defun monkeytype--final-performance-results ()
   "Final Performance results for all run(s).
@@ -503,17 +563,8 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
          (errors (ht-get last-entry 'error-count))
          (corrections (ht-get last-entry 'correction-count))
          (words (monkeytype--words entries)))
-    (format monkeytype--run-performance-results-format
-            (monkeytype--net-wpm words errors elapsed-minutes)
-            (monkeytype--accuracy entries (- entries errors) corrections)
-            (format-seconds "%.2h:%z%.2m:%.2s" total-elapsed-seconds)
-            (monkeytype--net-cpm entries errors elapsed-minutes)
-            (monkeytype--gross-wpm words elapsed-minutes)
-            (monkeytype--gross-cpm entries elapsed-minutes)
-            entries
-            words
-            corrections
-            (+ errors corrections))))
+    (monkeytype--build-performance-results
+     words errors elapsed-minutes total-elapsed-seconds entries corrections)))
 
 ;;;; Words
 
