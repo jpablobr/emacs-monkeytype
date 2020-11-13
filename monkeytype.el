@@ -120,7 +120,7 @@
   :type 'sexp
   :risky t)
 
-(defcustom monkeytype--mode-line-update-seconds 5
+(defcustom monkeytype--mode-line-update-seconds 1
   "Number of second after each mode-line update.
 
 Reducing the frequency of the updates helps reduce lagging on longer text
