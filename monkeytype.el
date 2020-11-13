@@ -577,8 +577,10 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                         (let* ((tries (cdr entries-for-source))
                                (correctionsp (> (length tries) 1))
                                (settled (if correctionsp (car (last tries)) (car tries)))
-                               (source (ht-get settled 'source-entry))
-                               (newline (if (string= "\n" source) source ""))
+                               (source-entry (ht-get settled 'source-entry))
+                               (typed-entry (ht-get settled 'typed-entry))
+                               (typed-entry (if (string= "\n" source-entry) "↵\n" typed-entry))
+                               (typed-entry (if (string= " " typed-entry) "·" typed-entry))
                                (settled-correctp (= (ht-get settled 'state) 1))
                                (settled-index (ht-get settled 'source-index))
                                (source-char-index (car (car monkeytype--chars-list)))
@@ -592,7 +594,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                                  (dotimes (n (+ source-skipped-length 1)) (pop monkeytype--chars-list))
                                                  (substring monkeytype--source-text (- source-char-index 1) (- settled-index 1)))))
                                (propertized-settled (concat skipped-text (propertize
-                                                                          (format "%s" (ht-get settled 'typed-entry))
+                                                                          (format "%s" typed-entry)
                                                                           'face
                                                                           (monkeytype--final-text>typed-entry-face settled-correctp))))
                                (corrections (if correctionsp (butlast tries) nil)))
@@ -605,7 +607,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                                      (propertize (format "%s" correction-char) 'face correction-face)))
                                                  corrections
                                                  "")))
-                                (format "%s%s%s" propertized-settled propertized-corrections newline))
+                                (format "%s%s" propertized-settled propertized-corrections))
                             (progn
                               (unless (= (ht-get settled 'state) 1)
                                 (unless (string-match "[ \n\t]" (ht-get settled 'source-entry))
@@ -621,7 +623,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                         (cl-pushnew hard-transition monkeytype--hard-transition-list))
 
                                     (add-to-list 'monkeytype--mistyped-words-list mistyped-word)))))
-                            (format "%s%s" propertized-settled newline))))
+                            (format "%s" propertized-settled))))
                       entries
                       "")))
     (format "\n%s\n\n" final-text)))
