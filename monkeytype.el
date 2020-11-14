@@ -923,6 +923,8 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
      (propertize formatted-accuracy 'face normal)
      (propertize elapsed-time 'face orange)
      (propertize (format " (%d/" words) 'face normal)
+     (propertize (format "%d" corrections) 'face (if (> corrections 0) red green))
+     (propertize "/" 'face normal)
      (propertize (format "%d" errors) 'face (if (> errors 0) red green))
      (propertize ")]" 'face normal))))
 
