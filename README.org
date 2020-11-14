@@ -22,6 +22,10 @@ The buffer should look as follows:
 
 Then you can either type all the way to the end or stop/finish (=C-c C-C s= / =monkeytype-stop=).
 
+The section inside the red rectangle is Monkeytype's mode-line:
+
+*MT[WPM Accuracy Elapsed-time (words/corrections/errors)]*
+
 The buffer should look as follows:
 
   [[file:img/monkeytype-results-without-log.png]]
