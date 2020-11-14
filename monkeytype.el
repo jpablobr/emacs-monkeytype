@@ -480,7 +480,7 @@ Also shows SECONDS right next to WPM."
     'face
     'monkeytype--header-3-face)
    (propertize
-    (format "%.2f" uncorrected-errors)
+    (format "%d" uncorrected-errors)
     'face
     `(:foreground ,(if
                        (= uncorrected-errors 0)
@@ -523,7 +523,7 @@ Gross-WPM = WORDS / MINUTES."
     'face
     'monkeytype--header-3-face)
    (propertize
-    (format "%.2f" corrections)
+    (format "%d" corrections)
     'face
     `(:foreground ,(if
                        (= corrections 0)
