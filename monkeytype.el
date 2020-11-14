@@ -876,32 +876,27 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
   "Show status in mode line."
   (let* ((elapsed-seconds (ht-get monkeytype--current-entry 'elapsed-seconds))
          (elapsed-minutes (monkeytype--seconds-to-minutes elapsed-seconds))
-         (entries (if (and
-                       monkeytype--previous-run
-                       (> (ht-get monkeytype--current-entry 'input-index) 0)
-                       (not monkeytype--paused)
-                       (not monkeytype--finished))
+         (previous-last-entry (if monkeytype--previous-run
+                                  monkeytype--mode-line-previous-run-last-entry))
+         (previous-run-entryp (and
+                               monkeytype--previous-run
+                               (> (ht-get monkeytype--current-entry 'input-index) 0)
+                               (not monkeytype--paused)
+                               (not monkeytype--finished)))
+         (entries (if previous-run-entryp
                       (-
                        (ht-get monkeytype--current-entry 'input-index)
-                       (ht-get monkeytype--mode-line-previous-run-last-entry 'input-index))
+                       (ht-get previous-last-entry 'input-index))
                     (ht-get monkeytype--current-entry 'input-index)))
-         (errors (if (and
-                      monkeytype--previous-run
-                      (> (ht-get monkeytype--current-entry 'input-index) 0)
-                      (not monkeytype--paused)
-                      (not monkeytype--finished))
+         (errors (if previous-run-entryp
                      (-
                       (ht-get monkeytype--current-entry 'error-count)
-                      (ht-get monkeytype--mode-line-previous-run-last-entry 'error-count))
+                      (ht-get previous-last-entry 'error-count))
                    (ht-get monkeytype--current-entry 'error-count)))
-         (corrections (if (and
-                           monkeytype--previous-run
-                           (> (ht-get monkeytype--current-entry 'input-index) 0)
-                           (not monkeytype--paused)
-                           (not monkeytype--finished))
+         (corrections (if previous-run-entryp
                           (-
                            (ht-get monkeytype--current-entry 'correction-count)
-                           (ht-get monkeytype--mode-line-previous-run-last-entry 'correction-count))
+                           (ht-get previous-last-entry 'correction-count))
                         (ht-get monkeytype--current-entry 'correction-count)))
 
          (words (monkeytype--words entries))
