@@ -333,23 +333,28 @@ affected. Only set monkeytype--ignored-change-counter when the
     (setq monkeytype--start-time (float-time))
     (monkeytype--run-with-local-idle-timer 5 nil 'monkeytype-pause)))
 
-(defun monkeytype--pause-run (&optional print-results)
+(defun monkeytype--pause-run ()
   "Pause run and optionally PRINT-RESULTS."
   (setq monkeytype--start-time nil)
   (remove-hook 'after-change-functions 'monkeytype--change)
   (remove-hook 'first-change-hook 'monkeytype--first-change)
   (monkeytype--add-to-run-list)
   (monkeytype--report-status)
-  (when print-results
-    (funcall print-results))
   (read-only-mode))
 
 (defun monkeytype--handle-complete ()
   "Remove typing hooks from the buffer and print statistics."
   (setq monkeytype--finished t)
-  (monkeytype--pause-run 'monkeytype--print-results)
+
+  (unless monkeytype--paused (monkeytype--pause-run))
+
+  (set-buffer-modified-p nil)
+  (setq buffer-read-only nil)
+  (monkeytype--print-results)
+
   (monkeytype--report-status)
-  (monkeytype-mode))
+  (monkeytype-mode)
+  (read-only-mode))
 
 (defun monkeytype--add-to-run-list ()
   "Add."
