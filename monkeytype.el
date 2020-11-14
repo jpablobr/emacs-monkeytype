@@ -651,8 +651,18 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                (settled (if correctionsp (car (last tries)) (car tries)))
                                (source-entry (ht-get settled 'source-entry))
                                (typed-entry (ht-get settled 'typed-entry))
-                               (typed-entry (if (string= "\n" source-entry) "↵\n" typed-entry))
-                               (typed-entry (if (string= " " typed-entry) "·" typed-entry))
+                               (typed-entry (if (and
+                                                 (string= " " typed-entry)
+                                                 (not (string= typed-entry source-entry)))
+                                                "·"
+                                              typed-entry))
+                               (typed-entry (if (string= "\n" source-entry)
+                                                (if (and
+                                                     (string= "\n" source-entry)
+                                                     (string= source-entry typed-entry))
+                                                    "↵\n"
+                                                  (concat typed-entry "↵\n"))
+                                              typed-entry))
                                (settled-correctp (= (ht-get settled 'state) 1))
                                (settled-index (ht-get settled 'source-index))
                                (source-char-index (car (car monkeytype--chars-list)))
