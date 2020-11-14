@@ -120,7 +120,7 @@
   :type 'sexp
   :risky t)
 
-(defcustom monkeytype--mode-line-update-seconds 1
+(defcustom monkeytype--mode-line-interval-update 1
   "Number of second after each mode-line update.
 
 Reducing the frequency of the updates helps reduce lagging on longer text
@@ -244,21 +244,21 @@ REPEAT FUNCTION ARGS."
                          (monkeytype--change>diff source entry start end)
                          (when (monkeytype--change>add-to-entriesp entry change-length)
                            (monkeytype--change>add-to-entries source-start entry source)))))
-          (monkeytype--update-mode-line)
           (funcall update)
           (goto-char end)
+          (monkeytype--update-mode-line)
           (when (= monkeytype--remaining-counter 0) (monkeytype--handle-complete))))
     (monkeytype--handle-complete)))
 
 (defun monkeytype--update-mode-line ()
   "Update mode-line."
 
-  (if monkeytype--mode-line-update-seconds
-      (let ((entry (elt monkeytype--current-run-list 0)))
+  (if monkeytype--mode-line-interval-update
+      (let* ((entry (elt monkeytype--current-run-list 0))
+            (char-index (if entry (ht-get entry 'source-index) 0)))
         (if (and
-             entry
-             (> (ht-get entry 'elapsed-seconds) monkeytype--mode-line-update-seconds)
-             (= (mod (ffloor (ht-get entry 'elapsed-seconds)) monkeytype--mode-line-update-seconds) 0))
+             (> char-index monkeytype--mode-line-interval-update)
+             (= (mod char-index monkeytype--mode-line-interval-update) 0))
             (monkeytype--report-status)))))
 
 (defun monkeytype--change>handle-del (source-start end deleted-text)
