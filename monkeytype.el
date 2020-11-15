@@ -339,7 +339,6 @@ affected. Only set monkeytype--ignored-change-counter when the
   (remove-hook 'after-change-functions 'monkeytype--change)
   (remove-hook 'first-change-hook 'monkeytype--first-change)
   (monkeytype--add-to-run-list)
-  (monkeytype--report-status)
   (read-only-mode))
 
 (defun monkeytype--handle-complete ()
@@ -895,9 +894,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                   monkeytype--mode-line-previous-run-last-entry))
          (previous-run-entryp (and
                                monkeytype--previous-run
-                               (> (ht-get monkeytype--current-entry 'input-index) 0)
-                               (not monkeytype--paused)
-                               (not monkeytype--finished)))
+                               (> (ht-get monkeytype--current-entry 'input-index) 0)))
          (entries (if previous-run-entryp
                       (-
                        (ht-get monkeytype--current-entry 'input-index)
