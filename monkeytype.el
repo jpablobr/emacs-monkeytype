@@ -744,8 +744,12 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 (defun monkeytype--final-text>typed-entry-face (correctp &optional correctionp)
   "Return the face for the CORRECTP and/or CORRECTIONP entry."
   (let* ((entry-face (if correctionp
-                 (if correctp 'monkeytype--correction-correct-face 'monkeytype--correction-error-face)
-               (if correctp 'monkeytype--correct-face 'monkeytype--error-face))))
+                         (if correctp
+                             'monkeytype--correction-correct-face
+                           'monkeytype--correction-error-face)
+                       (if correctp
+                           'monkeytype--correct-face
+                         'monkeytype--error-face))))
     entry-face))
 
 ;;;; Log:
