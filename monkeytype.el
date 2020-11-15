@@ -385,21 +385,40 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
   (erase-buffer)
 
   (when (> (length monkeytype--run-list) 1)
-    (insert (propertize (format "%s" "Overall Results:\n\n") 'face 'monkeytype--header-1-face))
-    (insert (monkeytype--final-performance-results))
-    (insert (propertize (format "%s" "\n\nBreakdown by Runs:\n\n") 'face 'monkeytype--header-1-face)))
+    (insert (concat
+             (propertize
+              (format "%s" "Overall Results:\n")
+              'face
+              'monkeytype--header-1-face)
+             (propertize
+              (format "(Tally of %d runs)\n\n" (length monkeytype--run-list))
+              'face
+              'monkeytype--header-3-face)
+             (monkeytype--final-performance-results)
+             (propertize
+              "\n\nBreakdown by Runs:\n\n"
+              'face
+              'monkeytype--header-1-face))))
 
-  (dolist (run (reverse monkeytype--run-list))
-    (insert (propertize (format "--%s--:\n" (ht-get run 'started-at)) 'face 'monkeytype--header-2-face))
-    (insert (monkeytype--run-typed-text run))
-    (insert (monkeytype--run-performance-results (ht-get  run 'entries)))
-    (insert "\n\n")
+  (let ((run-index 1))
+    (dolist (run (reverse monkeytype--run-list))
+      (insert (concat
+               (propertize
+                (format "--(%d)-%s--:\n" run-index (ht-get run 'started-at))
+                'face
+                'monkeytype--header-2-face)
+               (monkeytype--run-typed-text run)
+               (monkeytype--run-performance-results (ht-get  run 'entries))
+               "\n\n"))
 
-    (when monkeytype--insert-log
-      (async-start
-       `(lambda () ,(monkeytype--run-log run) 1)
-       (lambda (result)
-         (message "Monkeytype: Log generated successfully. (%s)" result)))))
+      (setq run-index (+ run-index 1))
+
+      (when monkeytype--insert-log
+        (async-start
+         `(lambda () ,(monkeytype--run-log run) 1)
+         (lambda (result)
+           (message "Monkeytype: Log generated successfully. (%s)" result))))))
+
   (goto-char (point-min)))
 
 (defun monkeytype--elapsed-seconds ()
