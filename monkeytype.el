@@ -622,17 +622,18 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 
 (defun monkeytype--get-words ()
   "Index words."
-  (let* ((words (split-string monkeytype--source-text "[ \n]")))
-    (setq index 1)
+  (let* ((words (split-string monkeytype--source-text "[ \n]"))
+         (index 1))
+
     (dolist (word words)
       (add-to-list 'monkeytype--words-list `(,index . ,word))
       (setq index (+ index 1)))))
 
 (defun monkeytype--get-chars-to-words ()
   "Associate by index cars to words."
-  (setq word-index 1)
-  (setq char-index 1)
-  (let* ((chars (mapcar 'char-to-string monkeytype--source-text)))
+  (let* ((chars (mapcar 'char-to-string monkeytype--source-text))
+         (word-index 1)
+         (char-index 1))
     (dolist (char chars)
       (if (string-match "[ \n\t]" char)
           (progn
@@ -654,8 +655,8 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
          (last-entry (elt (ht-get run 'entries) 0))
          (source-text (substring monkeytype--source-text first-entry-index (ht-get last-entry 'source-index)))
          (chars (mapcar 'char-to-string source-text))
-         (chars-list '()))
-    (setq index first-entry-index)
+         (chars-list '())
+         (index first-entry-index))
 
     (dolist (char chars)
       (setq index (+ 1 index))

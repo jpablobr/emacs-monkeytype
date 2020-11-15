@@ -30,7 +30,7 @@ The buffer should look as follows:
 
   [[file:img/monkeytype-results-without-log.png]]
 
-This results buffer re-renders the typed text highlighting errors and either correct or incorrect corrections
+This Results buffer re-renders the typed text highlighting errors and either correct or incorrect corrections
 (highlighted with a different background and slightly different colour).
 
 At this point you can either practice mistyped words with =monkeytype-mistyped-words=  or just troubling/hard transitions with =monkeytype--hard-transition= (=C-c C-c h=).
