@@ -526,11 +526,11 @@ Gross-WPM = WORDS / MINUTES."
     'face
     'monkeytype--header-2-face)
    (propertize
-    (format "[" words minutes)
+    "["
     'face
     'monkeytype--header-3-face)
    (propertize
-    (format "%.2f" words minutes)
+    (format "%.2f" words)
     'face
     '(:foreground "#98be65" :height 0.7))
    (propertize
