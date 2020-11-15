@@ -20,11 +20,11 @@ The buffer should look as follows:
 
   [[file:img/monkeytype-paused.png]]
 
-Then you can either type all the way to the end or stop/finish (=C-c C-C s= / =monkeytype-stop=).
-
-The section inside the red rectangle is Monkeytype's mode-line:
+The section inside the red rectangle is Monkeytype's mode-line and the following is the fields breakdown:
 
 *MT[WPM Accuracy Elapsed-time (words/corrections/errors)]*
+
+Then you can either type all the way to the end or stop/finish (=C-c C-C s= / =monkeytype-stop=).
 
 The buffer should look as follows:
 
