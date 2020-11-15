@@ -950,8 +950,6 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
          (formatted-accuracy (format "%d " accuracy))
          (elapsed-time (format "%s" (format-seconds "%.2h:%z%.2m:%.2s" elapsed-seconds)))
          (green '(:foreground "#98be65"))
-         (yellow '(:foreground "yellow"))
-         (light-yellow '(:foreground "#ffeead"))
          (normal '(:foreground "#c5c8c6"))
          (orange '(:foreground "#B7950B"))
          (red '(:foreground "#ff6c6b")))
