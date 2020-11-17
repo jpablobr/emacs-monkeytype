@@ -114,13 +114,13 @@
   :type 'integer
   :group 'monkeytype-mode)
 
-(defcustom monkeytype--mode-line '(:eval (monkeytype--mode-line-status-text))
+(defcustom monkeytype--mode-line '(:eval (monkeytype--mode-line>text))
   "Monkeytype mode line."
   :group 'monkeytype
   :type 'sexp
   :risky t)
 
-(defcustom monkeytype--mode-line-interval-update 1
+(defcustom monkeytype--mode-line>interval-update 1
   "Number of second after each mode-line update.
 
 Reducing the frequency of the updates helps reduce lagging on longer text
@@ -167,8 +167,11 @@ or when typing to fast."
 (defvar monkeytype--previous-last-entry-index nil)
 (defvar monkeytype--previous-run-last-entry nil)
 (defvar monkeytype--previous-run '())
-(defvar monkeytype--mode-line-previous-run-last-entry nil)
 (defvar monkeytype--paused nil)
+(defvar monkeytype--mode-line>current-entry '())
+(defvar monkeytype--mode-line>previous-run '())
+(defvar monkeytype--mode-line>previous-run-last-entry nil)
+
 (make-variable-buffer-local 'monkeytype--change>ignored-change-counter)
 
 (defun monkeytype--run-with-local-idle-timer (secs repeat function &rest args)
@@ -209,7 +212,10 @@ REPEAT FUNCTION ARGS."
     (setq monkeytype--previous-last-entry-index nil)
     (setq monkeytype--previous-run-last-entry nil)
     (setq monkeytype--previous-run '())
-    (setq monkeytype--mode-line-previous-run-last-entry nil)
+    (setq monkeytype--mode-line>current-entry '())
+    (setq monkeytype--mode-line>previous-run '())
+    (setq monkeytype--mode-line>previous-run-last-entry nil)
+
     (setq monkeytype--paused nil)
     (erase-buffer)
     (insert monkeytype--source-text)
@@ -221,7 +227,7 @@ REPEAT FUNCTION ARGS."
     (monkeytype--add-hooks)
     (monkeytype-mode)
 
-    (monkeytype--report-status)
+    (monkeytype--mode-line>report-status)
 
     (message "Monkeytype: Timer will start when you type the first character.")))
 
@@ -253,13 +259,13 @@ REPEAT FUNCTION ARGS."
 (defun monkeytype--update-mode-line ()
   "Update mode-line."
 
-  (if monkeytype--mode-line-interval-update
+  (if monkeytype--mode-line>interval-update
       (let* ((entry (elt monkeytype--current-run-list 0))
             (char-index (if entry (ht-get entry 'source-index) 0)))
         (if (and
-             (> char-index monkeytype--mode-line-interval-update)
-             (= (mod char-index monkeytype--mode-line-interval-update) 0))
-            (monkeytype--report-status)))))
+             (> char-index monkeytype--mode-line>interval-update)
+             (= (mod char-index monkeytype--mode-line>interval-update) 0))
+            (monkeytype--mode-line>report-status)))))
 
 (defun monkeytype--change>handle-del (source-start end deleted-text)
   "Keep track of statistics when deletion occurs between SOURCE-START and END DELETED-TEXT."
@@ -351,7 +357,7 @@ affected. Only set monkeytype--ignored-change-counter when the
   (setq buffer-read-only nil)
   (monkeytype--print-results)
 
-  (monkeytype--report-status)
+  (monkeytype--mode-line>report-status)
   (monkeytype-mode)
   (read-only-mode))
 
@@ -868,7 +874,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
       (monkeytype--add-hooks)
       (monkeytype-mode)
       (setq buffer-read-only nil)
-      (monkeytype--report-status)
+      (monkeytype--mode-line>report-status)
       (message "Monkeytype: Timer will start when you type the first character."))))
 
 ;;;###autoload
@@ -897,17 +903,17 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 
 ;;; Mode-line
 
-(defun monkeytype--report-status ()
+(defun monkeytype--mode-line>report-status ()
   "Take care of mode-line updating."
-  (setq monkeytype--current-entry (elt monkeytype--current-run-list 0))
-  (setq monkeytype--previous-run (elt monkeytype--run-list 0))
+  (setq monkeytype--mode-line>current-entry (elt monkeytype--current-run-list 0))
+  (setq monkeytype--mode-line>previous-run (elt monkeytype--run-list 0))
 
-  (when monkeytype--previous-run
-    (setq monkeytype--mode-line-previous-run-last-entry
-          (elt (ht-get monkeytype--previous-run 'entries) 0)))
+  (when monkeytype--mode-line>previous-run
+    (setq monkeytype--mode-line>previous-run-last-entry
+          (elt (ht-get monkeytype--mode-line>previous-run 'entries) 0)))
 
-  (if (or (not monkeytype--current-entry) monkeytype--finished)
-      (setq monkeytype--current-entry
+  (if (or (not monkeytype--mode-line>current-entry) monkeytype--finished)
+      (setq monkeytype--mode-line>current-entry
             (ht ('input-index 0)
                 ('typed-entry "")
                 ('source-entry "")
@@ -918,30 +924,30 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                 ('elapsed-seconds 0))))
   (force-mode-line-update))
 
-(defun monkeytype--mode-line-status-text ()
+(defun monkeytype--mode-line>text ()
   "Show status in mode line."
-  (let* ((elapsed-seconds (ht-get monkeytype--current-entry 'elapsed-seconds))
+  (let* ((elapsed-seconds (ht-get monkeytype--mode-line>current-entry 'elapsed-seconds))
          (elapsed-minutes (monkeytype--seconds-to-minutes elapsed-seconds))
-         (previous-last-entry (if monkeytype--previous-run
-                                  monkeytype--mode-line-previous-run-last-entry))
+         (previous-last-entry (if monkeytype--mode-line>previous-run
+                                  monkeytype--mode-line>previous-run-last-entry))
          (previous-run-entryp (and
-                               monkeytype--previous-run
-                               (> (ht-get monkeytype--current-entry 'input-index) 0)))
+                               monkeytype--mode-line>previous-run
+                               (> (ht-get monkeytype--mode-line>current-entry 'input-index) 0)))
          (entries (if previous-run-entryp
                       (-
-                       (ht-get monkeytype--current-entry 'input-index)
+                       (ht-get monkeytype--mode-line>current-entry 'input-index)
                        (ht-get previous-last-entry 'input-index))
-                    (ht-get monkeytype--current-entry 'input-index)))
+                    (ht-get monkeytype--mode-line>current-entry 'input-index)))
          (errors (if previous-run-entryp
                      (-
-                      (ht-get monkeytype--current-entry 'error-count)
+                      (ht-get monkeytype--mode-line>current-entry 'error-count)
                       (ht-get previous-last-entry 'error-count))
-                   (ht-get monkeytype--current-entry 'error-count)))
+                   (ht-get monkeytype--mode-line>current-entry 'error-count)))
          (corrections (if previous-run-entryp
                           (-
-                           (ht-get monkeytype--current-entry 'correction-count)
+                           (ht-get monkeytype--mode-line>current-entry 'correction-count)
                            (ht-get previous-last-entry 'correction-count))
-                        (ht-get monkeytype--current-entry 'correction-count)))
+                        (ht-get monkeytype--mode-line>current-entry 'correction-count)))
 
          (words (monkeytype--words entries))
          (net-wpm (if (> words 1) (monkeytype--net-wpm words errors elapsed-minutes) 0))
