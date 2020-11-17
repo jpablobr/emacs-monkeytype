@@ -832,7 +832,11 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 (defun monkeytype-dummy-text ()
   "Dummy text."
   (interactive)
-  (monkeytype--setup "\"I have had a dream past the wit of man to say what dream it was,\"\nsays Bottom."))
+  (let* ((text
+          (concat
+           "\"I have had a dream past the wit of man to say what dream it was,\n"
+           "says Bottom.\"")))
+    (monkeytype--setup text)))
 
 ;;;###autoload
 (defun monkeytype-fortune ()
