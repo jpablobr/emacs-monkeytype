@@ -854,7 +854,8 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
   (setq monkeytype--paused t)
   (when monkeytype--start-time (monkeytype--pause-run))
   (setq monkeytype--current-run-list '())
-  (message "Monkeytype: Paused ([C-c C-c r] to resume.)"))
+  (when (not monkeytype--finished)
+    (message "Monkeytype: Paused ([C-c C-c r] to resume.)")))
 
 ;;;###autoload
 (defun monkeytype-stop ()
