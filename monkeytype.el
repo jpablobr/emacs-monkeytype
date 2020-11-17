@@ -384,6 +384,49 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
                     (elt sequence (1- i))))
   sequence)
 
+(defun monkeytype--index-words ()
+  "Index words."
+  (let* ((words (split-string monkeytype--source-text "[ \n]"))
+         (index 1))
+
+    (dolist (word words)
+      (add-to-list 'monkeytype--words-list `(,index . ,word))
+      (setq index (+ index 1)))))
+
+(defun monkeytype--index-chars-to-words ()
+  "Associate by index cars to words."
+  (let* ((chars (mapcar 'char-to-string monkeytype--source-text))
+         (word-index 1)
+         (char-index 1))
+    (dolist (char chars)
+      (if (string-match "[ \n\t]" char)
+          (progn
+            (setq word-index (+ word-index 1))
+            (setq char-index (+ char-index 1)))
+        (progn
+          (let* ((word  (assoc word-index monkeytype--words-list))
+                 (word (cdr word)))
+            (add-to-list 'monkeytype--chars-to-words-list `(,char-index . ,word))
+            (setq char-index (+ char-index 1))))))))
+
+(defun monkeytype--index-chars (run)
+  "RUN Index chars."
+  (unless monkeytype--previous-last-entry-index
+    (setq monkeytype--previous-last-entry-index 0))
+
+  (let* ((first-entry-index monkeytype--previous-last-entry-index)
+         (last-entry (elt (ht-get run 'entries) 0))
+         (source-text (substring monkeytype--source-text first-entry-index (ht-get last-entry 'source-index)))
+         (chars (mapcar 'char-to-string source-text))
+         (chars-list '())
+         (index first-entry-index))
+
+    (dolist (char chars)
+      (setq index (+ 1 index))
+      (cl-pushnew `(,index . ,char) chars-list))
+    (setq monkeytype--chars-list (reverse chars-list))
+    (setq monkeytype--previous-last-entry-index (ht-get (elt (ht-get run 'entries) 0) 'source-index))))
+
 (defun monkeytype--add-hooks ()
   "Add hooks."
   (make-local-variable 'after-change-functions)
@@ -621,59 +664,14 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
     (monkeytype--build-performance-results
      words errors elapsed-minutes total-elapsed-seconds entries corrections)))
 
-;;;; Words
-
-(defun monkeytype--get-words ()
-  "Index words."
-  (let* ((words (split-string monkeytype--source-text "[ \n]"))
-         (index 1))
-
-    (dolist (word words)
-      (add-to-list 'monkeytype--words-list `(,index . ,word))
-      (setq index (+ index 1)))))
-
-(defun monkeytype--get-chars-to-words ()
-  "Associate by index cars to words."
-  (let* ((chars (mapcar 'char-to-string monkeytype--source-text))
-         (word-index 1)
-         (char-index 1))
-    (dolist (char chars)
-      (if (string-match "[ \n\t]" char)
-          (progn
-            (setq word-index (+ word-index 1))
-            (setq char-index (+ char-index 1)))
-        (progn
-          (let* ((word  (assoc word-index monkeytype--words-list))
-                 (word (cdr word)))
-            (add-to-list 'monkeytype--chars-to-words-list `(,char-index . ,word))
-            (setq char-index (+ char-index 1))))))))
-
-(defun monkeytype--get-chars (run)
-  "RUN Index chars."
-  (unless monkeytype--previous-last-entry-index
-    (setq monkeytype--previous-last-entry-index 0))
-
-  (let* ((first-entry-index monkeytype--previous-last-entry-index)
-         (last-entry (elt (ht-get run 'entries) 0))
-         (source-text (substring monkeytype--source-text first-entry-index (ht-get last-entry 'source-index)))
-         (chars (mapcar 'char-to-string source-text))
-         (chars-list '())
-         (index first-entry-index))
-
-    (dolist (char chars)
-      (setq index (+ 1 index))
-      (cl-pushnew `(,index . ,char) chars-list))
-    (setq monkeytype--chars-list (reverse chars-list))
-    (setq monkeytype--previous-last-entry-index (ht-get (elt (ht-get run 'entries) 0) 'source-index))))
-
 ;;;; typed text
 
 (defun monkeytype--run-typed-text (run)
   "Final Text for RUN."
 
-  (monkeytype--get-chars run)
-  (monkeytype--get-words)
-  (monkeytype--get-chars-to-words)
+  (monkeytype--index-chars run)
+  (monkeytype--index-words)
+  (monkeytype--index-chars-to-words)
 
   (let* ((entries (seq-group-by
                    (lambda (entry) (ht-get entry 'source-index))
