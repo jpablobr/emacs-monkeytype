@@ -654,8 +654,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
   (unless monkeytype--previous-last-entry-index
     (setq monkeytype--previous-last-entry-index 0))
 
-  (let* (
-         (first-entry-index monkeytype--previous-last-entry-index)
+  (let* ((first-entry-index monkeytype--previous-last-entry-index)
          (last-entry (elt (ht-get run 'entries) 0))
          (source-text (substring monkeytype--source-text first-entry-index (ht-get last-entry 'source-index)))
          (chars (mapcar 'char-to-string source-text))
@@ -684,7 +683,9 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                       (lambda (entries-for-source)
                         (let* ((tries (cdr entries-for-source))
                                (correctionsp (> (length tries) 1))
-                               (settled (if correctionsp (car (last tries)) (car tries)))
+                               (settled (if correctionsp
+                                            (car (last tries))
+                                          (car tries)))
                                (source-entry (ht-get settled 'source-entry))
                                (typed-entry (ht-get settled 'typed-entry))
                                (typed-entry (if (string= "\n" source-entry)
@@ -703,7 +704,9 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                (settled-index (ht-get settled 'source-index))
                                (source-char-index (car (car monkeytype--chars-list)))
                                (source-char-entry (cdr (car monkeytype--chars-list)))
-                               (source-skipped-length (if source-char-index (- settled-index source-char-index) 0))
+                               (source-skipped-length (if source-char-index
+                                                          (- settled-index source-char-index)
+                                                        0))
                                (skipped-text (if (or
                                                   (string-match "[ \n\t]" source-char-entry)
                                                   (= source-skipped-length 0))
@@ -715,7 +718,9 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                                                           (format "%s" typed-entry)
                                                                           'face
                                                                           (monkeytype--final-text>typed-entry-face settled-correctp))))
-                               (corrections (if correctionsp (butlast tries) nil)))
+                               (corrections (if correctionsp
+                                                (butlast tries)
+                                              nil)))
                           (if correctionsp
                               (let* ((propertized-corrections
                                       (mapconcat (lambda (correction)
@@ -735,7 +740,8 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                          (hard-transition  (if hard-transitionp
                                                                (substring monkeytype--source-text (- char-index 2) char-index)))
                                          (hard-transitionp (if hard-transitionp
-                                                               (and (not (string-match "[ \n\t]" hard-transition))))))
+                                                               (and
+                                                                (not (string-match "[ \n\t]" hard-transition))))))
 
                                     (if hard-transitionp
                                         (cl-pushnew hard-transition monkeytype--hard-transition-list))
@@ -947,9 +953,15 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                         (ht-get monkeytype--mode-line>current-entry 'correction-count)))
 
          (words (monkeytype--words entries))
-         (net-wpm (if (> words 1) (monkeytype--net-wpm words errors elapsed-minutes) 0))
-         (gross-wpm (if (> words 1) (monkeytype--gross-wpm words elapsed-minutes) 0))
-         (accuracy (if (> words 1) (monkeytype--accuracy entries (- entries errors) corrections) 0))
+         (net-wpm (if (> words 1)
+                      (monkeytype--net-wpm words errors elapsed-minutes)
+                    0))
+         (gross-wpm (if (> words 1)
+                        (monkeytype--gross-wpm words elapsed-minutes)
+                      0))
+         (accuracy (if (> words 1)
+                       (monkeytype--accuracy entries (- entries errors) corrections)
+                     0))
          (elapsed-time (format "%s" (format-seconds "%.2h:%z%.2m:%.2s" elapsed-seconds)))
          (green '(:foreground "#98be65"))
          (normal '(:foreground "#c5c8c6"))
