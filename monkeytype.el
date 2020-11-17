@@ -128,6 +128,13 @@ or when typing to fast."
   :type 'integer
   :group 'monkeytype-mode)
 
+(defcustom monkeytype--word-divisor 5.0
+  "5 is the most common number for these calculations.
+Proper word count doesn't work as well since words have different number
+of characters. This also makes calculations easier and more accurate."
+  :type 'integer
+  :group 'monkeytype-mode)
+
 ;;;; Setup:
 
 (defvar monkeytype--typing-buffer nil)
@@ -446,13 +453,6 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
   (/ seconds 60.0))
 
 ;;;; Equations:
-
-(defcustom monkeytype--word-divisor 5.0
-  "5 is the most common number for these calculations.
-Proper word count doesn't work as well since words have different number
-of characters. This also makes calculations easier and more accurate."
-  :type 'integer
-  :group 'monkeytype-mode)
 
 (defun monkeytype--words (chars)
   "Divide all CHARS by divisor."
