@@ -40,6 +40,7 @@ At this point you can either practice mistyped words with =monkeytype-mistyped-w
   - Type any text you want.
   - Mode-line live WPM (=monkeytype--mode-line-update-seconds= allows to adjust the update frequency).
   - Practice mistyped words.
+  - Optionally treat newlines as whitespace.
   - Practice troubling/hard key combinations/transitions (useful when practising with different keyboard layouts).
   - Visual representation of typed text including errors and retries/corrections.
   - UI customisation.
