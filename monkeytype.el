@@ -429,15 +429,16 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
   "Return float with the total time since start."
   (let ((end-time (float-time)))
     (if (not monkeytype--start-time)
-        0 (- end-time monkeytype--start-time))))
+        0
+      (- end-time monkeytype--start-time))))
 
 (defun monkeytype--check-same (source typed)
   "Return non-nil if both POS (SOURCE and TYPED) are white space or the same."
   (if monkeytype--treat-newline-as-space
-    (or (string= source typed)
-        (and
-         (= (char-syntax (aref source 0)) ?\s)
-         (= (char-syntax (aref typed 0)) ?\s)))
+      (or (string= source typed)
+          (and
+           (= (char-syntax (aref source 0)) ?\s)
+           (= (char-syntax (aref typed 0)) ?\s)))
     (string= source typed)))
 
 (defun monkeytype--seconds-to-minutes (seconds)
@@ -509,8 +510,7 @@ Also shows SECONDS right next to WPM."
    (propertize
     (format "%d" uncorrected-errors)
     'face
-    `(:foreground ,(if
-                       (= uncorrected-errors 0)
+    `(:foreground ,(if (= uncorrected-errors 0)
                        "#98be65"
                      "#cc6666") :height 0.7))
    (propertize
@@ -560,8 +560,7 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format "%d" corrections)
     'face
-    `(:foreground ,(if
-                       (= corrections 0)
+    `(:foreground ,(if (= corrections 0)
                        "#98be65"
                      "#cc6666") :height 0.7))
    (propertize
@@ -718,9 +717,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                                                           (format "%s" typed-entry)
                                                                           'face
                                                                           (monkeytype--final-text>typed-entry-face settled-correctp))))
-                               (corrections (if correctionsp
-                                                (butlast tries)
-                                              nil)))
+                               (corrections (when correctionsp (butlast tries))))
                           (if correctionsp
                               (let* ((propertized-corrections
                                       (mapconcat (lambda (correction)
@@ -737,13 +734,13 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                   (let* ((char-index (ht-get settled 'source-index))
                                          (mistyped-word (cdr (assoc char-index monkeytype--chars-to-words-list)))
                                          (hard-transitionp (> char-index 2))
-                                         (hard-transition  (if hard-transitionp
+                                         (hard-transition  (when hard-transitionp
                                                                (substring monkeytype--source-text (- char-index 2) char-index)))
-                                         (hard-transitionp (if hard-transitionp
-                                                               (and
-                                                                (not (string-match "[ \n\t]" hard-transition))))))
+                                         (hard-transitionp (and
+                                                            hard-transitionp
+                                                            (not (string-match "[ \n\t]" hard-transition)))))
 
-                                    (if hard-transitionp
+                                    (when hard-transitionp
                                         (cl-pushnew hard-transition monkeytype--hard-transition-list))
 
                                     (add-to-list 'monkeytype--mistyped-words-list mistyped-word)))))
@@ -915,7 +912,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
     (setq monkeytype--mode-line>previous-run-last-entry
           (elt (ht-get monkeytype--mode-line>previous-run 'entries) 0)))
 
-  (if (or (not monkeytype--mode-line>current-entry) monkeytype--finished)
+  (when (or (not monkeytype--mode-line>current-entry) monkeytype--finished)
       (setq monkeytype--mode-line>current-entry
             (ht ('input-index 0)
                 ('typed-entry "")
@@ -931,8 +928,8 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
   "Show status in mode line."
   (let* ((elapsed-seconds (ht-get monkeytype--mode-line>current-entry 'elapsed-seconds))
          (elapsed-minutes (monkeytype--seconds-to-minutes elapsed-seconds))
-         (previous-last-entry (if monkeytype--mode-line>previous-run
-                                  monkeytype--mode-line>previous-run-last-entry))
+         (previous-last-entry (when monkeytype--mode-line>previous-run
+                                monkeytype--mode-line>previous-run-last-entry))
          (previous-run-entryp (and
                                monkeytype--mode-line>previous-run
                                (> (ht-get monkeytype--mode-line>current-entry 'input-index) 0)))
