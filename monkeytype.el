@@ -882,9 +882,9 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
   "Practice mistyped words."
   (interactive)
   (if (> (length monkeytype--mistyped-words-list) 0)
-      (let* ((text (mapconcat (lambda (word) (replace-regexp-in-string " " "" word))
-                              monkeytype--mistyped-words-list " ")))
-        (monkeytype--setup text))
+      (monkeytype--setup
+       (mapconcat (lambda (word) (string-trim word))
+                  monkeytype--mistyped-words-list " "))
     (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
 
 ;;;###autoload
