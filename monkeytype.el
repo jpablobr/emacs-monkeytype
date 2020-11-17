@@ -461,7 +461,7 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
                 (format "--(%d)-%s--:\n" run-index (ht-get run 'started-at))
                 'face
                 'monkeytype--header-2-face)
-               (monkeytype--run-typed-text run)
+               (monkeytype--typed-text run)
                (monkeytype--run-performance-results (ht-get  run 'entries))
                "\n\n"))
 
@@ -666,8 +666,8 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 
 ;;;; typed text
 
-(defun monkeytype--run-typed-text (run)
-  "Final Text for RUN."
+(defun monkeytype--typed-text (run)
+  "Typed text for RUN."
 
   (monkeytype--index-chars run)
   (monkeytype--index-words)
