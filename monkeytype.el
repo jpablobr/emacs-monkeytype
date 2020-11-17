@@ -895,10 +895,9 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
       (let* ((transitions-count (length monkeytype--hard-transition-list))
              (append-times (/ monkeytype--minimum-transitions transitions-count))
              (final-list '()))
-        (progn
-          (dotimes (n append-times)
-            (setq final-list (append final-list monkeytype--hard-transition-list )))
-          (monkeytype--setup (mapconcat 'identity (monkeytype--nshuffle final-list) " "))))
+        (dotimes (n append-times)
+          (setq final-list (append final-list monkeytype--hard-transition-list )))
+        (monkeytype--setup (mapconcat 'identity (monkeytype--nshuffle final-list) " ")))
     (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
 
 ;;; Mode-line
