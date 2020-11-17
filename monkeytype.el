@@ -293,7 +293,7 @@ SOURCE ENTRY START END."
   (when (/= start end)
     (let* ((correct (monkeytype--check-same source entry))
           (progress-index (1- start))
-          (face-for-entry (monkeytype--final-text>typed-entry-face correct)))
+          (face-for-entry (monkeytype--typed-text>entry-face correct)))
       (if correct
         (store-substring monkeytype--progress progress-index 1)
         (progn
@@ -716,14 +716,14 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                (propertized-settled (concat skipped-text (propertize
                                                                           (format "%s" typed-entry)
                                                                           'face
-                                                                          (monkeytype--final-text>typed-entry-face settled-correctp))))
+                                                                          (monkeytype--typed-text>entry-face settled-correctp))))
                                (corrections (when correctionsp (butlast tries))))
                           (if correctionsp
                               (let* ((propertized-corrections
                                       (mapconcat (lambda (correction)
                                                    (let* ((correction-char (ht-get correction 'typed-entry))
                                                           (state (ht-get correction 'state))
-                                                          (correction-face (monkeytype--final-text>typed-entry-face (= state 1) t)))
+                                                          (correction-face (monkeytype--typed-text>entry-face (= state 1) t)))
                                                      (propertize (format "%s" correction-char) 'face correction-face)))
                                                  corrections
                                                  "")))
@@ -749,7 +749,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                       "")))
     (format "\n%s\n\n" final-text)))
 
-(defun monkeytype--final-text>typed-entry-face (correctp &optional correctionp)
+(defun monkeytype--typed-text>entry-face (correctp &optional correctionp)
   "Return the face for the CORRECTP and/or CORRECTIONP entry."
   (let* ((entry-face (if correctionp
                          (if correctp
@@ -800,7 +800,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
          (state (ht-get entry 'state))
          (elapsed-seconds (ht-get entry 'elapsed-seconds))
          (elapsed-minutes (monkeytype--seconds-to-minutes elapsed-seconds))
-         (typed-entry-face (monkeytype--final-text>typed-entry-face (= state 1)))
+         (typed-entry-face (monkeytype--typed-text>entry-face (= state 1)))
          (propertized-typed-entry (propertize (format "%S" typed-entry) 'face typed-entry-face)))
     (format "\n|%9s|%9s|%9d|%9d|%9d|%9d|%9.2f|%9s|%9d|%9d|"
             (format "%s %s" input-index source-index)
