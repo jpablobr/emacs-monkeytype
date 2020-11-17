@@ -666,87 +666,6 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 
 ;;;; typed text
 
-(defun monkeytype--typed-text (run)
-  "Typed text for RUN."
-
-  (monkeytype--index-chars run)
-  (monkeytype--index-words)
-  (monkeytype--index-chars-to-words)
-
-  (let* ((entries (seq-group-by
-                   (lambda (entry) (ht-get entry 'source-index))
-                   (reverse (ht-get run 'entries))))
-         (final-text (mapconcat
-                      (lambda (entries-for-source)
-                        (let* ((tries (cdr entries-for-source))
-                               (correctionsp (> (length tries) 1))
-                               (settled (if correctionsp
-                                            (car (last tries))
-                                          (car tries)))
-                               (source-entry (ht-get settled 'source-entry))
-                               (typed-entry (ht-get settled 'typed-entry))
-                               (typed-entry (if (string= "\n" source-entry)
-                                                (if (or
-                                                     (string= " " typed-entry)
-                                                     (string= source-entry typed-entry))
-                                                    "↵\n"
-                                                  (concat typed-entry "↵\n"))
-                                              typed-entry))
-                               (typed-entry (if (and
-                                                 (string= " " typed-entry)
-                                                 (not (string= typed-entry source-entry)))
-                                                "·"
-                                              typed-entry))
-                               (settled-correctp (= (ht-get settled 'state) 1))
-                               (settled-index (ht-get settled 'source-index))
-                               (source-char-index (car (car monkeytype--chars-list)))
-                               (source-char-entry (cdr (car monkeytype--chars-list)))
-                               (source-skipped-length (if source-char-index
-                                                          (- settled-index source-char-index)
-                                                        0))
-                               (skipped-text (if (or
-                                                  (string-match "[ \n\t]" source-char-entry)
-                                                  (= source-skipped-length 0))
-                                                 (progn (pop monkeytype--chars-list) "")
-                                               (progn
-                                                 (dotimes (n (+ source-skipped-length 1)) (pop monkeytype--chars-list))
-                                                 (substring monkeytype--source-text (- source-char-index 1) (- settled-index 1)))))
-                               (propertized-settled (concat skipped-text (propertize
-                                                                          (format "%s" typed-entry)
-                                                                          'face
-                                                                          (monkeytype--typed-text>entry-face settled-correctp))))
-                               (corrections (when correctionsp (butlast tries))))
-                          (if correctionsp
-                              (let* ((propertized-corrections
-                                      (mapconcat (lambda (correction)
-                                                   (let* ((correction-char (ht-get correction 'typed-entry))
-                                                          (state (ht-get correction 'state))
-                                                          (correction-face (monkeytype--typed-text>entry-face (= state 1) t)))
-                                                     (propertize (format "%s" correction-char) 'face correction-face)))
-                                                 corrections
-                                                 "")))
-                                (format "%s%s" propertized-settled propertized-corrections))
-                            (progn
-                              (unless (= (ht-get settled 'state) 1)
-                                (unless (string-match "[ \n\t]" (ht-get settled 'source-entry))
-                                  (let* ((char-index (ht-get settled 'source-index))
-                                         (mistyped-word (cdr (assoc char-index monkeytype--chars-to-words-list)))
-                                         (hard-transitionp (> char-index 2))
-                                         (hard-transition  (when hard-transitionp
-                                                               (substring monkeytype--source-text (- char-index 2) char-index)))
-                                         (hard-transitionp (and
-                                                            hard-transitionp
-                                                            (not (string-match "[ \n\t]" hard-transition)))))
-
-                                    (when hard-transitionp
-                                        (cl-pushnew hard-transition monkeytype--hard-transition-list))
-
-                                    (add-to-list 'monkeytype--mistyped-words-list mistyped-word)))))
-                            (format "%s" propertized-settled))))
-                      entries
-                      "")))
-    (format "\n%s\n\n" final-text)))
-
 (defun monkeytype--typed-text>entry-face (correctp &optional correctionp)
   "Return the face for the CORRECTP and/or CORRECTIONP entry."
   (let* ((entry-face (if correctionp
@@ -757,6 +676,123 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                            'monkeytype--correct-face
                          'monkeytype--error-face))))
     entry-face))
+
+(defun monkeytype--typed-text>newline (source typed)
+  "Newline substitutions depending on SOURCE and TYPED char."
+  (if (string= "\n" source)
+      (if (or
+           (string= " " typed)
+           (string= source typed))
+          "↵\n"
+        (concat typed "↵\n"))
+    typed))
+
+(defun monkeytype--typed-text>whitespace (source typed)
+  "Whitespace substitutions depending on SOURCE and TYPED char."
+  (if (and
+       (string= " " typed)
+       (not (string= typed source)))
+      "·"
+    typed))
+
+(defun monkeytype--typed-text>skipped-text (settled-index)
+  "Handle skipped text before the typed char at SETTLED-INDEX."
+  (let* ((source-index (car (car monkeytype--chars-list)))
+         (source-entry (cdr (car monkeytype--chars-list)))
+         (skipped-length (if source-index
+                             (- settled-index source-index)
+                           0)))
+    (if (or
+         (string-match "[ \n\t]" source-entry)
+         (= skipped-length 0))
+        (progn
+          (pop monkeytype--chars-list)
+          "")
+      (progn
+        (dotimes (n (+ skipped-length 1))
+          (pop monkeytype--chars-list))
+        (substring
+         monkeytype--source-text
+         (- source-index 1)
+         (- settled-index 1))))))
+
+(defun monkeytype--typed-text>concat-corrections (corrections settled)
+  "Concat propertized CORRECTIONS to SETTLED char."
+  (format
+   "%s%s"
+   settled
+   (mapconcat
+    (lambda (correction)
+      (let* ((correction-char (ht-get correction 'typed-entry))
+             (state (ht-get correction 'state))
+             (correction-face (monkeytype--typed-text>entry-face (= state 1) t)))
+        (propertize (format "%s" correction-char) 'face correction-face)))
+    corrections
+    "")))
+
+(defun monkeytype--typed-text>collect-errors (settled)
+  "Add the SETTLED char's associated word and transition to their respective lists."
+  (unless (= (ht-get settled 'state) 1)
+    (unless (string-match "[ \n\t]" (ht-get settled 'source-entry))
+      (let* ((char-index (ht-get settled 'source-index))
+             (mistyped-word (cdr (assoc char-index monkeytype--chars-to-words-list)))
+             (hard-transitionp (> char-index 2))
+             (hard-transition  (when hard-transitionp
+                                 (substring monkeytype--source-text (- char-index 2) char-index)))
+             (hard-transitionp (and
+                                hard-transitionp
+                                (not (string-match "[ \n\t]" hard-transition)))))
+
+        (when hard-transitionp
+          (cl-pushnew hard-transition monkeytype--hard-transition-list))
+        (cl-pushnew mistyped-word monkeytype--mistyped-words-list)))))
+
+(defun monkeytype--typed-text>to-string (entries)
+  "Format typed ENTRIES and return a string."
+  (mapconcat
+   (lambda (entries-for-source)
+     (let* ((tries (cdr entries-for-source))
+            (correctionsp (> (length tries) 1))
+            (settled (if correctionsp
+                         (car (last tries))
+                       (car tries)))
+            (source-entry (ht-get settled 'source-entry))
+            (typed-entry (monkeytype--typed-text>newline
+                          source-entry
+                          (ht-get settled 'typed-entry)))
+            (typed-entry (monkeytype--typed-text>whitespace
+                          source-entry
+                          typed-entry))
+            (settled-correctp (= (ht-get settled 'state) 1))
+            (settled-index (ht-get settled 'source-index))
+            (skipped-text  (monkeytype--typed-text>skipped-text settled-index))
+            (propertized-settled (concat
+                                  skipped-text
+                                  (propertize
+                                   (format "%s" typed-entry)
+                                   'face
+                                   (monkeytype--typed-text>entry-face settled-correctp))))
+            (corrections (when correctionsp (butlast tries))))
+       (if correctionsp
+           (monkeytype--typed-text>concat-corrections corrections propertized-settled)
+         (monkeytype--typed-text>collect-errors settled)
+         (format "%s" propertized-settled))))
+   entries
+   ""))
+
+(defun monkeytype--typed-text (run)
+  "Typed text for RUN."
+
+  (monkeytype--index-chars run)
+  (monkeytype--index-words)
+  (monkeytype--index-chars-to-words)
+
+  (format
+   "\n%s\n\n"
+   (monkeytype--typed-text>to-string
+    (seq-group-by
+     (lambda (entry) (ht-get entry 'source-index))
+     (reverse (ht-get run 'entries))))))
 
 ;;;; Log:
 
