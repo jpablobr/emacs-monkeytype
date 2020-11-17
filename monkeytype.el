@@ -218,19 +218,15 @@ REPEAT FUNCTION ARGS."
     (setq monkeytype--source-text-length (length text))
     (setq monkeytype--remaining-counter (length text))
     (setq monkeytype--progress (make-string len 0))
-
     (erase-buffer)
     (insert monkeytype--source-text)
     (set-buffer-modified-p nil)
     (switch-to-buffer monkeytype--typing-buffer)
     (goto-char 0)
-
     (face-remap-add-relative 'default 'monkeytype--buffer-face-mode-face)
     (monkeytype--add-hooks)
     (monkeytype-mode)
-
     (monkeytype--mode-line>report-status)
-
     (message "Monkeytype: Timer will start when you type the first character.")))
 
 ;;;; Change:
