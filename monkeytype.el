@@ -944,10 +944,9 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                         (ht-get monkeytype--current-entry 'correction-count)))
 
          (words (monkeytype--words entries))
-         (wpm (if (> words 1) (monkeytype--net-wpm words errors elapsed-minutes) 0))
-         (formatted-wpm (format "%d " wpm))
+         (net-wpm (if (> words 1) (monkeytype--net-wpm words errors elapsed-minutes) 0))
+         (gross-wpm (if (> words 1) (monkeytype--gross-wpm words elapsed-minutes) 0))
          (accuracy (if (> words 1) (monkeytype--accuracy entries (- entries errors) corrections) 0))
-         (formatted-accuracy (format "%d " accuracy))
          (elapsed-time (format "%s" (format-seconds "%.2h:%z%.2m:%.2s" elapsed-seconds)))
          (green '(:foreground "#98be65"))
          (normal '(:foreground "#c5c8c6"))
@@ -956,8 +955,11 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 
     (concat
      (propertize "MT[" 'face normal)
-     (propertize formatted-wpm 'face green)
-     (propertize formatted-accuracy 'face normal)
+     (propertize (format "%d" net-wpm) 'face green)
+     (propertize "/" 'face normal)
+     (propertize (format "%d" gross-wpm) 'face normal)
+     (propertize " " 'face normal)
+     (propertize (format "%d " accuracy) 'face normal)
      (propertize elapsed-time 'face orange)
      (propertize (format " (%d/" words) 'face normal)
      (propertize (format "%d" corrections) 'face (if (> corrections 0) red green))
