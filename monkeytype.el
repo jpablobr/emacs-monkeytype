@@ -263,7 +263,6 @@ REPEAT FUNCTION ARGS."
 
 (defun monkeytype--update-mode-line ()
   "Update mode-line."
-
   (if monkeytype--mode-line>interval-update
       (let* ((entry (elt monkeytype--current-run-list 0))
             (char-index (if entry (ht-get entry 'source-index) 0)))
@@ -388,7 +387,6 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
   "Index words."
   (let* ((words (split-string monkeytype--source-text "[ \n]"))
          (index 1))
-
     (dolist (word words)
       (add-to-list 'monkeytype--words-list `(,index . ,word))
       (setq index (+ index 1)))))
@@ -420,7 +418,6 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
          (chars (mapcar 'char-to-string source-text))
          (chars-list '())
          (index first-entry-index))
-
     (dolist (char chars)
       (setq index (+ 1 index))
       (cl-pushnew `(,index . ,char) chars-list))
