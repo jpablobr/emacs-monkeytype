@@ -466,7 +466,7 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
 
       (when monkeytype--insert-log
         (async-start
-         `(lambda () ,(monkeytype--run-log run) 1)
+         `(lambda () ,(monkeytype--log run) 1)
          (lambda (result)
            (message "Monkeytype: Log generated successfully. (%s)" result))))))
 
@@ -793,17 +793,17 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 
 ;;;; Log:
 
-(defun monkeytype--run-log (run)
+(defun monkeytype--log (run)
   "Log for the RUN."
   (insert "Log:")
-  (insert (monkeytype--run-log>header))
+  (insert (monkeytype--log>header))
   (dotimes (i (length (ht-get  run 'entries)))
     (let* ((entries  (reverse (ht-get  run 'entries)))
            (entry (elt entries i)))
-      (insert (monkeytype--run-log>entry entry))))
+      (insert (monkeytype--log>entry entry))))
   (insert "\n\n"))
 
-(defun monkeytype--run-log>header ()
+(defun monkeytype--log>header ()
   "Log header."
   (let ((log-header
          '(" I/S Idx "
@@ -818,7 +818,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
            " Errs    ")))
     (format "\n|%s|" (mapconcat 'identity log-header "|"))))
 
-(defun monkeytype--run-log>entry (entry)
+(defun monkeytype--log>entry (entry)
   "Format ENTRY."
   (let* ((source-index (ht-get entry 'source-index))
          (typed-entry (ht-get entry 'typed-entry))
