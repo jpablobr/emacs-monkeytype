@@ -323,7 +323,7 @@ affected. Only set monkeytype--ignored-change-counter when the
    (t t)))
 
 (defun monkeytype--change>add-to-entries (source-start change-typed change-source)
-  "SOURCE-START CHANGE-TYPED CHANGE-SOURCE."
+  "Add entry to current-run-list keeping track of SOURCE-START CHANGE-TYPED and CHANGE-SOURCE."
   (cl-incf monkeytype--input-counter)
   (let ((entry (ht ('input-index monkeytype--input-counter)
                    ('typed-entry change-typed)
@@ -366,7 +366,7 @@ affected. Only set monkeytype--ignored-change-counter when the
   (read-only-mode))
 
 (defun monkeytype--add-to-run-list ()
-  "Add."
+  "Add run to run-list."
   (add-to-list
    'monkeytype--run-list
    (ht ('started-at monkeytype--current-run-start-datetime)
