@@ -475,9 +475,9 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
 (defun monkeytype--elapsed-seconds ()
   "Return float with the total time since start."
   (let ((end-time (float-time)))
-    (if (not monkeytype--start-time)
-        0
-      (- end-time monkeytype--start-time))))
+    (if monkeytype--start-time
+        (- end-time monkeytype--start-time)
+      0)))
 
 (defun monkeytype--check-same (source typed)
   "Return non-nil if both POS (SOURCE and TYPED) are white space or the same."
