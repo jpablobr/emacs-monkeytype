@@ -140,6 +140,11 @@ of characters. This also makes calculations easier and more accurate."
   :type 'boolean
   :group 'monkeytype-mode)
 
+(defcustom monkeytype--downcase-mistype t
+  "Toggle downcasing of mistyped words."
+  :type 'boolean
+  :group 'monkeytype-mode)
+
 ;;;; Setup:
 
 (defvar monkeytype--typing-buffer nil)
@@ -933,7 +938,10 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
       (monkeytype--setup
        (mapconcat (lambda (word)
                     (let* ((word (string-trim word))
-                           (word (replace-regexp-in-string "[;.\":,()-?]" "" word)))
+                           (word (replace-regexp-in-string "[;.\":,()-?]" "" word))
+                           (word (if monkeytype--downcase-mistype
+                                     (downcase word)
+                                   word)))
                       word))
                   monkeytype--mistyped-words-list " "))
     (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
