@@ -204,7 +204,10 @@ REPEAT FUNCTION ARGS."
   (let* ((fns (make-symbol "local-idle-timer"))
          (timer (apply 'run-with-idle-timer secs repeat fns args))
          (fn `(lambda (&rest args)
-                (if (not (buffer-live-p ,(current-buffer)))
+                (if (or
+                     monkeytype--paused
+                     monkeytype--finished
+                     (not (buffer-live-p ,(current-buffer))))
                     (cancel-timer ,timer)
                   (with-current-buffer ,(current-buffer)
                     (apply (function ,function) args))))))
