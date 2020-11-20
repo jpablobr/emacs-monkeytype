@@ -135,6 +135,11 @@ of characters. This also makes calculations easier and more accurate."
   :type 'integer
   :group 'monkeytype-mode)
 
+(defcustom monkeytype--auto-fill t
+  "Toggle auto fill."
+  :type 'boolean
+  :group 'monkeytype-mode)
+
 ;;;; Setup:
 
 (defvar monkeytype--typing-buffer nil)
@@ -218,6 +223,10 @@ REPEAT FUNCTION ARGS."
   "Set up a new buffer for the typing exercise on TEXT."
   (with-temp-buffer
     (insert text)
+
+    (when monkeytype--auto-fill
+      (fill-region (point-min) (point-max)))
+
     (delete-trailing-whitespace)
     (setq text (buffer-string)))
 

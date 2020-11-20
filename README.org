@@ -44,6 +44,7 @@ At this point you can either practice mistyped words with =monkeytype-mistyped-w
   - Practice troubling/hard key combinations/transitions (useful when practising with different keyboard layouts).
   - Visual representation of typed text including errors and retries/corrections.
   - UI customisation.
+  - Optionally auto-fill text to the defaults =fill-column= value (see: =monkeytype--auto-fill=).
   - Auto stop after 5 seconds of no input (=C-c C-c r= [ =monkeytype-resume= ] resumes).
 
 ** To come... (PRs welcome)
