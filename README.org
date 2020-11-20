@@ -12,7 +12,7 @@
 
 * Usage
 
-Use one of the functions to enter in =monkeytype= mode (=monkeytype-region=, =monkeytype-buffer= or =monkeytype-fortune=).
+Use one of the functions to enter =monkeytype= mode (=monkeytype-region=, =monkeytype-buffer= or =monkeytype-fortune=).
 
 (Note: You should bind these functions to anything you want in your =.emacs=.)
 
@@ -38,9 +38,9 @@ At this point you can either practice mistyped words with =monkeytype-mistyped-w
 * Features
 
   - Type any text you want.
-  - Mode-line live WPM (=monkeytype--mode-line-update-seconds= allows to adjust the update frequency).
+  - Mode-line live WPM (=monkeytype--mode-line>interval-update= adjust the update frequency).
   - Practice mistyped words.
-  - Optionally treat newlines as whitespace.
+  - Optionally treat newlines as whitespace (see: =monkeytype--treat-newline-as-space=).
   - Practice troubling/hard key combinations/transitions (useful when practising with different keyboard layouts).
   - Visual representation of typed text including errors and retries/corrections.
   - UI customisation.
@@ -96,11 +96,11 @@ or by directly modifying the =custom-set-variables= in your =.emacs= file.
    '(monkeytype--error-face '(:foreground "#ff6c6b"))
    '(monkeytype--correction-error-face '(:inherit region :foreground "#ff6c6b"))
    '(monkeytype--correction-correct-face '(:inherit region :foreground "#98be65"))
-   '(monkeytype--header-1-face '(:foreground "#B7950B" :height 250))
-   '(monkeytype--header-2-face '(:foreground "#F1C40F" :height 200))
-   '(monkeytype--header-3-face '(:foreground "#F1C40F" :height 180))
+   '(monkeytype--header-1-face '(:foreground "#B7950B"))
+   '(monkeytype--header-2-face '(:foreground "#F1C40F"))
+   '(monkeytype--header-3-face '(:foreground "#F1C40F"))
    '(monkeytype--minimum-transitions 50)
-   '(monkeytype--mode-line-update-seconds 10)
+   '(monkeytype--mode-line>interval-update 10)
    '(monkeytype--treat-newline-as-space t)
    '(monkeytype--insert-log nil)
   )
@@ -110,7 +110,7 @@ or by directly modifying the =custom-set-variables= in your =.emacs= file.
 
 * Log
 
-Logging can be enabled for debugging purposes (see =mt--insert-log= customisation).
+Logging can be enabled for debugging purposes (see =monkeytype--insert-log= customisation).
 
 When enabled it should look as follows:
 
