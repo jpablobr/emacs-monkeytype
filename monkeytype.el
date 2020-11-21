@@ -145,6 +145,11 @@ of characters. This also makes calculations easier and more accurate."
   :type 'boolean
   :group 'monkeytype-mode)
 
+(defcustom monkeytype--save>directory "~/.monkeytype/"
+  "Monkeytype directory."
+  :type 'string
+  :group 'monkeytype-mode)
+
 ;;;; Setup:
 
 (defvar monkeytype--typing-buffer nil)
@@ -956,6 +961,34 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
         (monkeytype--setup (mapconcat 'identity (monkeytype--nshuffle final-list) " ")))
     (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
 
+;;;; Saving
+
+(defun monkeytype--save>file-path (type)
+  "Build path for the TYPE of file to be saved."
+  (concat
+   monkeytype--save>directory
+   (format "%s/" type)
+   (format "%s" (downcase (format-time-string "%a-%d-%b-%Y-%H-%M-%S")))
+   ".txt"))
+
+;;;###autoload
+(defun monkeytype-save-mistyped-words ()
+  "Save mistyped words."
+  (interactive)
+  (let ((path (monkeytype--save>file-path "words"))
+        (words (mapconcat 'identity monkeytype--mistyped-words-list " ")))
+    (with-temp-file path (insert words))
+    (message "Monkeytype: Words saved successfully to file: %s" path)))
+
+;;;###autoload
+(defun monkeytype-save-hard-transitions ()
+  "Save hard transitions."
+  (interactive)
+  (let ((path (monkeytype--save>file-path "transitions"))
+        (transitions (mapconcat 'identity monkeytype--hard-transition-list " ")))
+    (with-temp-file path (insert transitions))
+    (message "Monkeytype: Transitions saved successfully to file: %s" path)))
+
 ;;; Mode-line
 
 (defun monkeytype--mode-line>report-status ()
@@ -1046,6 +1079,8 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
             (define-key map (kbd "C-c C-c f") 'monkeytype-fortune)
             (define-key map (kbd "C-c C-c m") 'monkeytype-mistyped-words)
             (define-key map (kbd "C-c C-c h") 'monkeytype-hard-transitions)
+            (define-key map (kbd "C-c C-c a") 'monkeytype-save-mistyped-words)
+            (define-key map (kbd "C-c C-c o") 'monkeytype-save-hard-transitions)
             map))
 
 (provide 'monkeytype)
