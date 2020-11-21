@@ -813,11 +813,9 @@ Also add correction to mistyped-words-list."
 
 (defun monkeytype--typed-text (run)
   "Typed text for RUN."
-
   (monkeytype--index-chars run)
   (monkeytype--index-words)
   (monkeytype--index-chars-to-words)
-
   (format
    "\n%s\n\n"
    (monkeytype--typed-text>to-string
