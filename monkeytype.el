@@ -735,11 +735,24 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
          (- source-index 1)
          (- settled-index 1))))))
 
-(defun monkeytype--typed-text>concat-corrections (corrections settled)
-  "Concat propertized CORRECTIONS to SETTLED char."
+(defun monkeytype--typed-text>add-to-mistyped-list (char)
+  "Find associated word for CHAR and add it to mistyped list."
+  (let* ((index (ht-get char 'source-index))
+         (word (cdr (assoc index monkeytype--chars-to-words-list)))
+         (word (when word (string-trim word)))
+         (word (when word (replace-regexp-in-string "[;.\":,()-?]" "" word))))
+    (when word
+      (cl-pushnew word monkeytype--mistyped-words-list))))
+
+(defun monkeytype--typed-text>concat-corrections (corrections settled propertized-settled)
+  "Concat propertized CORRECTIONS to SETTLED char.
+
+Also add correction to mistyped-words-list."
+  (monkeytype--typed-text>add-to-mistyped-list settled)
+
   (format
    "%s%s"
-   settled
+   propertized-settled
    (mapconcat
     (lambda (correction)
       (let* ((correction-char (ht-get correction 'typed-entry))
@@ -754,7 +767,6 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
   (unless (= (ht-get settled 'state) 1)
     (unless (string-match "[ \n\t]" (ht-get settled 'source-entry))
       (let* ((char-index (ht-get settled 'source-index))
-             (mistyped-word (cdr (assoc char-index monkeytype--chars-to-words-list)))
              (hard-transitionp (> char-index 2))
              (hard-transition  (when hard-transitionp
                                  (substring monkeytype--source-text (- char-index 2) char-index)))
@@ -764,9 +776,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 
         (when hard-transitionp
           (cl-pushnew hard-transition monkeytype--hard-transition-list))
-        (cl-pushnew
-         (replace-regexp-in-string "[;.\":,()-?]" "" (string-trim mistyped-word))
-         monkeytype--mistyped-words-list)))))
+        (monkeytype--typed-text>add-to-mistyped-list settled)))))
 
 (defun monkeytype--typed-text>to-string (entries)
   "Format typed ENTRIES and return a string."
@@ -795,7 +805,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
                                    (monkeytype--typed-text>entry-face settled-correctp))))
             (corrections (when correctionsp (butlast tries))))
        (if correctionsp
-           (monkeytype--typed-text>concat-corrections corrections propertized-settled)
+           (monkeytype--typed-text>concat-corrections corrections settled propertized-settled)
          (monkeytype--typed-text>collect-errors settled)
          (format "%s" propertized-settled))))
    entries
