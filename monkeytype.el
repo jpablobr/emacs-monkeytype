@@ -74,11 +74,16 @@
   "Face for correctly typed char.")
 
 (defface monkeytype--error-face
-  '((t (:foreground "#cc6666")))
+  '((t (
+        :foreground "#cc6666"
+        :underline (:color "#cc6666" :style wave))))
   "Face for wrongly typed char.")
 
 (defface monkeytype--correction-error-face
-  '((t (:inherit region :foreground "#ff6c6b")))
+  '((t (
+        :inherit region
+        :foreground "#ff6c6b"
+        :underline (:color "#ff6c6b" :style wave))))
   "Face for wrongly typed correction.")
 
 (defface monkeytype--correction-correct-face
