@@ -750,9 +750,9 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
       (cl-pushnew word monkeytype--mistyped-words-list))))
 
 (defun monkeytype--typed-text>concat-corrections (corrections settled propertized-settled)
-  "Concat propertized CORRECTIONS to SETTLED char.
+  "Concat propertized CORRECTIONS to PROPERTIZED-SETTLED char.
 
-Also add correction to mistyped-words-list."
+Also add correction in SETTLED to mistyped-words-list."
   (monkeytype--typed-text>add-to-mistyped-list settled)
 
   (format
