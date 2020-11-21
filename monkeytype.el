@@ -759,7 +759,9 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 
         (when hard-transitionp
           (cl-pushnew hard-transition monkeytype--hard-transition-list))
-        (cl-pushnew mistyped-word monkeytype--mistyped-words-list)))))
+        (cl-pushnew
+         (replace-regexp-in-string "[;.\":,()-?]" "" (string-trim mistyped-word))
+         monkeytype--mistyped-words-list)))))
 
 (defun monkeytype--typed-text>to-string (entries)
   "Format typed ENTRIES and return a string."
@@ -936,14 +938,9 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
   (interactive)
   (if (> (length monkeytype--mistyped-words-list) 0)
       (monkeytype--setup
-       (mapconcat (lambda (word)
-                    (let* ((word (string-trim word))
-                           (word (replace-regexp-in-string "[;.\":,()-?]" "" word))
-                           (word (if monkeytype--downcase-mistype
-                                     (downcase word)
-                                   word)))
-                      word))
-                  monkeytype--mistyped-words-list " "))
+       (mapconcat
+        (lambda (word) (if monkeytype--downcase-mistype (downcase word) word))
+        monkeytype--mistyped-words-list " "))
     (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
 
 ;;;###autoload
