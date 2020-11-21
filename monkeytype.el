@@ -955,7 +955,7 @@ Also add correction to mistyped-words-list."
       (monkeytype--setup
        (mapconcat
         (lambda (word) (if monkeytype--downcase-mistype (downcase word) word))
-        monkeytype--mistyped-words-list " "))
+        (monkeytype--nshuffle monkeytype--mistyped-words-list)  " "))
     (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
 
 ;;;###autoload
