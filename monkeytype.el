@@ -45,6 +45,7 @@
 
 (require 'cl-lib)
 (require 'seq)
+(require 'subr-x)
 (require 'async)
 
 ;;;; Customization
