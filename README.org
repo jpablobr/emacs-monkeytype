@@ -12,6 +12,7 @@
 - [[#changelog][Changelog]]
   - [[#011][0.1.1]]
   - [[#010][0.1.0]]
+- [[#license][License]]
 
 * Usage
 
@@ -165,3 +166,7 @@ Drop =monkeytype.el= somewhere in your =load-path=.
 ** 0.1.0
 
 Initial release.
+
+* License
+
+GPLv3
