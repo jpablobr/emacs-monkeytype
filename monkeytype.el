@@ -978,6 +978,9 @@ Also add correction in SETTLED to mistyped-words-list."
 
 (defun monkeytype--save>file-path (type)
   "Build path for the TYPE of file to be saved."
+  (unless (file-exists-p monkeytype--save>directory)
+    (make-directory monkeytype--save>directory))
+
   (concat
    monkeytype--save>directory
    (format "%s/" type)
