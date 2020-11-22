@@ -395,7 +395,6 @@ affected. Only set monkeytype--ignored-change-counter when the
 (defun monkeytype--add-to-run-list ()
   "Add run to run-list."
   (let* ((run (make-hash-table :test 'equal)))
-    (puthash "joe" 19 myHash)
     (puthash "started-at" monkeytype--current-run-start-datetime run)
     (puthash "finished-at" (format-time-string "%a-%d-%b-%Y %H:%M:%S") run)
     (puthash "entries" (vconcat monkeytype--current-run-list) run)
