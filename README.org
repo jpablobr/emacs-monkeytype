@@ -8,7 +8,6 @@
 - [[#customisation][Customisation]]
 - [[#log][Log]]
 - [[#install][Install]]
-  - [[#required-libraries][Required Libraries]]
 
 * Usage
 
@@ -122,9 +121,6 @@ When enabled it should look as follows:
   [[file:img/monkeytype-log.png]]
 
 * Install
-
-** Required Libraries
-- ht.el (https://github.com/Wilfred/ht.el)
 
 Drop =monkeytype.el= somewhere in your =load-path=.
 

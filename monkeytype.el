@@ -7,7 +7,7 @@
 ;; Version: 0.1.0
 ;; Keywords: games
 ;; URL: http://github.com/jpablobr/emacs-monkeytype
-;; Package-Requires: ((emacs "24.4") (seq "2.19") (ht "2.2") (async "1.9.3"))
+;; Package-Requires: ((emacs "24.4") (seq "2.19") (async "1.9.3"))
 
 ;;; Commentary:
 
@@ -45,7 +45,6 @@
 
 (require 'cl-lib)
 (require 'seq)
-(require 'ht)
 (require 'async)
 
 ;;;; Customization
@@ -292,7 +291,7 @@ REPEAT FUNCTION ARGS."
   "Update mode-line."
   (if monkeytype--mode-line>interval-update
       (let* ((entry (elt monkeytype--current-run-list 0))
-            (char-index (if entry (ht-get entry 'source-index) 0)))
+             (char-index (if entry (gethash "source-index" entry) 0)))
         (if (and
              (> char-index monkeytype--mode-line>interval-update)
              (= (mod char-index monkeytype--mode-line>interval-update) 0))
@@ -352,15 +351,16 @@ affected. Only set monkeytype--ignored-change-counter when the
 (defun monkeytype--change>add-to-entries (source-start change-typed change-source)
   "Add entry to current-run-list keeping track of SOURCE-START CHANGE-TYPED and CHANGE-SOURCE."
   (cl-incf monkeytype--input-counter)
-  (let ((entry (ht ('input-index monkeytype--input-counter)
-                   ('typed-entry change-typed)
-                   ('source-entry change-source)
-                   ('source-index (1+ source-start))
-                   ('error-count monkeytype--error-counter)
-                   ('correction-count monkeytype--correction-counter)
-                   ('state (aref monkeytype--progress source-start))
-                   ('elapsed-seconds (monkeytype--elapsed-seconds))
-                   ('formatted-seconds (format-seconds "%.2h:%z%.2m:%.2s" (monkeytype--elapsed-seconds))))))
+  (let ((entry (make-hash-table :test 'equal)))
+    (puthash "input-index" monkeytype--input-counter entry)
+    (puthash "typed-entry" change-typed entry)
+    (puthash "source-entry" change-source entry)
+    (puthash "source-index" (1+ source-start) entry)
+    (puthash "error-count" monkeytype--error-counter entry)
+    (puthash "correction-count" monkeytype--correction-counter entry)
+    (puthash "state" (aref monkeytype--progress source-start) entry)
+    (puthash "elapsed-seconds" (monkeytype--elapsed-seconds) entry)
+    (puthash "formatted-seconds" (format-seconds "%.2h:%z%.2m:%.2s" (monkeytype--elapsed-seconds)) entry)
     (add-to-list 'monkeytype--current-run-list entry)))
 
 (defun monkeytype--first-change ()
@@ -394,11 +394,12 @@ affected. Only set monkeytype--ignored-change-counter when the
 
 (defun monkeytype--add-to-run-list ()
   "Add run to run-list."
-  (add-to-list
-   'monkeytype--run-list
-   (ht ('started-at monkeytype--current-run-start-datetime)
-       ('finished-at (format-time-string "%a-%d-%b-%Y %H:%M:%S"))
-       ('entries (vconcat monkeytype--current-run-list)))))
+  (let* ((run (make-hash-table :test 'equal)))
+    (puthash "joe" 19 myHash)
+    (puthash "started-at" monkeytype--current-run-start-datetime run)
+    (puthash "finished-at" (format-time-string "%a-%d-%b-%Y %H:%M:%S") run)
+    (puthash "entries" (vconcat monkeytype--current-run-list) run)
+    (add-to-list 'monkeytype--run-list run)))
 
 ;;;; Utils:
 
@@ -440,8 +441,11 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
     (setq monkeytype--previous-last-entry-index 0))
 
   (let* ((first-entry-index monkeytype--previous-last-entry-index)
-         (last-entry (elt (ht-get run 'entries) 0))
-         (source-text (substring monkeytype--source-text first-entry-index (ht-get last-entry 'source-index)))
+         (last-entry (elt (gethash "entries" run) 0))
+         (source-text (substring
+                       monkeytype--source-text
+                       first-entry-index
+                       (gethash "source-index" last-entry)))
          (chars (mapcar 'char-to-string source-text))
          (chars-list '())
          (index first-entry-index))
@@ -449,7 +453,8 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
       (setq index (+ 1 index))
       (cl-pushnew `(,index . ,char) chars-list))
     (setq monkeytype--chars-list (reverse chars-list))
-    (setq monkeytype--previous-last-entry-index (ht-get (elt (ht-get run 'entries) 0) 'source-index))))
+    (setq monkeytype--previous-last-entry-index
+          (gethash "source-index" (elt (gethash "entries" run) 0)))))
 
 (defun monkeytype--add-hooks ()
   "Add hooks."
@@ -482,11 +487,11 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
     (dolist (run (reverse monkeytype--run-list))
       (insert (concat
                (propertize
-                (format "--(%d)-%s--:\n" run-index (ht-get run 'started-at))
+                (format "--(%d)-%s--:\n" run-index (gethash "started-at" run))
                 'face
                 'monkeytype--header-2-face)
                (monkeytype--typed-text run)
-               (monkeytype--run-performance-results (ht-get  run 'entries))
+               (monkeytype--run-performance-results (gethash "entries" run))
                "\n\n"))
 
       (setq run-index (+ run-index 1))
@@ -652,23 +657,23 @@ WORDS ERRORS MINUTES SECONDS ENTRIES CORRECTIONS."
 (defun monkeytype--run-performance-results (run)
   "Performance results for RUN."
   (let* ((last-entry (elt run 0))
-         (elapsed-seconds (ht-get last-entry 'elapsed-seconds))
+         (elapsed-seconds (gethash "elapsed-seconds" last-entry))
          (elapsed-minutes (monkeytype--seconds-to-minutes elapsed-seconds))
          (entries (if monkeytype--previous-run-last-entry
-                     (-
-                      (ht-get last-entry 'input-index)
-                      (ht-get monkeytype--previous-run-last-entry 'input-index))
-                   (ht-get last-entry 'input-index)))
+                      (-
+                       (gethash "input-index" last-entry)
+                       (gethash "input-index" monkeytype--previous-run-last-entry))
+                    (gethash "input-index" last-entry)))
          (errors (if monkeytype--previous-run-last-entry
                      (-
-                      (ht-get last-entry 'error-count)
-                      (ht-get monkeytype--previous-run-last-entry 'error-count))
-                   (ht-get last-entry 'error-count)))
+                      (gethash "error-count" last-entry)
+                      (gethash "error-count" monkeytype--previous-run-last-entry))
+                   (gethash "error-count" last-entry)))
          (corrections (if monkeytype--previous-run-last-entry
-                     (-
-                      (ht-get last-entry 'correction-count)
-                      (ht-get monkeytype--previous-run-last-entry 'correction-count))
-                   (ht-get last-entry 'correction-count)))
+                          (-
+                           (gethash "correction-count" last-entry)
+                           (gethash "correction-count" monkeytype--previous-run-last-entry))
+                        (gethash "correction-count" last-entry)))
          (words (monkeytype--words entries)))
     (setq monkeytype--previous-run-last-entry (elt run 0))
     (monkeytype--build-performance-results
@@ -677,13 +682,13 @@ WORDS ERRORS MINUTES SECONDS ENTRIES CORRECTIONS."
 (defun monkeytype--final-performance-results ()
   "Final Performance results for all run(s).
 Total time is the sum of all the last entries' elapsed-seconds from all runs."
-  (let* ((runs-last-entry (mapcar (lambda (x) (elt (ht-get x 'entries ) 0)) monkeytype--run-list))
+  (let* ((runs-last-entry (mapcar (lambda (x) (elt (gethash "entries" x) 0)) monkeytype--run-list))
          (last-entry (elt runs-last-entry 0))
-         (total-elapsed-seconds (apply '+  (mapcar (lambda (x) (ht-get x 'elapsed-seconds)) runs-last-entry)))
+         (total-elapsed-seconds (apply '+  (mapcar (lambda (x) (gethash "elapsed-seconds" x)) runs-last-entry)))
          (elapsed-minutes (monkeytype--seconds-to-minutes total-elapsed-seconds))
-         (entries (ht-get last-entry 'input-index))
-         (errors (ht-get last-entry 'error-count))
-         (corrections (ht-get last-entry 'correction-count))
+         (entries (gethash "input-index" last-entry))
+         (errors (gethash "error-count" last-entry))
+         (corrections (gethash "correction-count" last-entry))
          (words (monkeytype--words entries)))
     (monkeytype--build-performance-results
      words errors elapsed-minutes total-elapsed-seconds entries corrections)))
@@ -742,7 +747,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 
 (defun monkeytype--typed-text>add-to-mistyped-list (char)
   "Find associated word for CHAR and add it to mistyped list."
-  (let* ((index (ht-get char 'source-index))
+  (let* ((index (gethash "source-index" char))
          (word (cdr (assoc index monkeytype--chars-to-words-list)))
          (word (when word (string-trim word)))
          (word (when word (replace-regexp-in-string "[;.\":,()-?]" "" word))))
@@ -760,8 +765,8 @@ Also add correction in SETTLED to mistyped-words-list."
    propertized-settled
    (mapconcat
     (lambda (correction)
-      (let* ((correction-char (ht-get correction 'typed-entry))
-             (state (ht-get correction 'state))
+      (let* ((correction-char (gethash "typed-entry" correction))
+             (state (gethash "state" correction))
              (correction-face (monkeytype--typed-text>entry-face (= state 1) t)))
         (propertize (format "%s" correction-char) 'face correction-face)))
     corrections
@@ -769,9 +774,9 @@ Also add correction in SETTLED to mistyped-words-list."
 
 (defun monkeytype--typed-text>collect-errors (settled)
   "Add the SETTLED char's associated word and transition to their respective lists."
-  (unless (= (ht-get settled 'state) 1)
-    (unless (string-match "[ \n\t]" (ht-get settled 'source-entry))
-      (let* ((char-index (ht-get settled 'source-index))
+  (unless (= (gethash "state" settled) 1)
+    (unless (string-match "[ \n\t]" (gethash "source-entry" settled))
+      (let* ((char-index (gethash "source-index" settled))
              (hard-transitionp (> char-index 2))
              (hard-transition  (when hard-transitionp
                                  (substring monkeytype--source-text (- char-index 2) char-index)))
@@ -792,15 +797,15 @@ Also add correction in SETTLED to mistyped-words-list."
             (settled (if correctionsp
                          (car (last tries))
                        (car tries)))
-            (source-entry (ht-get settled 'source-entry))
+            (source-entry (gethash "source-entry" settled))
             (typed-entry (monkeytype--typed-text>newline
                           source-entry
-                          (ht-get settled 'typed-entry)))
+                          (gethash "typed-entry" settled)))
             (typed-entry (monkeytype--typed-text>whitespace
                           source-entry
                           typed-entry))
-            (settled-correctp (= (ht-get settled 'state) 1))
-            (settled-index (ht-get settled 'source-index))
+            (settled-correctp (= (gethash "state" settled) 1))
+            (settled-index (gethash "source-index" settled))
             (skipped-text  (monkeytype--typed-text>skipped-text settled-index))
             (propertized-settled (concat
                                   skipped-text
@@ -825,8 +830,8 @@ Also add correction in SETTLED to mistyped-words-list."
    "\n%s\n\n"
    (monkeytype--typed-text>to-string
     (seq-group-by
-     (lambda (entry) (ht-get entry 'source-index))
-     (reverse (ht-get run 'entries))))))
+     (lambda (entry) (gethash "source-index" entry))
+     (reverse (gethash "entries" run))))))
 
 ;;;; Log:
 
@@ -834,8 +839,8 @@ Also add correction in SETTLED to mistyped-words-list."
   "Log for the RUN."
   (insert "Log:")
   (insert (monkeytype--log>header))
-  (dotimes (i (length (ht-get  run 'entries)))
-    (let* ((entries  (reverse (ht-get  run 'entries)))
+  (dotimes (i (length (gethash "entries" run)))
+    (let* ((entries  (reverse (gethash "entries" run)))
            (entry (elt entries i)))
       (insert (monkeytype--log>entry entry))))
   (insert "\n\n"))
@@ -857,16 +862,16 @@ Also add correction in SETTLED to mistyped-words-list."
 
 (defun monkeytype--log>entry (entry)
   "Format ENTRY."
-  (let* ((source-index (ht-get entry 'source-index))
-         (typed-entry (ht-get entry 'typed-entry))
-         (source-entry (ht-get entry 'source-entry))
+  (let* ((source-index (gethash "source-index" entry))
+         (typed-entry (gethash "typed-entry" entry))
+         (source-entry (gethash "source-entry" entry))
          (typed-entry (if (string= typed-entry "\n") "↵" typed-entry))
          (source-entry (if (string= source-entry "\n") "↵" source-entry))
-         (error-count (ht-get entry 'error-count))
-         (correction-count (ht-get entry 'correction-count))
-         (input-index (ht-get entry 'input-index))
-         (state (ht-get entry 'state))
-         (elapsed-seconds (ht-get entry 'elapsed-seconds))
+         (error-count (gethash "error-count" entry))
+         (correction-count (gethash "correction-count" entry))
+         (input-index (gethash "input-index" entry))
+         (state (gethash "state" entry))
+         (elapsed-seconds (gethash "elapsed-seconds" entry))
          (elapsed-minutes (monkeytype--seconds-to-minutes elapsed-seconds))
          (typed-entry-face (monkeytype--typed-text>entry-face (= state 1)))
          (propertized-typed-entry (propertize (format "%S" typed-entry) 'face typed-entry-face)))
@@ -1014,44 +1019,36 @@ Also add correction in SETTLED to mistyped-words-list."
 
   (when monkeytype--mode-line>previous-run
     (setq monkeytype--mode-line>previous-run-last-entry
-          (elt (ht-get monkeytype--mode-line>previous-run 'entries) 0)))
+          (elt (gethash "entries" monkeytype--mode-line>previous-run) 0)))
 
   (when (or (not monkeytype--mode-line>current-entry) monkeytype--finished)
-      (setq monkeytype--mode-line>current-entry
-            (ht ('input-index 0)
-                ('typed-entry "")
-                ('source-entry "")
-                ('source-index 0)
-                ('error-count 0)
-                ('correction-count 0)
-                ('state 0)
-                ('elapsed-seconds 0))))
+    (setq monkeytype--mode-line>current-entry (make-hash-table :test 'equal)))
   (force-mode-line-update))
 
 (defun monkeytype--mode-line>text ()
   "Show status in mode line."
-  (let* ((elapsed-seconds (ht-get monkeytype--mode-line>current-entry 'elapsed-seconds))
+  (let* ((elapsed-seconds (gethash "elapsed-seconds" monkeytype--mode-line>current-entry 0))
          (elapsed-minutes (monkeytype--seconds-to-minutes elapsed-seconds))
          (previous-last-entry (when monkeytype--mode-line>previous-run
                                 monkeytype--mode-line>previous-run-last-entry))
          (previous-run-entryp (and
                                monkeytype--mode-line>previous-run
-                               (> (ht-get monkeytype--mode-line>current-entry 'input-index) 0)))
+                               (> (gethash "input-index" monkeytype--mode-line>current-entry 0) 0)))
          (entries (if previous-run-entryp
                       (-
-                       (ht-get monkeytype--mode-line>current-entry 'input-index)
-                       (ht-get previous-last-entry 'input-index))
-                    (ht-get monkeytype--mode-line>current-entry 'input-index)))
+                       (gethash "input-index" monkeytype--mode-line>current-entry)
+                       (gethash "input-index" previous-last-entry))
+                    (gethash "input-index" monkeytype--mode-line>current-entry 0)))
          (errors (if previous-run-entryp
                      (-
-                      (ht-get monkeytype--mode-line>current-entry 'error-count)
-                      (ht-get previous-last-entry 'error-count))
-                   (ht-get monkeytype--mode-line>current-entry 'error-count)))
+                      (gethash "error-count" monkeytype--mode-line>current-entry)
+                      (gethash "error-count" previous-last-entry))
+                   (gethash "error-count" monkeytype--mode-line>current-entry 0)))
          (corrections (if previous-run-entryp
                           (-
-                           (ht-get monkeytype--mode-line>current-entry 'correction-count)
-                           (ht-get previous-last-entry 'correction-count))
-                        (ht-get monkeytype--mode-line>current-entry 'correction-count)))
+                           (gethash "correction-count" monkeytype--mode-line>current-entry)
+                           (gethash "correction-count" previous-last-entry))
+                        (gethash "correction-count" monkeytype--mode-line>current-entry 0)))
 
          (words (monkeytype--words entries))
          (net-wpm (if (> words 1)
