@@ -738,8 +738,8 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
           (pop monkeytype--chars-list)
           "")
       (progn
-        (dotimes (n (+ skipped-length 1))
-          (pop monkeytype--chars-list))
+        (cl-loop repeat (+ skipped-length 1) do
+                 (pop monkeytype--chars-list))
         (substring
          monkeytype--source-text
          (- source-index 1)
@@ -974,8 +974,8 @@ Also add correction in SETTLED to mistyped-words-list."
       (let* ((transitions-count (length monkeytype--hard-transition-list))
              (append-times (/ monkeytype--minimum-transitions transitions-count))
              (final-list '()))
-        (dotimes (n append-times)
-          (setq final-list (append final-list monkeytype--hard-transition-list )))
+        (cl-loop repeat append-times do
+                 (setq final-list (append final-list monkeytype--hard-transition-list)))
         (monkeytype--setup (mapconcat 'identity (monkeytype--nshuffle final-list) " ")))
     (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
 
