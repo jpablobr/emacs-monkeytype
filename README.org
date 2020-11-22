@@ -9,6 +9,9 @@
 - [[#customisation][Customisation]]
 - [[#log][Log]]
 - [[#install][Install]]
+- [[#changelog][Changelog]]
+  - [[#011][0.1.1]]
+  - [[#010][0.1.0]]
 
 * Usage
 
@@ -134,3 +137,31 @@ Drop =monkeytype.el= somewhere in your =load-path=.
   (add-to-list 'load-path "~/emacs.d/vendor")
   (require 'monkeytype)
 #+END_SRC
+
+* Changelog
+:PROPERTIES:
+:TOC:      :depth 0
+:END:
+
+** 0.1.1
+
+*Additions*
++ Allow to practice mistyped words.
++ Allow to practice hard to type transitions.
++ Allow to save mistyped words or transitions to =~/.monkeytype= directory.
++ Option to auto-fill typing region.
+
+*Changes*
++ Change =monkeytype--mode-line-update-seconds= option to =monkeytype--mode-line>interval-update= to have it work with typed entries (keystrokes) defaulting to 1 (update on each keystroke).
+
+*Internal*
++ Removed =ht= library requirement.
++ Updated Emacs requirement to 25.1.
++ Misc layout improvements.
+ 
+*Fixes*
++ Have =local-idle-timer= stop on paused or finished status.
+
+** 0.1.0
+
+Initial release.
