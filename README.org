@@ -4,6 +4,7 @@
 - [[#usage][Usage]]
 - [[#features][Features]]
   - [[#to-come-prs-welcome][To come... (PRs welcome)]]
+  - [[#tips][Tips]]
 - [[#commands--key-bindings][Commands / Key bindings]]
 - [[#customisation][Customisation]]
 - [[#log][Log]]
@@ -53,9 +54,11 @@ At this point you can either practice mistyped words with =monkeytype-mistyped-w
 
    - Save results / history
 
-*Note1*: When using =evil-mode= it's useful to automatically enable =evil-insert= (to start typing right away).
+** Tips
 
-*Note2*: Installing =centered-cursor-mode= is useful for an auto scrolling/paging in multi-page / long texts.
++ When using =evil-mode= it's useful to automatically enable =evil-insert= (to start typing right away).
+
++ Installing =centered-cursor-mode= is useful for auto scrolling/paging in multi-page / long texts.
 https://github.com/emacsmirror/centered-cursor-mode
 
 This can then be enabled with a hook in your =.emacs=:
