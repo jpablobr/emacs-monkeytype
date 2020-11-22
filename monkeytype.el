@@ -62,7 +62,7 @@
   :group 'faces)
 
 (defface monkeytype--buffer-face-mode-face
-  '((t (:family "Menlo")))
+  '((t (:family "Menlo" :foreground "#999999")))
   "Face for text area.")
 
 (defface monkeytype--label-face
