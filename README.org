@@ -17,6 +17,7 @@ Use one of the functions to enter =monkeytype= mode (=monkeytype-region=, =monke
 
 The buffer should look as follows:
 
+#+attr_latex: :width 600px
   [[file:img/monkeytype-paused.png]]
 
 The section inside the red rectangle is Monkeytype's mode-line and the following is the fields breakdown:
@@ -27,6 +28,7 @@ Then you can either type all the way to the end or stop/finish (=C-c C-C s= / =m
 
 The buffer should look as follows:
 
+#+attr_latex: :width 600px
   [[file:img/monkeytype-results-without-log.png]]
 
 This Results buffer re-renders the typed text highlighting errors and either correct or incorrect corrections
@@ -118,6 +120,7 @@ Logging can be enabled for debugging purposes (see =monkeytype--insert-log= cust
 
 When enabled it should look as follows:
 
+#+attr_latex: :width 600px
   [[file:img/monkeytype-log.png]]
 
 * Install
