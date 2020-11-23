@@ -61,24 +61,24 @@
   :group 'monkeytype
   :group 'faces)
 
-(defface monkeytype--face>default
+(defface monkeytype-face>default
   '((t (:family "Menlo" :foreground "#999999")))
   "Face for text area."
   :group 'monkeytype-faces)
 
-(defface monkeytype--face>correct
+(defface monkeytype-face>correct
   '((t (:foreground "#666666")))
   "Face for correctly typed char."
   :group 'monkeytype-faces)
 
-(defface monkeytype--face>error
+(defface monkeytype-face>error
   '((t (
         :foreground "#cc6666"
         :underline (:color "#cc6666" :style wave))))
   "Face for wrongly typed char."
   :group 'monkeytype-faces)
 
-(defface monkeytype--face>correction-error
+(defface monkeytype-face>correction-error
   '((t (
         :inherit region
         :foreground "#ff6c6b"
@@ -86,50 +86,50 @@
   "Face for wrongly typed correction."
   :group 'monkeytype-faces)
 
-(defface monkeytype--face>correction-correct
+(defface monkeytype-face>correction-correct
   '((t (:inherit region :foreground "#b9ca4a")))
   "Face for correctly typed correction."
   :group 'monkeytype-faces)
 
-(defface monkeytype--face>header-1
+(defface monkeytype-face>header-1
   '((t (:foreground "#c5c8c6" :height 1.1)))
   "Runs performance header 1"
   :group 'monkeytype-faces)
 
-(defface monkeytype--face>header-2
+(defface monkeytype-face>header-2
   '((t (:foreground "#B7950B")))
   "Runs performance header 2"
   :group 'monkeytype-faces)
 
-(defface monkeytype--face>header-3
+(defface monkeytype-face>header-3
   '((t (:foreground "#969896" :height 0.7)))
   "Runs performance header 3"
   :group 'monkeytype-faces)
 
 ;;;; Configurable settings:
 
-(defcustom monkeytype--treat-newline-as-space t
+(defcustom monkeytype-treat-newline-as-space t
   "Allow continuing to the next line by pressing space."
   :type 'boolean
   :group 'monkeytype)
 
-(defcustom monkeytype--insert-log nil
+(defcustom monkeytype-insert-log nil
   "Show log in results section."
   :type 'boolean
   :group 'monkeytype)
 
-(defcustom monkeytype--minimum-transitions 50
+(defcustom monkeytype-minimum-transitions 50
   "Minimum amount of transitions to practice."
   :type 'integer
   :group 'monkeytype)
 
-(defcustom monkeytype--mode-line '(:eval (monkeytype--mode-line>text))
+(defcustom monkeytype-mode-line '(:eval (monkeytype--mode-line>text))
   "Monkeytype mode line."
   :group 'monkeytype
   :type 'sexp
   :risky t)
 
-(defcustom monkeytype--mode-line>interval-update 1
+(defcustom monkeytype-mode-line>interval-update 1
   "Number of keystrokes after each mode-line update.
 
 Reducing the frequency of the updates helps reduce lagging on longer text or
@@ -137,24 +137,24 @@ when typing too fast."
   :type 'integer
   :group 'monkeytype)
 
-(defcustom monkeytype--word-divisor 5.0
+(defcustom monkeytype-word-divisor 5.0
   "5 is the most common number for these calculations.
 Proper word count doesn't work as well since words have different number
 of characters. This also makes calculations easier and more accurate."
   :type 'integer
   :group 'monkeytype)
 
-(defcustom monkeytype--auto-fill t
+(defcustom monkeytype-auto-fill t
   "Toggle auto fill to the defaults `fill-column' setting."
   :type 'boolean
   :group 'monkeytype)
 
-(defcustom monkeytype--downcase-mistype t
+(defcustom monkeytype-downcase-mistype t
   "Toggle downcasing of mistyped words."
   :type 'boolean
   :group 'monkeytype)
 
-(defcustom monkeytype--save>directory "~/.monkeytype/"
+(defcustom monkeytype-directory "~/.monkeytype/"
   "Monkeytype directory."
   :type 'string
   :group 'monkeytype)
@@ -243,7 +243,7 @@ REPEAT FUNCTION ARGS."
   (with-temp-buffer
     (insert text)
 
-    (when monkeytype--auto-fill
+    (when monkeytype-auto-fill
       (fill-region (point-min) (point-max)))
 
     (delete-trailing-whitespace)
@@ -261,7 +261,7 @@ REPEAT FUNCTION ARGS."
     (set-buffer-modified-p nil)
     (switch-to-buffer monkeytype--typing-buffer)
     (goto-char 0)
-    (face-remap-add-relative 'default 'monkeytype--face>default)
+    (face-remap-add-relative 'default 'monkeytype-face>default)
     (monkeytype--add-hooks)
     (monkeytype-mode)
     (monkeytype--mode-line>report-status)
@@ -294,12 +294,12 @@ REPEAT FUNCTION ARGS."
 
 (defun monkeytype--update-mode-line ()
   "Update mode-line."
-  (if monkeytype--mode-line>interval-update
+  (if monkeytype-mode-line>interval-update
       (let* ((entry (elt monkeytype--current-run-list 0))
              (char-index (if entry (gethash "source-index" entry) 0)))
         (if (and
-             (> char-index monkeytype--mode-line>interval-update)
-             (= (mod char-index monkeytype--mode-line>interval-update) 0))
+             (> char-index monkeytype-mode-line>interval-update)
+             (= (mod char-index monkeytype-mode-line>interval-update) 0))
             (monkeytype--mode-line>report-status)))))
 
 (defun monkeytype--change>handle-del (source-start end deleted-text)
@@ -476,16 +476,16 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
              (propertize
               (format "%s" "Overall Results:\n")
               'face
-              'monkeytype--face>header-1)
+              'monkeytype-face>header-1)
              (propertize
               (format "(Tally of %d runs)\n\n" (length monkeytype--run-list))
               'face
-              'monkeytype--face>header-3)
+              'monkeytype-face>header-3)
              (monkeytype--final-performance-results)
              (propertize
               "\n\nBreakdown by Runs:\n\n"
               'face
-              'monkeytype--face>header-1))))
+              'monkeytype-face>header-1))))
 
   (let ((run-index 1))
     (dolist (run (reverse monkeytype--run-list))
@@ -493,14 +493,14 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
                (propertize
                 (format "--(%d)-%s--:\n" run-index (gethash "started-at" run))
                 'face
-                'monkeytype--face>header-2)
+                'monkeytype-face>header-2)
                (monkeytype--typed-text run)
                (monkeytype--run-performance-results (gethash "entries" run))
                "\n\n"))
 
       (setq run-index (+ run-index 1))
 
-      (when monkeytype--insert-log
+      (when monkeytype-insert-log
         (async-start
          `(lambda () ,(monkeytype--log run) 1)
          (lambda (result)
@@ -517,7 +517,7 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
 
 (defun monkeytype--check-same (source typed)
   "Return non-nil if both POS (SOURCE and TYPED) are white space or the same."
-  (if monkeytype--treat-newline-as-space
+  (if monkeytype-treat-newline-as-space
       (or (string= source typed)
           (and
            (= (char-syntax (aref source 0)) ?\s)
@@ -532,7 +532,7 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
 
 (defun monkeytype--words (chars)
   "Divide all CHARS by divisor."
-  (/ chars monkeytype--word-divisor))
+  (/ chars monkeytype-word-divisor))
 
 (defun monkeytype--gross-wpm (words minutes)
   "Divides WORDS by MINUTES."
@@ -578,11 +578,11 @@ Also shows SECONDS right next to WPM."
      (monkeytype--net-wpm words uncorrected-errors minutes)
      (format-seconds "%.2h:%z%.2m:%.2s" seconds))
     'face
-    'monkeytype--face>header-2)
+    'monkeytype-face>header-2)
    (propertize
     (format "[%.2f - (" (monkeytype--gross-wpm words minutes))
     'face
-    'monkeytype--face>header-3)
+    'monkeytype-face>header-3)
    (propertize
     (format "%d" uncorrected-errors)
     'face
@@ -594,7 +594,7 @@ Also shows SECONDS right next to WPM."
      (format " / %.2f)]\n" minutes)
      "WPM = Gross-WPM - (uncorrected-errors / minutes)")
     'face
-    'monkeytype--face>header-3)))
+    'monkeytype-face>header-3)))
 
 (defun monkeytype--run-gross-wpm-format (words minutes)
   "Gross WPM performance result.
@@ -604,11 +604,11 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format "%.2f" (monkeytype--gross-wpm words minutes))
     'face
-    'monkeytype--face>header-2)
+    'monkeytype-face>header-2)
    (propertize
     "["
     'face
-    'monkeytype--face>header-3)
+    'monkeytype-face>header-3)
    (propertize
     (format "%.2f" words)
     'face
@@ -616,11 +616,11 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format " / %.2f]" minutes)
     'face
-    'monkeytype--face>header-3)
+    'monkeytype-face>header-3)
    (propertize
     "\nGross-WPM = words / minutes"
     'face
-    'monkeytype--face>header-3)))
+    'monkeytype-face>header-3)))
 
 (defun monkeytype--run-accuracy-format (chars correct-chars corrections)
   "CHARS CORRECT-CHARS CORRECTIONS."
@@ -628,11 +628,11 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format "%.2f%%" (monkeytype--accuracy chars correct-chars corrections))
     'face
-    'monkeytype--face>header-2)
+    'monkeytype-face>header-2)
    (propertize
     (format "[((%.2f - " correct-chars)
     'face
-    'monkeytype--face>header-3)
+    'monkeytype-face>header-3)
    (propertize
     (format "%d" corrections)
     'face
@@ -642,11 +642,11 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format ") / %.2f) * 100]" chars)
     'face
-    'monkeytype--face>header-3)
+    'monkeytype-face>header-3)
    (propertize
     "\nAccuracy = ((correct-chars - corrections) / total-chars) * 100"
     'face
-    'monkeytype--face>header-3)))
+    'monkeytype-face>header-3)))
 
 (defun monkeytype--build-performance-results (words errors minutes seconds entries corrections)
   "Build results text.
@@ -703,11 +703,11 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
   "Return the face for the CORRECTP and/or CORRECTIONP entry."
   (let* ((entry-face (if correctionp
                          (if correctp
-                             'monkeytype--face>correction-correct
-                           'monkeytype--face>correction-error)
+                             'monkeytype-face>correction-correct
+                           'monkeytype-face>correction-error)
                        (if correctp
-                           'monkeytype--face>correct
-                         'monkeytype--face>error))))
+                           'monkeytype-face>correct
+                         'monkeytype-face>error))))
     entry-face))
 
 (defun monkeytype--typed-text>newline (source typed)
@@ -983,7 +983,7 @@ Also add correction in SETTLED to mistyped-words-list."
   (if (> (length monkeytype--mistyped-words-list) 0)
       (monkeytype--setup
        (mapconcat
-        (lambda (word) (if monkeytype--downcase-mistype (downcase word) word))
+        (lambda (word) (if monkeytype-downcase-mistype (downcase word) word))
         (monkeytype--nshuffle monkeytype--mistyped-words-list)  " "))
     (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
 
@@ -995,7 +995,7 @@ Also add correction in SETTLED to mistyped-words-list."
   (interactive)
   (if (> (length monkeytype--hard-transition-list) 0)
       (let* ((transitions-count (length monkeytype--hard-transition-list))
-             (append-times (/ monkeytype--minimum-transitions transitions-count))
+             (append-times (/ monkeytype-minimum-transitions transitions-count))
              (final-list '()))
         (cl-loop repeat append-times do
                  (setq final-list (append final-list monkeytype--hard-transition-list)))
@@ -1006,11 +1006,11 @@ Also add correction in SETTLED to mistyped-words-list."
 
 (defun monkeytype--save>file-path (type)
   "Build path for the TYPE of file to be saved."
-  (unless (file-exists-p monkeytype--save>directory)
-    (make-directory monkeytype--save>directory))
+  (unless (file-exists-p monkeytype-directory)
+    (make-directory monkeytype-directory))
 
   (concat
-   monkeytype--save>directory
+   monkeytype-directory
    (format "%s/" type)
    (format "%s" (downcase (format-time-string "%a-%d-%b-%Y-%H-%M-%S")))
    ".txt"))
@@ -1110,7 +1110,7 @@ Also add correction in SETTLED to mistyped-words-list."
 ;;;###autoload
 (define-minor-mode monkeytype-mode
   "Monkeytype mode is a minor mode for speed/touch typing"
-  :lighter monkeytype--mode-line
+  :lighter monkeytype-mode-line
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-c C-c p") 'monkeytype-pause)
             (define-key map (kbd "C-c C-c r") 'monkeytype-resume)

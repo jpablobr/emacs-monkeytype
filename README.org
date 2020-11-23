@@ -44,14 +44,14 @@ At this point you can either practice mistyped words with =monkeytype-mistyped-w
 * Features
 
   - Type any text you want.
-  - Mode-line live WPM (=monkeytype--mode-line>interval-update= adjust the update frequency).
-  - Practice mistyped words (see: =monkeytype--downcase-mistyped=).
+  - Mode-line live WPM (=monkeytype-mode-line>interval-update= adjust the update frequency).
+  - Practice mistyped words (see: =monkeytype-downcase-mistyped=).
   - Practice troubling/hard key combinations/transitions (useful when practising with different keyboard layouts).
-  - Ability to save mistyped words or transitions to =~/.monkeytype=  (see: =monkeytype--save>directory=).
+  - Ability to save mistyped words or transitions to =~/.monkeytype=  (see: =monkeytype-directory=).
   - Visual representation of typed text including errors and retries/corrections.
   - UI customisation.
-  - Optionally treat newlines as whitespace (see: =monkeytype--treat-newline-as-space=).
-  - Optionally auto-fill text to the defaults =fill-column= value (see: =monkeytype--auto-fill=).
+  - Optionally treat newlines as whitespace (see: =monkeytype-treat-newline-as-space=).
+  - Optionally auto-fill text to the defaults =fill-column= value (see: =monkeytype-auto-fill=).
   - Auto stop after 5 seconds of no input (=C-c C-c r= [ =monkeytype-resume= ] resumes).
 
 ** To come... (PRs welcome)
@@ -103,19 +103,19 @@ or by directly modifying the =custom-set-variables= in your =.emacs= file.
    ;; If you edit it by hand, you could mess it up, so be careful.
    ;; Your init file should contain only one such instance.
    ;; If there is more than one, they won't work right.
-   '(monkeytype--face>default '(:family "Menlo" :height 1.6 :foreground "#969896"))
-   '(monkeytype--face>correct '(:foreground "#98be65"))
-   '(monkeytype--face>error '(:foreground "#ff6c6b"))
-   '(monkeytype--face>correction-error '(:inherit region :foreground "#ff6c6b"))
-   '(monkeytype--face>correction-correct '(:inherit region :foreground "#98be65"))
-   '(monkeytype--face>header-1 '(:foreground "#B7950B"))
-   '(monkeytype--face>header-2 '(:foreground "#F1C40F"))
-   '(monkeytype--face>header-3 '(:foreground "#F1C40F"))
-   '(monkeytype--minimum-transitions 50)
-   '(monkeytype--mode-line>interval-update 10)
-   '(monkeytype--treat-newline-as-space t)
-   '(monkeytype--insert-log nil)
-   '(monkeytype--save>directory "~/.monkeytype")
+   '(monkeytype-face>default '(:family "Menlo" :height 1.6 :foreground "#969896"))
+   '(monkeytype-face>correct '(:foreground "#98be65"))
+   '(monkeytype-face>error '(:foreground "#ff6c6b"))
+   '(monkeytype-face>correction-error '(:inherit region :foreground "#ff6c6b"))
+   '(monkeytype-face>correction-correct '(:inherit region :foreground "#98be65"))
+   '(monkeytype-face>header-1 '(:foreground "#B7950B"))
+   '(monkeytype-face>header-2 '(:foreground "#F1C40F"))
+   '(monkeytype-face>header-3 '(:foreground "#F1C40F"))
+   '(monkeytype-minimum-transitions 50)
+   '(monkeytype-mode-line>interval-update 10)
+   '(monkeytype-treat-newline-as-space t)
+   '(monkeytype-insert-log nil)
+   '(monkeytype-directory "~/.monkeytype")
   )
 #+END_SRC
 
@@ -123,7 +123,7 @@ or by directly modifying the =custom-set-variables= in your =.emacs= file.
 
 * Log
 
-Logging can be enabled for debugging purposes (see =monkeytype--insert-log= customisation).
+Logging can be enabled for debugging purposes (see =monkeytype-insert-log= customisation).
 
 When enabled it should look as follows:
 
@@ -153,7 +153,7 @@ Drop =monkeytype.el= somewhere in your =load-path=.
 + Option to auto-fill typing region.
 
 *Changes*
-+ Change =monkeytype--mode-line-update-seconds= option to =monkeytype--mode-line>interval-update= to have it work with typed entries (keystrokes) defaulting to 1 (update on each keystroke).
++ Change =monkeytype--mode-line-update-seconds= option to =monkeytype-mode-line>interval-update= to have it work with typed entries (keystrokes) defaulting to 1 (update on each keystroke).
 
 *Internal*
 + Removed =ht= library requirement.
