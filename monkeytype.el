@@ -409,7 +409,8 @@ affected. Only set monkeytype--ignored-change-counter when the
 
 (defun monkeytype--nshuffle (sequence)
   "Shuffle given SEQUENCE.
-https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
+
+URL `https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle'"
   (cl-loop for i from (length sequence) downto 2
         do (cl-rotatef (elt sequence (random i))
                     (elt sequence (1- i))))
