@@ -165,8 +165,8 @@ of characters. This also makes calculations easier and more accurate."
 
 (defvar monkeytype--current-entry '())
 (make-variable-buffer-local 'monkeytype--current-entry)
-(defvar monkeytype--finished nil)
-(make-variable-buffer-local 'monkeytype--finished)
+(defvar monkeytype--status>finished nil)
+(make-variable-buffer-local 'monkeytype--status>finished)
 (defvar monkeytype--start-time nil)
 (make-variable-buffer-local 'monkeytype--start-time)
 (defvar monkeytype--source-text "")
@@ -212,8 +212,8 @@ of characters. This also makes calculations easier and more accurate."
 (make-variable-buffer-local 'monkeytype--previous-run-last-entry)
 (defvar monkeytype--previous-run '())
 (make-variable-buffer-local 'monkeytype--previous-run)
-(defvar monkeytype--paused nil)
-(make-variable-buffer-local 'monkeytype--paused)
+(defvar monkeytype--status>paused nil)
+(make-variable-buffer-local 'monkeytype--status>paused)
 (defvar monkeytype--mode-line>current-entry '())
 (make-variable-buffer-local 'monkeytype--mode-line>current-entry)
 (defvar monkeytype--mode-line>previous-run '())
@@ -229,8 +229,8 @@ REPEAT FUNCTION ARGS."
          (timer (apply 'run-with-idle-timer secs repeat fns args))
          (fn `(lambda (&rest args)
                 (if (or
-                     monkeytype--paused
-                     monkeytype--finished
+                     monkeytype--status>paused
+                     monkeytype--status>finished
                      (not (buffer-live-p ,(current-buffer))))
                     (cancel-timer ,timer)
                   (with-current-buffer ,(current-buffer)
@@ -385,9 +385,9 @@ affected. Only set monkeytype--ignored-change-counter when the
 
 (defun monkeytype--handle-complete ()
   "Remove typing hooks from the buffer and print statistics."
-  (setq monkeytype--finished t)
+  (setq monkeytype--status>finished t)
 
-  (unless monkeytype--paused (monkeytype--pause-run))
+  (unless monkeytype--status>paused (monkeytype--pause-run))
 
   (set-buffer-modified-p nil)
   (setq buffer-read-only nil)
@@ -944,10 +944,10 @@ Also add correction in SETTLED to mistyped-words-list."
 
 \\[monkeytype-pause]"
   (interactive)
-  (setq monkeytype--paused t)
+  (setq monkeytype--status>paused t)
   (when monkeytype--start-time (monkeytype--pause-run))
   (setq monkeytype--current-run-list '())
-  (when (not monkeytype--finished)
+  (when (not monkeytype--status>finished)
     (message "Monkeytype: Paused ([C-c C-c r] to resume.)")))
 
 ;;;###autoload
@@ -964,9 +964,9 @@ Also add correction in SETTLED to mistyped-words-list."
 
 \\[monkeytype-resume]"
   (interactive)
-  (when (not monkeytype--finished)
+  (when (not monkeytype--status>finished)
     (progn
-      (setq monkeytype--paused nil)
+      (setq monkeytype--status>paused nil)
       (switch-to-buffer monkeytype--typing-buffer)
       (set-buffer-modified-p nil)
       (monkeytype--add-hooks)
@@ -1049,7 +1049,7 @@ Also add correction in SETTLED to mistyped-words-list."
     (setq monkeytype--mode-line>previous-run-last-entry
           (elt (gethash "entries" monkeytype--mode-line>previous-run) 0)))
 
-  (when (or (not monkeytype--mode-line>current-entry) monkeytype--finished)
+  (when (or (not monkeytype--mode-line>current-entry) monkeytype--status>finished)
     (setq monkeytype--mode-line>current-entry (make-hash-table :test 'equal)))
   (force-mode-line-update))
 
