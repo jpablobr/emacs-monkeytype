@@ -66,10 +66,6 @@
   "Face for text area."
   :group 'monkeytype-faces)
 
-(defface monkeytype--label-face
-  '((t (:foreground "#a9a9a9")))
-  "Face for labels.")
-
 (defface monkeytype--correct-face
   '((t (:foreground "#666666")))
   "Face for correctly typed char."
