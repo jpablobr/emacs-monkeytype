@@ -63,7 +63,8 @@
 
 (defface monkeytype--buffer-face-mode-face
   '((t (:family "Menlo" :foreground "#999999")))
-  "Face for text area.")
+  "Face for text area."
+  :group 'monkeytype-faces)
 
 (defface monkeytype--label-face
   '((t (:foreground "#a9a9a9")))
@@ -71,36 +72,43 @@
 
 (defface monkeytype--correct-face
   '((t (:foreground "#666666")))
-  "Face for correctly typed char.")
+  "Face for correctly typed char."
+  :group 'monkeytype-faces)
 
 (defface monkeytype--error-face
   '((t (
         :foreground "#cc6666"
         :underline (:color "#cc6666" :style wave))))
-  "Face for wrongly typed char.")
+  "Face for wrongly typed char."
+  :group 'monkeytype-faces)
 
 (defface monkeytype--correction-error-face
   '((t (
         :inherit region
         :foreground "#ff6c6b"
         :underline (:color "#ff6c6b" :style wave))))
-  "Face for wrongly typed correction.")
+  "Face for wrongly typed correction."
+  :group 'monkeytype-faces)
 
 (defface monkeytype--correction-correct-face
   '((t (:inherit region :foreground "#b9ca4a")))
-  "Face for correctly typed correction.")
+  "Face for correctly typed correction."
+  :group 'monkeytype-faces)
 
 (defface monkeytype--header-1-face
   '((t (:foreground "#c5c8c6" :height 1.1)))
-  "Runs performance header 1")
+  "Runs performance header 1"
+  :group 'monkeytype-faces)
 
 (defface monkeytype--header-2-face
   '((t (:foreground "#B7950B")))
-  "Runs performance header 2")
+  "Runs performance header 2"
+  :group 'monkeytype-faces)
 
 (defface monkeytype--header-3-face
   '((t (:foreground "#969896" :height 0.7)))
-  "Runs performance header 3")
+  "Runs performance header 3"
+  :group 'monkeytype-faces)
 
 ;;;; Configurable settings:
 
