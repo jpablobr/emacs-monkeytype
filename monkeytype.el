@@ -61,24 +61,24 @@
   :group 'monkeytype
   :group 'faces)
 
-(defface monkeytype--buffer-face-mode-face
+(defface monkeytype--face>default
   '((t (:family "Menlo" :foreground "#999999")))
   "Face for text area."
   :group 'monkeytype-faces)
 
-(defface monkeytype--correct-face
+(defface monkeytype--face>correct
   '((t (:foreground "#666666")))
   "Face for correctly typed char."
   :group 'monkeytype-faces)
 
-(defface monkeytype--error-face
+(defface monkeytype--face>error
   '((t (
         :foreground "#cc6666"
         :underline (:color "#cc6666" :style wave))))
   "Face for wrongly typed char."
   :group 'monkeytype-faces)
 
-(defface monkeytype--correction-error-face
+(defface monkeytype--face>correction-error
   '((t (
         :inherit region
         :foreground "#ff6c6b"
@@ -86,22 +86,22 @@
   "Face for wrongly typed correction."
   :group 'monkeytype-faces)
 
-(defface monkeytype--correction-correct-face
+(defface monkeytype--face>correction-correct
   '((t (:inherit region :foreground "#b9ca4a")))
   "Face for correctly typed correction."
   :group 'monkeytype-faces)
 
-(defface monkeytype--header-1-face
+(defface monkeytype--face>header-1
   '((t (:foreground "#c5c8c6" :height 1.1)))
   "Runs performance header 1"
   :group 'monkeytype-faces)
 
-(defface monkeytype--header-2-face
+(defface monkeytype--face>header-2
   '((t (:foreground "#B7950B")))
   "Runs performance header 2"
   :group 'monkeytype-faces)
 
-(defface monkeytype--header-3-face
+(defface monkeytype--face>header-3
   '((t (:foreground "#969896" :height 0.7)))
   "Runs performance header 3"
   :group 'monkeytype-faces)
@@ -261,7 +261,7 @@ REPEAT FUNCTION ARGS."
     (set-buffer-modified-p nil)
     (switch-to-buffer monkeytype--typing-buffer)
     (goto-char 0)
-    (face-remap-add-relative 'default 'monkeytype--buffer-face-mode-face)
+    (face-remap-add-relative 'default 'monkeytype--face>default)
     (monkeytype--add-hooks)
     (monkeytype-mode)
     (monkeytype--mode-line>report-status)
@@ -476,16 +476,16 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
              (propertize
               (format "%s" "Overall Results:\n")
               'face
-              'monkeytype--header-1-face)
+              'monkeytype--face>header-1)
              (propertize
               (format "(Tally of %d runs)\n\n" (length monkeytype--run-list))
               'face
-              'monkeytype--header-3-face)
+              'monkeytype--face>header-3)
              (monkeytype--final-performance-results)
              (propertize
               "\n\nBreakdown by Runs:\n\n"
               'face
-              'monkeytype--header-1-face))))
+              'monkeytype--face>header-1))))
 
   (let ((run-index 1))
     (dolist (run (reverse monkeytype--run-list))
@@ -493,7 +493,7 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
                (propertize
                 (format "--(%d)-%s--:\n" run-index (gethash "started-at" run))
                 'face
-                'monkeytype--header-2-face)
+                'monkeytype--face>header-2)
                (monkeytype--typed-text run)
                (monkeytype--run-performance-results (gethash "entries" run))
                "\n\n"))
@@ -578,11 +578,11 @@ Also shows SECONDS right next to WPM."
      (monkeytype--net-wpm words uncorrected-errors minutes)
      (format-seconds "%.2h:%z%.2m:%.2s" seconds))
     'face
-    'monkeytype--header-2-face)
+    'monkeytype--face>header-2)
    (propertize
     (format "[%.2f - (" (monkeytype--gross-wpm words minutes))
     'face
-    'monkeytype--header-3-face)
+    'monkeytype--face>header-3)
    (propertize
     (format "%d" uncorrected-errors)
     'face
@@ -594,7 +594,7 @@ Also shows SECONDS right next to WPM."
      (format " / %.2f)]\n" minutes)
      "WPM = Gross-WPM - (uncorrected-errors / minutes)")
     'face
-    'monkeytype--header-3-face)))
+    'monkeytype--face>header-3)))
 
 (defun monkeytype--run-gross-wpm-format (words minutes)
   "Gross WPM performance result.
@@ -604,11 +604,11 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format "%.2f" (monkeytype--gross-wpm words minutes))
     'face
-    'monkeytype--header-2-face)
+    'monkeytype--face>header-2)
    (propertize
     "["
     'face
-    'monkeytype--header-3-face)
+    'monkeytype--face>header-3)
    (propertize
     (format "%.2f" words)
     'face
@@ -616,11 +616,11 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format " / %.2f]" minutes)
     'face
-    'monkeytype--header-3-face)
+    'monkeytype--face>header-3)
    (propertize
     "\nGross-WPM = words / minutes"
     'face
-    'monkeytype--header-3-face)))
+    'monkeytype--face>header-3)))
 
 (defun monkeytype--run-accuracy-format (chars correct-chars corrections)
   "CHARS CORRECT-CHARS CORRECTIONS."
@@ -628,11 +628,11 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format "%.2f%%" (monkeytype--accuracy chars correct-chars corrections))
     'face
-    'monkeytype--header-2-face)
+    'monkeytype--face>header-2)
    (propertize
     (format "[((%.2f - " correct-chars)
     'face
-    'monkeytype--header-3-face)
+    'monkeytype--face>header-3)
    (propertize
     (format "%d" corrections)
     'face
@@ -642,11 +642,11 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format ") / %.2f) * 100]" chars)
     'face
-    'monkeytype--header-3-face)
+    'monkeytype--face>header-3)
    (propertize
     "\nAccuracy = ((correct-chars - corrections) / total-chars) * 100"
     'face
-    'monkeytype--header-3-face)))
+    'monkeytype--face>header-3)))
 
 (defun monkeytype--build-performance-results (words errors minutes seconds entries corrections)
   "Build results text.
@@ -703,11 +703,11 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
   "Return the face for the CORRECTP and/or CORRECTIONP entry."
   (let* ((entry-face (if correctionp
                          (if correctp
-                             'monkeytype--correction-correct-face
-                           'monkeytype--correction-error-face)
+                             'monkeytype--face>correction-correct
+                           'monkeytype--face>correction-error)
                        (if correctp
-                           'monkeytype--correct-face
-                         'monkeytype--error-face))))
+                           'monkeytype--face>correct
+                         'monkeytype--face>error))))
     entry-face))
 
 (defun monkeytype--typed-text>newline (source typed)

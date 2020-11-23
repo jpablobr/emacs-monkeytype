@@ -103,14 +103,14 @@ or by directly modifying the =custom-set-variables= in your =.emacs= file.
    ;; If you edit it by hand, you could mess it up, so be careful.
    ;; Your init file should contain only one such instance.
    ;; If there is more than one, they won't work right.
-   '(monkeytype--buffer-face-mode-face '(:family "Menlo" :height 1.6 :foreground "#969896"))
-   '(monkeytype--correct-face '(:foreground "#98be65"))
-   '(monkeytype--error-face '(:foreground "#ff6c6b"))
-   '(monkeytype--correction-error-face '(:inherit region :foreground "#ff6c6b"))
-   '(monkeytype--correction-correct-face '(:inherit region :foreground "#98be65"))
-   '(monkeytype--header-1-face '(:foreground "#B7950B"))
-   '(monkeytype--header-2-face '(:foreground "#F1C40F"))
-   '(monkeytype--header-3-face '(:foreground "#F1C40F"))
+   '(monkeytype--face>default '(:family "Menlo" :height 1.6 :foreground "#969896"))
+   '(monkeytype--face>correct '(:foreground "#98be65"))
+   '(monkeytype--face>error '(:foreground "#ff6c6b"))
+   '(monkeytype--face>correction-error '(:inherit region :foreground "#ff6c6b"))
+   '(monkeytype--face>correction-correct '(:inherit region :foreground "#98be65"))
+   '(monkeytype--face>header-1 '(:foreground "#B7950B"))
+   '(monkeytype--face>header-2 '(:foreground "#F1C40F"))
+   '(monkeytype--face>header-3 '(:foreground "#F1C40F"))
    '(monkeytype--minimum-transitions 50)
    '(monkeytype--mode-line>interval-update 10)
    '(monkeytype--treat-newline-as-space t)
