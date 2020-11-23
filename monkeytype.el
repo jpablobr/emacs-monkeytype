@@ -165,37 +165,37 @@ of characters. This also makes calculations easier and more accurate."
 (make-variable-buffer-local 'monkeytype--buffer-name)
 (defvar monkeytype--run-list '())
 (make-variable-buffer-local 'monkeytype--run-list)
+(defvar monkeytype--start-time nil)
+(make-variable-buffer-local 'monkeytype--start-time)
 (defvar monkeytype--typing-buffer nil)
 (defvar monkeytype--source-text "")
 
+;; Status
 (defvar monkeytype--status>finished nil)
 (make-variable-buffer-local 'monkeytype--status>finished)
 (defvar monkeytype--status>paused nil)
 (make-variable-buffer-local 'monkeytype--status>paused)
 
-(defvar monkeytype--start-time nil)
-(make-variable-buffer-local 'monkeytype--start-time)
+;; Run
+(defvar monkeytype--progress-tracker 0)
+(make-variable-buffer-local 'monkeytype--progress-tracker)
 (defvar monkeytype--current-run-list '())
 (make-variable-buffer-local 'monkeytype--current-run-list)
 (defvar monkeytype--current-entry '())
 (make-variable-buffer-local 'monkeytype--current-entry)
-(defvar monkeytype--progress-tracker 0)
-(make-variable-buffer-local 'monkeytype--progress-tracker)
 (defvar monkeytype--current-run-start-datetime nil)
 (make-variable-buffer-local 'monkeytype--current-run-start-datetime)
 
-(defvar monkeytype--counter>entries 0)
-(make-variable-buffer-local 'monkeytype--counter>entries)
-(defvar monkeytype--counter>input 0)
-(make-variable-buffer-local 'monkeytype--counter>input)
-(defvar monkeytype--counter>error 0)
-(make-variable-buffer-local 'monkeytype--counter>error)
-(defvar monkeytype--counter>correction 0)
-(make-variable-buffer-local 'monkeytype--counter>correction)
-(defvar monkeytype--counter>remaining 0)
-(make-variable-buffer-local 'monkeytype--counter>remaining)
-(defvar monkeytype--counter>ignored-change 0)
-(make-variable-buffer-local 'monkeytype--counter>ignored-change)
+;; Results
+(defvar monkeytype--previous-last-entry-index nil)
+(make-variable-buffer-local 'monkeytype--previous-last-entry-index)
+(defvar monkeytype--previous-run-last-entry nil)
+(make-variable-buffer-local 'monkeytype--previous-run-last-entry)
+(defvar monkeytype--previous-run '())
+(make-variable-buffer-local 'monkeytype--previous-run)
+
+;; -------------------------------------------------------------------
+;;;; Utils:
 
 (defvar monkeytype--chars-list '())
 (make-variable-buffer-local 'monkeytype--chars-list)
@@ -207,23 +207,6 @@ of characters. This also makes calculations easier and more accurate."
 (make-variable-buffer-local 'monkeytype--chars-to-words-list)
 (defvar monkeytype--hard-transition-list '())
 (make-variable-buffer-local 'monkeytype--hard-transition-list)
-
-(defvar monkeytype--previous-last-entry-index nil)
-(make-variable-buffer-local 'monkeytype--previous-last-entry-index)
-(defvar monkeytype--previous-run-last-entry nil)
-(make-variable-buffer-local 'monkeytype--previous-run-last-entry)
-(defvar monkeytype--previous-run '())
-(make-variable-buffer-local 'monkeytype--previous-run)
-
-(defvar monkeytype--mode-line>current-entry '())
-(make-variable-buffer-local 'monkeytype--mode-line>current-entry)
-(defvar monkeytype--mode-line>previous-run '())
-(make-variable-buffer-local 'monkeytype--mode-line>previous-run)
-(defvar monkeytype--mode-line>previous-run-last-entry nil)
-(make-variable-buffer-local 'monkeytype--mode-line>previous-run-last-entry)
-
-;; -------------------------------------------------------------------
-;;;; Utils:
 
 (defun monkeytype--utils>nshuffle (sequence)
   "Shuffle given SEQUENCE.
@@ -366,6 +349,19 @@ All CHARS count."
 
 ;; -------------------------------------------------------------------
 ;;;; Change:
+
+(defvar monkeytype--counter>entries 0)
+(make-variable-buffer-local 'monkeytype--counter>entries)
+(defvar monkeytype--counter>input 0)
+(make-variable-buffer-local 'monkeytype--counter>input)
+(defvar monkeytype--counter>error 0)
+(make-variable-buffer-local 'monkeytype--counter>error)
+(defvar monkeytype--counter>correction 0)
+(make-variable-buffer-local 'monkeytype--counter>correction)
+(defvar monkeytype--counter>remaining 0)
+(make-variable-buffer-local 'monkeytype--counter>remaining)
+(defvar monkeytype--counter>ignored-change 0)
+(make-variable-buffer-local 'monkeytype--counter>ignored-change)
 
 (defun monkeytype--change (start end change-length)
   "START END CHANGE-LENGTH."
@@ -1048,6 +1044,13 @@ Also add correction in SETTLED to mistyped-words-list."
 
 ;; -------------------------------------------------------------------
 ;;; Mode-line
+
+(defvar monkeytype--mode-line>current-entry '())
+(make-variable-buffer-local 'monkeytype--mode-line>current-entry)
+(defvar monkeytype--mode-line>previous-run '())
+(make-variable-buffer-local 'monkeytype--mode-line>previous-run)
+(defvar monkeytype--mode-line>previous-run-last-entry nil)
+(make-variable-buffer-local 'monkeytype--mode-line>previous-run-last-entry)
 
 (defun monkeytype--mode-line>report-status ()
   "Take care of mode-line updating."
