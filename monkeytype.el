@@ -204,8 +204,8 @@ of characters. This also makes calculations easier and more accurate."
 (make-variable-buffer-local 'monkeytype--hard-transition-list)
 (defvar monkeytype--chars-list '())
 (make-variable-buffer-local 'monkeytype--chars-list)
-(defvar monkeytype--words-list '())
-(make-variable-buffer-local 'monkeytype--words-list)
+(defvar monkeytype--calc>words-list '())
+(make-variable-buffer-local 'monkeytype--calc>words-list)
 (defvar monkeytype--previous-last-entry-index nil)
 (make-variable-buffer-local 'monkeytype--previous-last-entry-index)
 (defvar monkeytype--previous-run-last-entry nil)
@@ -421,7 +421,7 @@ URL `https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle'"
   (let* ((words (split-string monkeytype--source-text "[ \n]"))
          (index 1))
     (dolist (word words)
-      (add-to-list 'monkeytype--words-list `(,index . ,word))
+      (add-to-list 'monkeytype--calc>words-list `(,index . ,word))
       (setq index (+ index 1)))))
 
 (defun monkeytype--index-chars-to-words ()
@@ -435,7 +435,7 @@ URL `https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle'"
             (setq word-index (+ word-index 1))
             (setq char-index (+ char-index 1)))
         (progn
-          (let* ((word  (assoc word-index monkeytype--words-list))
+          (let* ((word  (assoc word-index monkeytype--calc>words-list))
                  (word (cdr word)))
             (add-to-list 'monkeytype--chars-to-words-list `(,char-index . ,word))
             (setq char-index (+ char-index 1))))))))
@@ -529,35 +529,35 @@ URL `https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle'"
   "Return minutes in float for SECONDS."
   (/ seconds 60.0))
 
-;;;; Equations:
+;;;; Calc:
 
-(defun monkeytype--words (chars)
+(defun monkeytype--calc>words (chars)
   "Divide all CHARS by divisor."
   (/ chars monkeytype-word-divisor))
 
-(defun monkeytype--gross-wpm (words minutes)
+(defun monkeytype--calc>gross-wpm (words minutes)
   "Divides WORDS by MINUTES."
   (/ words minutes))
 
-(defun monkeytype--gross-cpm (chars minutes)
+(defun monkeytype--calc>gross-cpm (chars minutes)
   "Divides CHARS by MINUTES."
   (/ chars minutes))
 
-(defun monkeytype--net-wpm (words uncorrected-errors minutes)
+(defun monkeytype--calc>net-wpm (words uncorrected-errors minutes)
   "Net WPM is the gross WPM minus the UNCORRECTED-ERRORS by MINUTES.
 All WORDS count."
-  (let ((net-wpm (- (monkeytype--gross-wpm words minutes)
+  (let ((net-wpm (- (monkeytype--calc>gross-wpm words minutes)
                     (/ uncorrected-errors minutes))))
     (if (> 0 net-wpm) 0 net-wpm)))
 
-(defun monkeytype--net-cpm (chars uncorrected-errors minutes)
+(defun monkeytype--calc>net-cpm (chars uncorrected-errors minutes)
   "Net CPM is the gross CPM minus the UNCORRECTED-ERRORS by MINUTES.
 All CHARS count."
-  (let ((net-cpm (- (monkeytype--gross-cpm chars minutes)
+  (let ((net-cpm (- (monkeytype--calc>gross-cpm chars minutes)
                     (/ uncorrected-errors minutes))))
     (if (> 0 net-cpm) 0 net-cpm)))
 
-(defun monkeytype--accuracy (chars correct-chars corrections)
+(defun monkeytype--calc>accuracy (chars correct-chars corrections)
   "Accuracy is all CORRECT-CHARS minus CORRECTIONS divided by all CHARS."
   (when (> chars 0)
     (let* ((a-chars (- correct-chars corrections))
@@ -576,12 +576,12 @@ Also shows SECONDS right next to WPM."
    (propertize
     (format
      "%.2f/%s"
-     (monkeytype--net-wpm words uncorrected-errors minutes)
+     (monkeytype--calc>net-wpm words uncorrected-errors minutes)
      (format-seconds "%.2h:%z%.2m:%.2s" seconds))
     'face
     'monkeytype-face>header-2)
    (propertize
-    (format "[%.2f - (" (monkeytype--gross-wpm words minutes))
+    (format "[%.2f - (" (monkeytype--calc>gross-wpm words minutes))
     'face
     'monkeytype-face>header-3)
    (propertize
@@ -603,7 +603,7 @@ Also shows SECONDS right next to WPM."
 Gross-WPM = WORDS / MINUTES."
   (concat
    (propertize
-    (format "%.2f" (monkeytype--gross-wpm words minutes))
+    (format "%.2f" (monkeytype--calc>gross-wpm words minutes))
     'face
     'monkeytype-face>header-2)
    (propertize
@@ -627,7 +627,7 @@ Gross-WPM = WORDS / MINUTES."
   "CHARS CORRECT-CHARS CORRECTIONS."
   (concat
    (propertize
-    (format "%.2f%%" (monkeytype--accuracy chars correct-chars corrections))
+    (format "%.2f%%" (monkeytype--calc>accuracy chars correct-chars corrections))
     'face
     'monkeytype-face>header-2)
    (propertize
@@ -679,7 +679,7 @@ WORDS ERRORS MINUTES SECONDS ENTRIES CORRECTIONS."
                            (gethash "correction-count" last-entry)
                            (gethash "correction-count" monkeytype--previous-run-last-entry))
                         (gethash "correction-count" last-entry)))
-         (words (monkeytype--words entries)))
+         (words (monkeytype--calc>words entries)))
     (setq monkeytype--previous-run-last-entry (elt run 0))
     (monkeytype--build-performance-results
      words errors elapsed-minutes elapsed-seconds entries corrections)))
@@ -694,7 +694,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
          (entries (gethash "input-index" last-entry))
          (errors (gethash "error-count" last-entry))
          (corrections (gethash "correction-count" last-entry))
-         (words (monkeytype--words entries)))
+         (words (monkeytype--calc>words entries)))
     (monkeytype--build-performance-results
      words errors elapsed-minutes total-elapsed-seconds entries corrections)))
 
@@ -883,11 +883,11 @@ Also add correction in SETTLED to mistyped-words-list."
     (format "\n|%9s|%9s|%9d|%9d|%9d|%9d|%9.2f|%9s|%9d|%9d|"
             (format "%s %s" input-index source-index)
             (format "%S %s" source-entry propertized-typed-entry)
-            (monkeytype--net-wpm (monkeytype--words input-index) error-count elapsed-minutes)
-            (monkeytype--net-cpm input-index error-count elapsed-minutes)
-            (monkeytype--gross-wpm (monkeytype--words input-index) elapsed-minutes)
-            (monkeytype--gross-cpm input-index elapsed-minutes)
-            (monkeytype--accuracy input-index (- input-index error-count) correction-count)
+            (monkeytype--calc>net-wpm (monkeytype--calc>words input-index) error-count elapsed-minutes)
+            (monkeytype--calc>net-cpm input-index error-count elapsed-minutes)
+            (monkeytype--calc>gross-wpm (monkeytype--calc>words input-index) elapsed-minutes)
+            (monkeytype--calc>gross-cpm input-index elapsed-minutes)
+            (monkeytype--calc>accuracy input-index (- input-index error-count) correction-count)
             (format-seconds "%.2h:%z%.2m:%.2s" elapsed-seconds)
             correction-count
             (+ error-count correction-count))))
@@ -1078,15 +1078,15 @@ Also add correction in SETTLED to mistyped-words-list."
                            (gethash "correction-count" previous-last-entry))
                         (gethash "correction-count" monkeytype--mode-line>current-entry 0)))
 
-         (words (monkeytype--words entries))
+         (words (monkeytype--calc>words entries))
          (net-wpm (if (> words 1)
-                      (monkeytype--net-wpm words errors elapsed-minutes)
+                      (monkeytype--calc>net-wpm words errors elapsed-minutes)
                     0))
          (gross-wpm (if (> words 1)
-                        (monkeytype--gross-wpm words elapsed-minutes)
+                        (monkeytype--calc>gross-wpm words elapsed-minutes)
                       0))
          (accuracy (if (> words 1)
-                       (monkeytype--accuracy entries (- entries errors) corrections)
+                       (monkeytype--calc>accuracy entries (- entries errors) corrections)
                      0))
          (elapsed-time (format "%s" (format-seconds "%.2h:%z%.2m:%.2s" elapsed-seconds)))
          (green '(:foreground "#98be65"))
