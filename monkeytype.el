@@ -159,7 +159,8 @@ of characters. This also makes calculations easier and more accurate."
   :type 'string
   :group 'monkeytype)
 
-;;;; Setup:
+;; -------------------------------------------------------------------
+;;;; Init:
 
 (defvar monkeytype--buffer-name "*Monkeytype*")
 (make-variable-buffer-local 'monkeytype--buffer-name)
@@ -193,6 +194,34 @@ of characters. This also makes calculations easier and more accurate."
 (make-variable-buffer-local 'monkeytype--previous-run-last-entry)
 (defvar monkeytype--previous-run '())
 (make-variable-buffer-local 'monkeytype--previous-run)
+
+(defun monkeytype--init (text)
+  "Set up a new buffer for the typing exercise on TEXT."
+  (with-temp-buffer
+    (insert text)
+
+    (when monkeytype-auto-fill
+      (fill-region (point-min) (point-max)))
+
+    (delete-trailing-whitespace)
+    (setq text (buffer-string)))
+
+  (setq monkeytype--typing-buffer (generate-new-buffer monkeytype--buffer-name))
+  (let* ((len (length text)))
+    (set-buffer monkeytype--typing-buffer)
+    (setq monkeytype--source-text text)
+    (setq monkeytype--counter>remaining (length text))
+    (setq monkeytype--progress-tracker (make-string len 0))
+    (erase-buffer)
+    (insert monkeytype--source-text)
+    (set-buffer-modified-p nil)
+    (switch-to-buffer monkeytype--typing-buffer)
+    (goto-char 0)
+    (face-remap-add-relative 'default 'monkeytype-face>default)
+    (monkeytype--run>add-hooks)
+    (monkeytype-mode)
+    (monkeytype--mode-line>report-status)
+    (message "Monkeytype: Timer will start when you type the first character.")))
 
 ;; -------------------------------------------------------------------
 ;;;; Utils:
@@ -471,34 +500,6 @@ affected. Only set monkeytype--ignored-change-counter when the
 
 ;; -------------------------------------------------------------------
 ;;;; Run:
-
-(defun monkeytype--run>setup (text)
-  "Set up a new buffer for the typing exercise on TEXT."
-  (with-temp-buffer
-    (insert text)
-
-    (when monkeytype-auto-fill
-      (fill-region (point-min) (point-max)))
-
-    (delete-trailing-whitespace)
-    (setq text (buffer-string)))
-
-  (setq monkeytype--typing-buffer (generate-new-buffer monkeytype--buffer-name))
-  (let* ((len (length text)))
-    (set-buffer monkeytype--typing-buffer)
-    (setq monkeytype--source-text text)
-    (setq monkeytype--counter>remaining (length text))
-    (setq monkeytype--progress-tracker (make-string len 0))
-    (erase-buffer)
-    (insert monkeytype--source-text)
-    (set-buffer-modified-p nil)
-    (switch-to-buffer monkeytype--typing-buffer)
-    (goto-char 0)
-    (face-remap-add-relative 'default 'monkeytype-face>default)
-    (monkeytype--run>add-hooks)
-    (monkeytype-mode)
-    (monkeytype--mode-line>report-status)
-    (message "Monkeytype: Timer will start when you type the first character.")))
 
 (defun monkeytype--run>pause ()
   "Pause run and optionally PRINT-RESULTS."
@@ -916,7 +917,7 @@ Also add correction in SETTLED to mistyped-words-list."
   "Type marked region form START to END.
 \\[monkeytype-region]"
   (interactive "r")
-  (monkeytype--run>setup (buffer-substring-no-properties start end)))
+  (monkeytype--init (buffer-substring-no-properties start end)))
 
 ;;;###autoload
 (defun monkeytype-repeat ()
@@ -924,7 +925,7 @@ Also add correction in SETTLED to mistyped-words-list."
 
 \\[monkeytype-repeat]"
   (interactive)
-  (monkeytype--run>setup monkeytype--source-text))
+  (monkeytype--init monkeytype--source-text))
 
 ;;;###autoload
 (defun monkeytype-dummy-text ()
@@ -936,7 +937,7 @@ Also add correction in SETTLED to mistyped-words-list."
           (concat
            "\"I have had a dream past the wit of man to say what dream it was,\n"
            "says Bottom.\"")))
-    (monkeytype--run>setup text)))
+    (monkeytype--init text)))
 
 ;;;###autoload
 (defun monkeytype-fortune ()
@@ -953,7 +954,7 @@ Also add correction in SETTLED to mistyped-words-list."
 
 \\[monkeytype-buffer]"
   (interactive)
-  (monkeytype--run>setup (buffer-substring-no-properties (point-min) (point-max))))
+  (monkeytype--init (buffer-substring-no-properties (point-min) (point-max))))
 
 ;;;###autoload
 (defun monkeytype-pause ()
@@ -999,7 +1000,7 @@ Also add correction in SETTLED to mistyped-words-list."
 \\[monkeytype-mistyped-words]"
   (interactive)
   (if (> (length monkeytype--mistyped-words-list) 0)
-      (monkeytype--run>setup
+      (monkeytype--init
        (mapconcat
         (lambda (word) (if monkeytype-downcase-mistype (downcase word) word))
         (monkeytype--utils>nshuffle monkeytype--mistyped-words-list)  " "))
@@ -1017,7 +1018,7 @@ Also add correction in SETTLED to mistyped-words-list."
              (final-list '()))
         (cl-loop repeat append-times do
                  (setq final-list (append final-list monkeytype--hard-transition-list)))
-        (monkeytype--run>setup (mapconcat 'identity (monkeytype--utils>nshuffle final-list) " ")))
+        (monkeytype--init (mapconcat 'identity (monkeytype--utils>nshuffle final-list) " ")))
     (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
 
 ;;;###autoload
