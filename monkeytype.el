@@ -178,8 +178,6 @@ of characters. This also makes calculations easier and more accurate."
 (make-variable-buffer-local 'monkeytype--error-counter)
 (defvar monkeytype--correction-counter 0)
 (make-variable-buffer-local 'monkeytype--correction-counter)
-(defvar monkeytype--error-list '())
-(make-variable-buffer-local 'monkeytype--error-list)
 (defvar monkeytype--source-text-length 0)
 (make-variable-buffer-local 'monkeytype--source-text-length)
 (defvar monkeytype--remaining-counter 0)
