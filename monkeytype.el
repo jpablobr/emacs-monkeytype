@@ -51,13 +51,13 @@
 ;;;; Customization
 
 (defgroup monkeytype nil
-  "Monkeytype."
+  "Speed/touch typing."
   :group 'games
   :tag    "Monkeytype"
   :link   '(url-link :tag "GitHub" "https://github.com/jpablobr/emacs-monkeytype"))
 
 (defgroup monkeytype-faces nil
-  "Font-lock faces for `monkeytype'."
+  "Faces used by Monkeytype."
   :group 'monkeytype
   :group 'faces)
 
