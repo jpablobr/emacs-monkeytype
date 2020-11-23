@@ -145,7 +145,7 @@ of characters. This also makes calculations easier and more accurate."
   :group 'monkeytype)
 
 (defcustom monkeytype--auto-fill t
-  "Toggle auto fill."
+  "Toggle auto fill to the defaults `fill-column' setting."
   :type 'boolean
   :group 'monkeytype)
 
