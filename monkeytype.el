@@ -910,6 +910,84 @@ Also add correction in SETTLED to mistyped-words-list."
             (+ error-count correction-count))))
 
 ;; -------------------------------------------------------------------
+;;; Mode-line
+
+(defvar monkeytype--mode-line>current-entry '())
+(make-variable-buffer-local 'monkeytype--mode-line>current-entry)
+(defvar monkeytype--mode-line>previous-run '())
+(make-variable-buffer-local 'monkeytype--mode-line>previous-run)
+(defvar monkeytype--mode-line>previous-run-last-entry nil)
+(make-variable-buffer-local 'monkeytype--mode-line>previous-run-last-entry)
+
+(defun monkeytype--mode-line>report-status ()
+  "Take care of mode-line updating."
+  (setq monkeytype--mode-line>current-entry (elt monkeytype--current-run-list 0))
+  (setq monkeytype--mode-line>previous-run (elt monkeytype--run-list 0))
+
+  (when monkeytype--mode-line>previous-run
+    (setq monkeytype--mode-line>previous-run-last-entry
+          (elt (gethash "entries" monkeytype--mode-line>previous-run) 0)))
+
+  (when (or (not monkeytype--mode-line>current-entry) monkeytype--status>finished)
+    (setq monkeytype--mode-line>current-entry (make-hash-table :test 'equal)))
+  (force-mode-line-update))
+
+(defun monkeytype--mode-line>text ()
+  "Show status in mode line."
+  (let* ((elapsed-seconds (gethash "elapsed-seconds" monkeytype--mode-line>current-entry 0))
+         (elapsed-minutes (monkeytype--utils>seconds-to-minutes elapsed-seconds))
+         (previous-last-entry (when monkeytype--mode-line>previous-run
+                                monkeytype--mode-line>previous-run-last-entry))
+         (previous-run-entryp (and
+                               monkeytype--mode-line>previous-run
+                               (> (gethash "input-index" monkeytype--mode-line>current-entry 0) 0)))
+         (entries (if previous-run-entryp
+                      (-
+                       (gethash "input-index" monkeytype--mode-line>current-entry)
+                       (gethash "input-index" previous-last-entry))
+                    (gethash "input-index" monkeytype--mode-line>current-entry 0)))
+         (errors (if previous-run-entryp
+                     (-
+                      (gethash "error-count" monkeytype--mode-line>current-entry)
+                      (gethash "error-count" previous-last-entry))
+                   (gethash "error-count" monkeytype--mode-line>current-entry 0)))
+         (corrections (if previous-run-entryp
+                          (-
+                           (gethash "correction-count" monkeytype--mode-line>current-entry)
+                           (gethash "correction-count" previous-last-entry))
+                        (gethash "correction-count" monkeytype--mode-line>current-entry 0)))
+
+         (words (monkeytype--calc>words entries))
+         (net-wpm (if (> words 1)
+                      (monkeytype--calc>net-wpm words errors elapsed-minutes)
+                    0))
+         (gross-wpm (if (> words 1)
+                        (monkeytype--calc>gross-wpm words elapsed-minutes)
+                      0))
+         (accuracy (if (> words 1)
+                       (monkeytype--calc>accuracy entries (- entries errors) corrections)
+                     0))
+         (elapsed-time (format "%s" (format-seconds "%.2h:%z%.2m:%.2s" elapsed-seconds)))
+         (green '(:foreground "#98be65"))
+         (normal '(:foreground "#c5c8c6"))
+         (orange '(:foreground "#B7950B"))
+         (red '(:foreground "#ff6c6b")))
+
+    (concat
+     (propertize "MT[" 'face normal)
+     (propertize (format "%d" net-wpm) 'face green)
+     (propertize "/" 'face normal)
+     (propertize (format "%d" gross-wpm) 'face normal)
+     (propertize " " 'face normal)
+     (propertize (format "%d " accuracy) 'face normal)
+     (propertize elapsed-time 'face orange)
+     (propertize (format " (%d/" words) 'face normal)
+     (propertize (format "%d" corrections) 'face (if (> corrections 0) red green))
+     (propertize "/" 'face normal)
+     (propertize (format "%d" errors) 'face (if (> errors 0) red green))
+     (propertize ")]" 'face normal))))
+
+;; -------------------------------------------------------------------
 ;;;; Interactive:
 
 ;;;###autoload
@@ -1042,84 +1120,6 @@ Also add correction in SETTLED to mistyped-words-list."
         (transitions (mapconcat 'identity monkeytype--hard-transition-list " ")))
     (with-temp-file path (insert transitions))
     (message "Monkeytype: Transitions saved successfully to file: %s" path)))
-
-;; -------------------------------------------------------------------
-;;; Mode-line
-
-(defvar monkeytype--mode-line>current-entry '())
-(make-variable-buffer-local 'monkeytype--mode-line>current-entry)
-(defvar monkeytype--mode-line>previous-run '())
-(make-variable-buffer-local 'monkeytype--mode-line>previous-run)
-(defvar monkeytype--mode-line>previous-run-last-entry nil)
-(make-variable-buffer-local 'monkeytype--mode-line>previous-run-last-entry)
-
-(defun monkeytype--mode-line>report-status ()
-  "Take care of mode-line updating."
-  (setq monkeytype--mode-line>current-entry (elt monkeytype--current-run-list 0))
-  (setq monkeytype--mode-line>previous-run (elt monkeytype--run-list 0))
-
-  (when monkeytype--mode-line>previous-run
-    (setq monkeytype--mode-line>previous-run-last-entry
-          (elt (gethash "entries" monkeytype--mode-line>previous-run) 0)))
-
-  (when (or (not monkeytype--mode-line>current-entry) monkeytype--status>finished)
-    (setq monkeytype--mode-line>current-entry (make-hash-table :test 'equal)))
-  (force-mode-line-update))
-
-(defun monkeytype--mode-line>text ()
-  "Show status in mode line."
-  (let* ((elapsed-seconds (gethash "elapsed-seconds" monkeytype--mode-line>current-entry 0))
-         (elapsed-minutes (monkeytype--utils>seconds-to-minutes elapsed-seconds))
-         (previous-last-entry (when monkeytype--mode-line>previous-run
-                                monkeytype--mode-line>previous-run-last-entry))
-         (previous-run-entryp (and
-                               monkeytype--mode-line>previous-run
-                               (> (gethash "input-index" monkeytype--mode-line>current-entry 0) 0)))
-         (entries (if previous-run-entryp
-                      (-
-                       (gethash "input-index" monkeytype--mode-line>current-entry)
-                       (gethash "input-index" previous-last-entry))
-                    (gethash "input-index" monkeytype--mode-line>current-entry 0)))
-         (errors (if previous-run-entryp
-                     (-
-                      (gethash "error-count" monkeytype--mode-line>current-entry)
-                      (gethash "error-count" previous-last-entry))
-                   (gethash "error-count" monkeytype--mode-line>current-entry 0)))
-         (corrections (if previous-run-entryp
-                          (-
-                           (gethash "correction-count" monkeytype--mode-line>current-entry)
-                           (gethash "correction-count" previous-last-entry))
-                        (gethash "correction-count" monkeytype--mode-line>current-entry 0)))
-
-         (words (monkeytype--calc>words entries))
-         (net-wpm (if (> words 1)
-                      (monkeytype--calc>net-wpm words errors elapsed-minutes)
-                    0))
-         (gross-wpm (if (> words 1)
-                        (monkeytype--calc>gross-wpm words elapsed-minutes)
-                      0))
-         (accuracy (if (> words 1)
-                       (monkeytype--calc>accuracy entries (- entries errors) corrections)
-                     0))
-         (elapsed-time (format "%s" (format-seconds "%.2h:%z%.2m:%.2s" elapsed-seconds)))
-         (green '(:foreground "#98be65"))
-         (normal '(:foreground "#c5c8c6"))
-         (orange '(:foreground "#B7950B"))
-         (red '(:foreground "#ff6c6b")))
-
-    (concat
-     (propertize "MT[" 'face normal)
-     (propertize (format "%d" net-wpm) 'face green)
-     (propertize "/" 'face normal)
-     (propertize (format "%d" gross-wpm) 'face normal)
-     (propertize " " 'face normal)
-     (propertize (format "%d " accuracy) 'face normal)
-     (propertize elapsed-time 'face orange)
-     (propertize (format " (%d/" words) 'face normal)
-     (propertize (format "%d" corrections) 'face (if (> corrections 0) red green))
-     (propertize "/" 'face normal)
-     (propertize (format "%d" errors) 'face (if (> errors 0) red green))
-     (propertize ")]" 'face normal))))
 
 ;;;###autoload
 (define-minor-mode monkeytype-mode
