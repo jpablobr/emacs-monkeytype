@@ -111,17 +111,17 @@
 (defcustom monkeytype--treat-newline-as-space t
   "Allow continuing to the next line by pressing space."
   :type 'boolean
-  :group 'monkeytype-mode)
+  :group 'monkeytype)
 
 (defcustom monkeytype--insert-log nil
   "Show log in results section."
   :type 'boolean
-  :group 'monkeytype-mode)
+  :group 'monkeytype)
 
 (defcustom monkeytype--minimum-transitions 50
   "Minimum amount of transitions to practice."
   :type 'integer
-  :group 'monkeytype-mode)
+  :group 'monkeytype)
 
 (defcustom monkeytype--mode-line '(:eval (monkeytype--mode-line>text))
   "Monkeytype mode line."
@@ -135,29 +135,29 @@
 Reducing the frequency of the updates helps reduce lagging on longer text
 or when typing to fast."
   :type 'integer
-  :group 'monkeytype-mode)
+  :group 'monkeytype)
 
 (defcustom monkeytype--word-divisor 5.0
   "5 is the most common number for these calculations.
 Proper word count doesn't work as well since words have different number
 of characters. This also makes calculations easier and more accurate."
   :type 'integer
-  :group 'monkeytype-mode)
+  :group 'monkeytype)
 
 (defcustom monkeytype--auto-fill t
   "Toggle auto fill."
   :type 'boolean
-  :group 'monkeytype-mode)
+  :group 'monkeytype)
 
 (defcustom monkeytype--downcase-mistype t
   "Toggle downcasing of mistyped words."
   :type 'boolean
-  :group 'monkeytype-mode)
+  :group 'monkeytype)
 
 (defcustom monkeytype--save>directory "~/.monkeytype/"
   "Monkeytype directory."
   :type 'string
-  :group 'monkeytype-mode)
+  :group 'monkeytype)
 
 ;;;; Setup:
 
