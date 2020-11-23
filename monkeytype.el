@@ -368,7 +368,7 @@ affected. Only set monkeytype--ignored-change-counter when the
     (puthash "formatted-seconds" (format-seconds "%.2h:%z%.2m:%.2s" (monkeytype--elapsed-seconds)) entry)
     (add-to-list 'monkeytype--current-run-list entry)))
 
-(defun monkeytype--first-change ()
+(defun monkeytype--change>timer-init ()
   "Start the timer."
   (when (not monkeytype--start-time)
     (setq monkeytype--current-run-start-datetime (format-time-string "%a-%d-%b-%Y %H:%M:%S"))
@@ -379,7 +379,7 @@ affected. Only set monkeytype--ignored-change-counter when the
   "Pause run and optionally PRINT-RESULTS."
   (setq monkeytype--start-time nil)
   (remove-hook 'after-change-functions 'monkeytype--change)
-  (remove-hook 'first-change-hook 'monkeytype--first-change)
+  (remove-hook 'first-change-hook 'monkeytype--change>timer-init)
   (monkeytype--add-to-run-list)
   (read-only-mode))
 
@@ -465,7 +465,7 @@ https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle"
   (make-local-variable 'after-change-functions)
   (make-local-variable 'first-change-hook)
   (add-hook 'after-change-functions 'monkeytype--change nil t)
-  (add-hook 'first-change-hook 'monkeytype--first-change nil t))
+  (add-hook 'first-change-hook 'monkeytype--change>timer-init nil t))
 
 (defun monkeytype--print-results ()
   "Print all results."
