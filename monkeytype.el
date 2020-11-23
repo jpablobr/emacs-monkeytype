@@ -895,19 +895,24 @@ Also add correction in SETTLED to mistyped-words-list."
 
 ;;;###autoload
 (defun monkeytype-region (start end)
-  "Type marked region form START to END."
+  "Type marked region form START to END.
+\\[monkeytype-region]"
   (interactive "r")
   (monkeytype--setup (buffer-substring-no-properties start end)))
 
 ;;;###autoload
 (defun monkeytype-repeat ()
-  "Repeat run."
+  "Repeat run.
+
+\\[monkeytype-repeat]"
   (interactive)
   (monkeytype--setup monkeytype--source-text))
 
 ;;;###autoload
 (defun monkeytype-dummy-text ()
-  "Dummy text."
+  "Dummy text.
+
+\\[monkeytype-dummy-text]"
   (interactive)
   (let* ((text
           (concat
@@ -917,20 +922,26 @@ Also add correction in SETTLED to mistyped-words-list."
 
 ;;;###autoload
 (defun monkeytype-fortune ()
-  "Type fortune."
+  "Type fortune.
+
+\\[monkeytype-fortune]"
   (interactive)
   (fortune)
   (monkeytype-buffer))
 
 ;;;###autoload
 (defun monkeytype-buffer ()
-  "Type entire current buffet."
+  "Type entire current buffet.
+
+\\[monkeytype-buffer]"
   (interactive)
   (monkeytype--setup (buffer-substring-no-properties (point-min) (point-max))))
 
 ;;;###autoload
 (defun monkeytype-pause ()
-  "Pause run."
+  "Pause run.
+
+\\[monkeytype-pause]"
   (interactive)
   (setq monkeytype--paused t)
   (when monkeytype--start-time (monkeytype--pause-run))
@@ -940,13 +951,17 @@ Also add correction in SETTLED to mistyped-words-list."
 
 ;;;###autoload
 (defun monkeytype-stop ()
-  "Finish run."
+  "Finish run.
+
+\\[monkeytype-stop]"
   (interactive)
   (monkeytype--handle-complete))
 
 ;;;###autoload
 (defun monkeytype-resume ()
-  "Resume run."
+  "Resume run.
+
+\\[monkeytype-resume]"
   (interactive)
   (when (not monkeytype--finished)
     (progn
@@ -961,7 +976,9 @@ Also add correction in SETTLED to mistyped-words-list."
 
 ;;;###autoload
 (defun monkeytype-mistyped-words ()
-  "Practice mistyped words."
+  "Practice mistyped words.
+
+\\[monkeytype-mistyped-words]"
   (interactive)
   (if (> (length monkeytype--mistyped-words-list) 0)
       (monkeytype--setup
@@ -972,7 +989,9 @@ Also add correction in SETTLED to mistyped-words-list."
 
 ;;;###autoload
 (defun monkeytype-hard-transitions ()
-  "Practice hard key combinations/transitions."
+  "Practice hard key combinations/transitions.
+
+\\[monkeytype-hard-transitions]"
   (interactive)
   (if (> (length monkeytype--hard-transition-list) 0)
       (let* ((transitions-count (length monkeytype--hard-transition-list))
@@ -998,7 +1017,9 @@ Also add correction in SETTLED to mistyped-words-list."
 
 ;;;###autoload
 (defun monkeytype-save-mistyped-words ()
-  "Save mistyped words."
+  "Save mistyped words.
+
+\\[monkeytype-save-mistyped-words]"
   (interactive)
   (let ((path (monkeytype--save>file-path "words"))
         (words (mapconcat 'identity monkeytype--mistyped-words-list " ")))
@@ -1007,7 +1028,9 @@ Also add correction in SETTLED to mistyped-words-list."
 
 ;;;###autoload
 (defun monkeytype-save-hard-transitions ()
-  "Save hard transitions."
+  "Save hard transitions.
+
+\\[monkeytype-save-hard-transition]"
   (interactive)
   (let ((path (monkeytype--save>file-path "transitions"))
         (transitions (mapconcat 'identity monkeytype--hard-transition-list " ")))
