@@ -288,11 +288,11 @@ REPEAT FUNCTION ARGS."
                            (monkeytype--change>add-to-entries source-start entry source)))))
           (funcall update)
           (goto-char end)
-          (monkeytype--update-mode-line)
+          (monkeytype--change>update-mode-line)
           (when (= monkeytype--remaining-counter 0) (monkeytype--handle-complete))))
     (monkeytype--handle-complete)))
 
-(defun monkeytype--update-mode-line ()
+(defun monkeytype--change>update-mode-line ()
   "Update mode-line."
   (if monkeytype-mode-line>interval-update
       (let* ((entry (elt monkeytype--current-run-list 0))
