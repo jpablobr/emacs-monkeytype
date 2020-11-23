@@ -130,10 +130,10 @@
   :risky t)
 
 (defcustom monkeytype--mode-line>interval-update 1
-  "Number of second after each mode-line update.
+  "Number of keystrokes after each mode-line update.
 
-Reducing the frequency of the updates helps reduce lagging on longer text
-or when typing to fast."
+Reducing the frequency of the updates helps reduce lagging on longer text or
+when typing too fast."
   :type 'integer
   :group 'monkeytype)
 
