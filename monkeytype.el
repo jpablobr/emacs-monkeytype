@@ -204,8 +204,8 @@ of characters. This also makes calculations easier and more accurate."
 (make-variable-buffer-local 'monkeytype--hard-transition-list)
 (defvar monkeytype--chars-list '())
 (make-variable-buffer-local 'monkeytype--chars-list)
-(defvar monkeytype--calc>words-list '())
-(make-variable-buffer-local 'monkeytype--calc>words-list)
+(defvar monkeytype--words-list '())
+(make-variable-buffer-local 'monkeytype--words-list)
 (defvar monkeytype--previous-last-entry-index nil)
 (make-variable-buffer-local 'monkeytype--previous-last-entry-index)
 (defvar monkeytype--previous-run-last-entry nil)
@@ -286,7 +286,7 @@ REPEAT FUNCTION ARGS."
   (let* ((words (split-string monkeytype--source-text "[ \n]"))
          (index 1))
     (dolist (word words)
-      (add-to-list 'monkeytype--calc>words-list `(,index . ,word))
+      (add-to-list 'monkeytype--words-list `(,index . ,word))
       (setq index (+ index 1)))))
 
 (defun monkeytype--utils>index-chars-to-words ()
@@ -300,7 +300,7 @@ REPEAT FUNCTION ARGS."
             (setq word-index (+ word-index 1))
             (setq char-index (+ char-index 1)))
         (progn
-          (let* ((word  (assoc word-index monkeytype--calc>words-list))
+          (let* ((word  (assoc word-index monkeytype--words-list))
                  (word (cdr word)))
             (add-to-list 'monkeytype--chars-to-words-list `(,char-index . ,word))
             (setq char-index (+ char-index 1))))))))
