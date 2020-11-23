@@ -180,7 +180,7 @@ of characters. This also makes calculations easier and more accurate."
 (make-variable-buffer-local 'monkeytype--correction-counter)
 (defvar monkeytype--remaining-counter 0)
 (make-variable-buffer-local 'monkeytype--remaining-counter)
-(defvar monkeytype--progress nil)
+(defvar monkeytype--progress 0)
 (make-variable-buffer-local 'monkeytype--progress)
 (defvar monkeytype--buffer-name "*Monkeytype*")
 (make-variable-buffer-local 'monkeytype--buffer-name)
