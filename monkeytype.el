@@ -179,8 +179,8 @@ of characters. This also makes calculations easier and more accurate."
 (make-variable-buffer-local 'monkeytype--current-run-list)
 (defvar monkeytype--current-entry '())
 (make-variable-buffer-local 'monkeytype--current-entry)
-(defvar monkeytype--progress 0)
-(make-variable-buffer-local 'monkeytype--progress)
+(defvar monkeytype--progress-tracker 0)
+(make-variable-buffer-local 'monkeytype--progress-tracker)
 (defvar monkeytype--current-run-start-datetime nil)
 (make-variable-buffer-local 'monkeytype--current-run-start-datetime)
 
@@ -403,7 +403,7 @@ All CHARS count."
 (defun monkeytype--change>handle-del (source-start end deleted-text)
   "Keep track of statistics when deletion occurs between SOURCE-START and END DELETED-TEXT."
   (delete-region (1+ source-start) end)
-  (let* ((entry-state (aref monkeytype--progress source-start)))
+  (let* ((entry-state (aref monkeytype--progress-tracker source-start)))
     (cond ((= entry-state 1)
            (cl-decf monkeytype--entries-counter)
            (cl-incf monkeytype--remaining-counter))
@@ -412,7 +412,7 @@ All CHARS count."
            (cl-incf monkeytype--remaining-counter)
            (cl-decf monkeytype--error-counter)
            (cl-incf monkeytype--correction-counter)))
-    (store-substring monkeytype--progress source-start 0)
+    (store-substring monkeytype--progress-tracker source-start 0)
     (insert deleted-text)))
 
 (defun monkeytype--change>diff (source entry start end)
@@ -423,10 +423,10 @@ SOURCE ENTRY START END."
           (progress-index (1- start))
           (face-for-entry (monkeytype--typed-text>entry-face correct)))
       (if correct
-        (store-substring monkeytype--progress progress-index 1)
+        (store-substring monkeytype--progress-tracker progress-index 1)
         (progn
           (cl-incf monkeytype--error-counter)
-          (store-substring monkeytype--progress progress-index 2)))
+          (store-substring monkeytype--progress-tracker progress-index 2)))
       (cl-incf monkeytype--entries-counter)
       (cl-decf monkeytype--remaining-counter)
 
@@ -461,7 +461,7 @@ affected. Only set monkeytype--ignored-change-counter when the
     (puthash "source-index" (1+ source-start) entry)
     (puthash "error-count" monkeytype--error-counter entry)
     (puthash "correction-count" monkeytype--correction-counter entry)
-    (puthash "state" (aref monkeytype--progress source-start) entry)
+    (puthash "state" (aref monkeytype--progress-tracker source-start) entry)
     (puthash "elapsed-seconds" (monkeytype--utils>elapsed-seconds) entry)
     (puthash "formatted-seconds" (format-seconds "%.2h:%z%.2m:%.2s" (monkeytype--utils>elapsed-seconds)) entry)
     (add-to-list 'monkeytype--current-run-list entry)))
@@ -492,7 +492,7 @@ affected. Only set monkeytype--ignored-change-counter when the
     (set-buffer monkeytype--typing-buffer)
     (setq monkeytype--source-text text)
     (setq monkeytype--remaining-counter (length text))
-    (setq monkeytype--progress (make-string len 0))
+    (setq monkeytype--progress-tracker (make-string len 0))
     (erase-buffer)
     (insert monkeytype--source-text)
     (set-buffer-modified-p nil)
