@@ -398,10 +398,7 @@ DELETE-LENGTH is the amount of deleted chars in case of deletion."
       (unless correctp (cl-incf monkeytype--counter>error))
 
       (set-text-properties region-start (1+ region-start) `(face ,face-for-entry))
-
-      (when (monkeytype--process-input>add-to-entriesp entry delete-length)
-        (monkeytype--process-input>add-to-entries source-start entry source))
-
+      (monkeytype--process-input>add-to-entries source-start entry source)
       (monkeytype--process-input>update-mode-line))
 
     (goto-char region-end)
@@ -453,23 +450,6 @@ ENTRY-STATE = 2 mistyped re-typed char"
          (cl-incf monkeytype--counter>remaining)
          (cl-decf monkeytype--counter>error)
          (cl-incf monkeytype--counter>correction))))
-
-(defun monkeytype--process-input>add-to-entriesp (entry change-length)
-  "Add ENTRY CHANGE-LENGTH.
-
-HACK: Properly fix BUG where \"f\" character produces a delete and re-enter
-event. ATM this only ignores those events since at least the stats do not get
-affected. Only set monkeytype--ignored-change-counter when the
-`last-input-event' is a character(e.i., integerp not M-backspace)."
-  (cond
-   ((= 0 (length entry))
-    (when (integerp last-input-event)
-      (setq monkeytype--counter>ignored-change change-length))
-    nil)
-   ((> monkeytype--counter>ignored-change 0) ;; Number of changes to be ignored.
-    (cl-decf monkeytype--counter>ignored-change)
-    nil)
-   (t t)))
 
 (defun monkeytype--process-input>add-to-entries (source-start change-typed change-source)
   "Add entry to current-run-list keeping track of SOURCE-START CHANGE-TYPED and CHANGE-SOURCE."

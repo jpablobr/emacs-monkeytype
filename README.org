@@ -62,6 +62,8 @@ At this point you can either practice mistyped words with =monkeytype-mistyped-w
 
 + When using =evil-mode= it's useful to automatically enable =evil-insert= (to start typing right away).
 
++ When using =evil-escape=, =evil-escape-mode= has to be disabled in order to prevent double keystrokes getting registered.
+ 
 + Installing =centered-cursor-mode= is useful for auto scrolling/paging in multi-page / long texts.
 https://github.com/emacsmirror/centered-cursor-mode
 
@@ -71,6 +73,7 @@ This can then be enabled with a hook in your =.emacs=:
   (add-hook 'monkeytype-mode-hook
             (lambda ()
               (centered-cursor-mode)
+              (evil-escape-mode -1)
               (evil-insert -1)))
 #+END_SRC
 
