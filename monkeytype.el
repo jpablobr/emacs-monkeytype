@@ -391,72 +391,87 @@ All CHARS count."
       accuracy)))
 
 ;; -------------------------------------------------------------------
-;;;; Change:
+;;;; Process Input:
 
-(defun monkeytype--process-input (start end delete-length)
-  "START END DELETE-LENGTH."
+(defun monkeytype--process-input (region-start region-end delete-length)
+  "Process input from REGION-START to REGION-END.
 
-  ;; HACK: This usually happens when text has been skipped without being typed.
-  ;; Text skipps need to be handled properly
-  (if (< (- end 2) (length monkeytype--source-text))
-      (progn
-        (let* ((source-start (1- start))
-               (source-end (1- end))
-               (entry (substring-no-properties (buffer-substring start end)))
-               (source (substring monkeytype--source-text source-start source-end))
-               (entry-state (aref monkeytype--progress-tracker source-start))
-               (correctp (monkeytype--utils>check-same source entry))
-               (face-for-entry (monkeytype--typed-text>entry-face correctp))
-               (correctionp (> entry-state 0))
-               (valid-input (/= start end)) ; a key combination not entering a char e.i, a command.
-               (deleted-textp (> delete-length 0)))
+DELETE-LENGTH is the amount of deleted chars in case of deletion."
+  (let* ((source-start (1- region-start))
+         (source-end (1- region-end))
+         (entry (substring-no-properties (buffer-substring region-start region-end)))
+         (source (substring monkeytype--source-text source-start source-end))
+         (entry-state (aref monkeytype--progress-tracker source-start))
+         (correctp (monkeytype--utils>check-same source entry))
+         (face-for-entry (monkeytype--typed-text>entry-face correctp))
+         ;; No char entered e.g., a command.
+         (valid-input (/= region-start region-end)))
 
-          ;; Leaving only the newly typed char
-          (delete-region start end)
+    (monkeytype--process-input>restabilize-region
+     region-start
+     region-end
+     entry-state
+     delete-length)
 
-          (when correctionp
-            (monkeytype--process-input>rectify-counters entry-state)
+    (when valid-input
+      (store-substring monkeytype--progress-tracker source-start (if correctp 1 2))
 
-            ;; Reset tracker back to 0 (i.e, new)
-            (store-substring monkeytype--progress-tracker source-start 0))
+      (cl-incf monkeytype--counter>entries)
+      (cl-decf monkeytype--counter>remaining)
+      (unless correctp (cl-incf monkeytype--counter>error))
 
-          ;; Re-insert deleted text
-          (when deleted-textp
-            (insert
-             (substring
-              monkeytype--source-text
-              source-start
-              (+ source-start delete-length))))
+      (set-text-properties region-start (1+ region-start) `(face ,face-for-entry))
 
-          (when valid-input
-            (if correctp
-                (store-substring monkeytype--progress-tracker source-start 1)
-              (progn
-                (cl-incf monkeytype--counter>error)
-                (store-substring monkeytype--progress-tracker source-start 2)))
+      (when (monkeytype--process-input>add-to-entriesp entry delete-length)
+        (monkeytype--process-input>add-to-entries source-start entry source))
 
-            (cl-incf monkeytype--counter>entries)
-            (cl-decf monkeytype--counter>remaining)
+      (monkeytype--process-input>update-mode-line))
 
-            (if (fboundp 'add-face-text-property)
-                (add-face-text-property start (1+ start) face-for-entry)
-              (add-text-properties start (1+ start) `(face ,@face-for-entry)))
+    (goto-char region-end)
+    (when (= monkeytype--counter>remaining 0) (monkeytype--run>finish))))
 
-            (when (monkeytype--process-input>add-to-entriesp entry delete-length)
-              (monkeytype--process-input>add-to-entries source-start entry source))
+(defun monkeytype--process-input>restabilize-region (region-start region-end entry-state delete-length)
+  "Restabilize current char input region from REGION-START to REGION-END.
 
-            (monkeytype--process-input>update-mode-line))
+ENTRY-STATE keeps track of text already typed but deleted (e.i., correction).
+DELETE-LENGTH is the number of deleted chars before current char input."
+  (let* ((source-start (1- region-start))
+         (skippedp (>
+                    (+ source-start monkeytype--counter>remaining)
+                    (length monkeytype--source-text)) )
+         (correctionp (> entry-state 0))
+         (deleted-textp (> delete-length 0)))
 
-          (goto-char end)
-          (when (= monkeytype--counter>remaining 0) (monkeytype--run>finish))))
-    (monkeytype--run>finish)))
+    ;; On skips update remaining-counter to reflect current position
+    (when skippedp
+      (setq monkeytype--counter>remaining
+            (- (length monkeytype--source-text) source-start)))
+
+    ;; Leaving only the newly typed char
+    (delete-region region-start region-end)
+
+    (when correctionp
+      (monkeytype--process-input>rectify-counters entry-state)
+
+      ;; Reset tracker back to 0 (i.e, new)
+      (store-substring monkeytype--progress-tracker source-start 0))
+
+    ;; Re-insert deleted text
+    (when deleted-textp
+      (insert (substring
+               monkeytype--source-text
+               source-start
+               (+ source-start delete-length))))))
 
 (defun monkeytype--process-input>rectify-counters (entry-state)
-  "Update counters on corrections/re-tries based on the ENTRY-STATE."
-  (cond ((= entry-state 1)              ; correct re-typed char
+  "Update counters on corrections/re-tries based on the ENTRY-STATE.
+
+ENTRY-STATE = 1 correctly re-typed char
+ENTRY-STATE = 2 mistyped re-typed char"
+  (cond ((= entry-state 1)
          (cl-decf monkeytype--counter>entries)
          (cl-incf monkeytype--counter>remaining))
-        ((= entry-state 2)              ; mistyped re-typed char
+        ((= entry-state 2)
          (cl-decf monkeytype--counter>entries)
          (cl-incf monkeytype--counter>remaining)
          (cl-decf monkeytype--counter>error)
