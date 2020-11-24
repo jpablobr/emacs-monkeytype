@@ -177,8 +177,22 @@ of characters. This also makes calculations easier and more accurate."
 (defvar monkeytype--status>paused nil)
 (make-variable-buffer-local 'monkeytype--status>paused)
 
+;; Counters
+(defvar monkeytype--counter>entries 0)
+(make-variable-buffer-local 'monkeytype--counter>entries)
+(defvar monkeytype--counter>input 0)
+(make-variable-buffer-local 'monkeytype--counter>input)
+(defvar monkeytype--counter>error 0)
+(make-variable-buffer-local 'monkeytype--counter>error)
+(defvar monkeytype--counter>correction 0)
+(make-variable-buffer-local 'monkeytype--counter>correction)
+(defvar monkeytype--counter>remaining 0)
+(make-variable-buffer-local 'monkeytype--counter>remaining)
+(defvar monkeytype--counter>ignored-change 0)
+(make-variable-buffer-local 'monkeytype--counter>ignored-change)
+
 ;; Run
-(defvar monkeytype--progress-tracker 0)
+(defvar monkeytype--progress-tracker "")
 (make-variable-buffer-local 'monkeytype--progress-tracker)
 (defvar monkeytype--current-run-list '())
 (make-variable-buffer-local 'monkeytype--current-run-list)
@@ -379,21 +393,8 @@ All CHARS count."
 ;; -------------------------------------------------------------------
 ;;;; Change:
 
-(defvar monkeytype--counter>entries 0)
-(make-variable-buffer-local 'monkeytype--counter>entries)
-(defvar monkeytype--counter>input 0)
-(make-variable-buffer-local 'monkeytype--counter>input)
-(defvar monkeytype--counter>error 0)
-(make-variable-buffer-local 'monkeytype--counter>error)
-(defvar monkeytype--counter>correction 0)
-(make-variable-buffer-local 'monkeytype--counter>correction)
-(defvar monkeytype--counter>remaining 0)
-(make-variable-buffer-local 'monkeytype--counter>remaining)
-(defvar monkeytype--counter>ignored-change 0)
-(make-variable-buffer-local 'monkeytype--counter>ignored-change)
-
-(defun monkeytype--change (start end change-length)
-  "START END CHANGE-LENGTH."
+(defun monkeytype--change (start end delete-length)
+  "START END DELETE-LENGTH."
 
   ;; HACK: This usually happens when text has been skipped without being typed.
   ;; Text skipps need to be handled properly
@@ -403,61 +404,63 @@ All CHARS count."
                (source-end (1- end))
                (entry (substring-no-properties (buffer-substring start end)))
                (source (substring monkeytype--source-text source-start source-end))
-               (deleted-text (substring monkeytype--source-text source-start (+ source-start change-length)))
-               (update (lambda ()
-                         (monkeytype--change>handle-del source-start end deleted-text)
-                         (monkeytype--change>diff source entry start end)
-                         (when (monkeytype--change>add-to-entriesp entry change-length)
-                           (monkeytype--change>add-to-entries source-start entry source)))))
-          (funcall update)
+               (entry-state (aref monkeytype--progress-tracker source-start))
+               (correctp (monkeytype--utils>check-same source entry))
+               (face-for-entry (monkeytype--typed-text>entry-face correctp))
+               (correctionp (> entry-state 0))
+               (valid-input (/= start end)) ; a key combination not entering a char e.i, a command.
+               (deleted-textp (> delete-length 0)))
+
+          ;; Leaving only the newly typed char
+          (delete-region start end)
+
+          (when correctionp
+            (monkeytype--change>rectify-counters entry-state)
+
+            ;; Reset tracker back to 0 (i.e, new)
+            (store-substring monkeytype--progress-tracker source-start 0))
+
+          ;; Re-insert deleted text
+          (when deleted-textp
+            (insert
+             (substring
+              monkeytype--source-text
+              source-start
+              (+ source-start delete-length))))
+
+          (when valid-input
+            (if correctp
+                (store-substring monkeytype--progress-tracker source-start 1)
+              (progn
+                (cl-incf monkeytype--counter>error)
+                (store-substring monkeytype--progress-tracker source-start 2)))
+
+            (cl-incf monkeytype--counter>entries)
+            (cl-decf monkeytype--counter>remaining)
+
+            (if (fboundp 'add-face-text-property)
+                (add-face-text-property start (1+ start) face-for-entry)
+              (add-text-properties start (1+ start) `(face ,@face-for-entry)))
+
+            (when (monkeytype--change>add-to-entriesp entry delete-length)
+              (monkeytype--change>add-to-entries source-start entry source))
+
+            (monkeytype--change>update-mode-line))
+
           (goto-char end)
-          (monkeytype--change>update-mode-line)
-          (when (= monkeytype--counter>remaining 0) (monkeytype--run>handle-complete))))
-    (monkeytype--run>handle-complete)))
+          (when (= monkeytype--counter>remaining 0) (monkeytype--run>finish))))
+    (monkeytype--run>finish)))
 
-(defun monkeytype--change>update-mode-line ()
-  "Update mode-line."
-  (if monkeytype-mode-line>interval-update
-      (let* ((entry (elt monkeytype--current-run-list 0))
-             (char-index (if entry (gethash "source-index" entry) 0)))
-        (if (and
-             (> char-index monkeytype-mode-line>interval-update)
-             (= (mod char-index monkeytype-mode-line>interval-update) 0))
-            (monkeytype--mode-line>report-status)))))
-
-(defun monkeytype--change>handle-del (source-start end deleted-text)
-  "Keep track of statistics when deletion occurs between SOURCE-START and END DELETED-TEXT."
-  (delete-region (1+ source-start) end)
-  (let* ((entry-state (aref monkeytype--progress-tracker source-start)))
-    (cond ((= entry-state 1)
-           (cl-decf monkeytype--counter>entries)
-           (cl-incf monkeytype--counter>remaining))
-          ((= entry-state 2)
-           (cl-decf monkeytype--counter>entries)
-           (cl-incf monkeytype--counter>remaining)
-           (cl-decf monkeytype--counter>error)
-           (cl-incf monkeytype--counter>correction)))
-    (store-substring monkeytype--progress-tracker source-start 0)
-    (insert deleted-text)))
-
-(defun monkeytype--change>diff (source entry start end)
-  "Update stats and buffer contents with result of changed text.
-SOURCE ENTRY START END."
-  (when (/= start end)
-    (let* ((correct (monkeytype--utils>check-same source entry))
-          (progress-index (1- start))
-          (face-for-entry (monkeytype--typed-text>entry-face correct)))
-      (if correct
-        (store-substring monkeytype--progress-tracker progress-index 1)
-        (progn
-          (cl-incf monkeytype--counter>error)
-          (store-substring monkeytype--progress-tracker progress-index 2)))
-      (cl-incf monkeytype--counter>entries)
-      (cl-decf monkeytype--counter>remaining)
-
-      (if (fboundp 'add-face-text-property)
-          (add-face-text-property start (1+ start) face-for-entry)
-        (add-text-properties start (1+ start) `(face ,@face-for-entry))))))
+(defun monkeytype--change>rectify-counters (entry-state)
+  "Update counters on corrections/re-tries based on the ENTRY-STATE."
+  (cond ((= entry-state 1)              ; correct re-typed char
+         (cl-decf monkeytype--counter>entries)
+         (cl-incf monkeytype--counter>remaining))
+        ((= entry-state 2)              ; mistyped re-typed char
+         (cl-decf monkeytype--counter>entries)
+         (cl-incf monkeytype--counter>remaining)
+         (cl-decf monkeytype--counter>error)
+         (cl-incf monkeytype--counter>correction))))
 
 (defun monkeytype--change>add-to-entriesp (entry change-length)
   "Add ENTRY CHANGE-LENGTH.
@@ -498,6 +501,16 @@ affected. Only set monkeytype--ignored-change-counter when the
     (setq monkeytype--start-time (float-time))
     (monkeytype--utils>local-idle-timer 5 nil 'monkeytype-pause)))
 
+(defun monkeytype--change>update-mode-line ()
+  "Update mode-line."
+  (if monkeytype-mode-line>interval-update
+      (let* ((entry (elt monkeytype--current-run-list 0))
+             (char-index (if entry (gethash "source-index" entry) 0)))
+        (if (and
+             (> char-index monkeytype-mode-line>interval-update)
+             (= (mod char-index monkeytype-mode-line>interval-update) 0))
+            (monkeytype--mode-line>report-status)))))
+
 ;; -------------------------------------------------------------------
 ;;;; Run:
 
@@ -509,7 +522,7 @@ affected. Only set monkeytype--ignored-change-counter when the
   (monkeytype--run>add-to-list)
   (read-only-mode))
 
-(defun monkeytype--run>handle-complete ()
+(defun monkeytype--run>finish ()
   "Remove typing hooks from the buffer and print statistics."
   (setq monkeytype--status>finished t)
 
@@ -1052,7 +1065,7 @@ Also add correction in SETTLED to mistyped-words-list."
 
 \\[monkeytype-stop]"
   (interactive)
-  (monkeytype--run>handle-complete))
+  (monkeytype--run>finish))
 
 ;;;###autoload
 (defun monkeytype-resume ()
