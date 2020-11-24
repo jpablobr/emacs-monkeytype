@@ -393,7 +393,7 @@ All CHARS count."
 ;; -------------------------------------------------------------------
 ;;;; Change:
 
-(defun monkeytype--change (start end delete-length)
+(defun monkeytype--process-input (start end delete-length)
   "START END DELETE-LENGTH."
 
   ;; HACK: This usually happens when text has been skipped without being typed.
@@ -415,7 +415,7 @@ All CHARS count."
           (delete-region start end)
 
           (when correctionp
-            (monkeytype--change>rectify-counters entry-state)
+            (monkeytype--process-input>rectify-counters entry-state)
 
             ;; Reset tracker back to 0 (i.e, new)
             (store-substring monkeytype--progress-tracker source-start 0))
@@ -442,16 +442,16 @@ All CHARS count."
                 (add-face-text-property start (1+ start) face-for-entry)
               (add-text-properties start (1+ start) `(face ,@face-for-entry)))
 
-            (when (monkeytype--change>add-to-entriesp entry delete-length)
-              (monkeytype--change>add-to-entries source-start entry source))
+            (when (monkeytype--process-input>add-to-entriesp entry delete-length)
+              (monkeytype--process-input>add-to-entries source-start entry source))
 
-            (monkeytype--change>update-mode-line))
+            (monkeytype--process-input>update-mode-line))
 
           (goto-char end)
           (when (= monkeytype--counter>remaining 0) (monkeytype--run>finish))))
     (monkeytype--run>finish)))
 
-(defun monkeytype--change>rectify-counters (entry-state)
+(defun monkeytype--process-input>rectify-counters (entry-state)
   "Update counters on corrections/re-tries based on the ENTRY-STATE."
   (cond ((= entry-state 1)              ; correct re-typed char
          (cl-decf monkeytype--counter>entries)
@@ -462,7 +462,7 @@ All CHARS count."
          (cl-decf monkeytype--counter>error)
          (cl-incf monkeytype--counter>correction))))
 
-(defun monkeytype--change>add-to-entriesp (entry change-length)
+(defun monkeytype--process-input>add-to-entriesp (entry change-length)
   "Add ENTRY CHANGE-LENGTH.
 
 HACK: Properly fix BUG where \"f\" character produces a delete and re-enter
@@ -479,7 +479,7 @@ affected. Only set monkeytype--ignored-change-counter when the
     nil)
    (t t)))
 
-(defun monkeytype--change>add-to-entries (source-start change-typed change-source)
+(defun monkeytype--process-input>add-to-entries (source-start change-typed change-source)
   "Add entry to current-run-list keeping track of SOURCE-START CHANGE-TYPED and CHANGE-SOURCE."
   (cl-incf monkeytype--counter>input)
   (let ((entry (make-hash-table :test 'equal)))
@@ -494,14 +494,14 @@ affected. Only set monkeytype--ignored-change-counter when the
     (puthash "formatted-seconds" (format-seconds "%.2h:%z%.2m:%.2s" (monkeytype--utils>elapsed-seconds)) entry)
     (add-to-list 'monkeytype--current-run-list entry)))
 
-(defun monkeytype--change>timer-init ()
+(defun monkeytype--process-input>timer-init ()
   "Start the timer."
   (when (not monkeytype--start-time)
     (setq monkeytype--current-run-start-datetime (format-time-string "%a-%d-%b-%Y %H:%M:%S"))
     (setq monkeytype--start-time (float-time))
     (monkeytype--utils>local-idle-timer 5 nil 'monkeytype-pause)))
 
-(defun monkeytype--change>update-mode-line ()
+(defun monkeytype--process-input>update-mode-line ()
   "Update mode-line."
   (if monkeytype-mode-line>interval-update
       (let* ((entry (elt monkeytype--current-run-list 0))
@@ -517,8 +517,8 @@ affected. Only set monkeytype--ignored-change-counter when the
 (defun monkeytype--run>pause ()
   "Pause run and optionally PRINT-RESULTS."
   (setq monkeytype--start-time nil)
-  (remove-hook 'after-change-functions 'monkeytype--change)
-  (remove-hook 'first-change-hook 'monkeytype--change>timer-init)
+  (remove-hook 'after-change-functions 'monkeytype--process-input)
+  (remove-hook 'first-change-hook 'monkeytype--process-input>timer-init)
   (monkeytype--run>add-to-list)
   (read-only-mode))
 
@@ -548,8 +548,8 @@ affected. Only set monkeytype--ignored-change-counter when the
   "Add hooks."
   (make-local-variable 'after-change-functions)
   (make-local-variable 'first-change-hook)
-  (add-hook 'after-change-functions 'monkeytype--change nil t)
-  (add-hook 'first-change-hook 'monkeytype--change>timer-init nil t))
+  (add-hook 'after-change-functions 'monkeytype--process-input nil t)
+  (add-hook 'first-change-hook 'monkeytype--process-input>timer-init nil t))
 
 ;; -------------------------------------------------------------------
 ;;;; Results:
