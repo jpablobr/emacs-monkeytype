@@ -692,16 +692,6 @@ Gross-WPM = WORDS / MINUTES."
     'face
     'monkeytype-face>header-3)))
 
-(defun monkeytype--results>build (words errors minutes seconds entries corrections)
-  "Build results text.
-WORDS ERRORS MINUTES SECONDS ENTRIES CORRECTIONS."
-  (concat
-   (monkeytype--results>net-wpm words errors minutes seconds)
-   "\n\n"
-   (monkeytype--results>accuracy entries (- entries errors) corrections)
-   "\n\n"
-   (monkeytype--results>gross-wpm words minutes)))
-
 (defun monkeytype--results>run (run)
   "Performance results for RUN."
   (let* ((last-entry (elt run 0))
@@ -724,8 +714,12 @@ WORDS ERRORS MINUTES SECONDS ENTRIES CORRECTIONS."
                         (gethash "correction-count" last-entry)))
          (words (monkeytype--calc>words entries)))
     (setq monkeytype--previous-run-last-entry (elt run 0))
-    (monkeytype--results>build
-     words errors elapsed-minutes elapsed-seconds entries corrections)))
+    (concat
+     (monkeytype--results>net-wpm words errors elapsed-minutes elapsed-seconds)
+     "\n\n"
+     (monkeytype--results>accuracy entries (- entries errors) corrections)
+     "\n\n"
+     (monkeytype--results>gross-wpm words elapsed-minutes))))
 
 (defun monkeytype--results>final ()
   "Final Performance results for all run(s).
@@ -738,8 +732,12 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
          (errors (gethash "error-count" last-entry))
          (corrections (gethash "correction-count" last-entry))
          (words (monkeytype--calc>words entries)))
-    (monkeytype--results>build
-     words errors elapsed-minutes total-elapsed-seconds entries corrections)))
+    (concat
+     (monkeytype--results>net-wpm words errors elapsed-minutes total-elapsed-seconds)
+     "\n\n"
+     (monkeytype--results>accuracy entries (- entries errors) corrections)
+     "\n\n"
+     (monkeytype--results>gross-wpm words elapsed-minutes))))
 
 ;; -------------------------------------------------------------------
 ;;;; typed text
