@@ -463,7 +463,7 @@ ENTRY-STATE = 2 mistyped re-typed char"
 
 (defun monkeytype--process-input>timer-init ()
   "Start the timer."
-  (when (not monkeytype--start-time)
+  (unless monkeytype--start-time
     (setq monkeytype--current-run-start-datetime (format-time-string "%a-%d-%b-%Y %H:%M:%S"))
     (setq monkeytype--start-time (float-time))
     (monkeytype--utils>local-idle-timer 5 nil 'monkeytype-pause)))
@@ -1008,7 +1008,7 @@ Also add correction in SETTLED to mistyped-words-list."
   (setq monkeytype--status>paused t)
   (when monkeytype--start-time (monkeytype--run>pause))
   (setq monkeytype--current-run-list '())
-  (when (not monkeytype--status>finished)
+  (unless monkeytype--status>finished
     (message "Monkeytype: Paused ([C-c C-c r] to resume.)")))
 
 ;;;###autoload
@@ -1025,7 +1025,7 @@ Also add correction in SETTLED to mistyped-words-list."
 
 \\[monkeytype-resume]"
   (interactive)
-  (when (not monkeytype--status>finished)
+  (unless monkeytype--status>finished
     (progn
       (setq monkeytype--status>paused nil)
       (switch-to-buffer monkeytype--typing-buffer)
