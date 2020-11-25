@@ -239,7 +239,7 @@ URL `https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle'"
 Cancels itself, if this buffer is killed or after 5 SECS.
 REPEAT FUNCTION ARGS."
   (let* ((fns (make-symbol "local-idle-timer"))
-         (timer (apply 'run-with-idle-timer secs repeat fns args))
+         (timer (apply #'run-with-idle-timer secs repeat fns args))
          (fn `(lambda (&rest args)
                 (if (or
                      monkeytype--status>paused
@@ -292,7 +292,7 @@ REPEAT FUNCTION ARGS."
 
 (defun monkeytype--utils>index-chars-to-words ()
   "Associate by index cars to words."
-  (let* ((chars (mapcar 'char-to-string monkeytype--source-text))
+  (let* ((chars (mapcar #'char-to-string monkeytype--source-text))
          (word-index 1)
          (char-index 1))
     (dolist (char chars)
@@ -317,7 +317,7 @@ REPEAT FUNCTION ARGS."
                        monkeytype--source-text
                        first-entry-index
                        (gethash "source-index" last-entry)))
-         (chars (mapcar 'char-to-string source-text))
+         (chars (mapcar #'char-to-string source-text))
          (chars-list '())
          (index first-entry-index))
     (dolist (char chars)
@@ -483,8 +483,8 @@ ENTRY-STATE = 2 mistyped re-typed char"
 (defun monkeytype--run>pause ()
   "Pause run and optionally PRINT-RESULTS."
   (setq monkeytype--start-time nil)
-  (remove-hook 'after-change-functions 'monkeytype--process-input)
-  (remove-hook 'first-change-hook 'monkeytype--process-input>timer-init)
+  (remove-hook 'after-change-functions #'monkeytype--process-input)
+  (remove-hook 'first-change-hook #'monkeytype--process-input>timer-init)
   (monkeytype--run>add-to-list)
   (read-only-mode))
 
@@ -514,8 +514,8 @@ ENTRY-STATE = 2 mistyped re-typed char"
   "Add hooks."
   (make-local-variable 'after-change-functions)
   (make-local-variable 'first-change-hook)
-  (add-hook 'after-change-functions 'monkeytype--process-input nil t)
-  (add-hook 'first-change-hook 'monkeytype--process-input>timer-init nil t))
+  (add-hook 'after-change-functions #'monkeytype--process-input nil t)
+  (add-hook 'first-change-hook #'monkeytype--process-input>timer-init nil t))
 
 ;;;; Results:
 
@@ -672,7 +672,7 @@ Gross-WPM = WORDS / MINUTES."
 Total time is the sum of all the last entries' elapsed-seconds from all runs."
   (let* ((runs-last-entry (mapcar (lambda (x) (elt (gethash "entries" x) 0)) monkeytype--run-list))
          (last-entry (elt runs-last-entry 0))
-         (total-elapsed-seconds (apply '+  (mapcar (lambda (x) (gethash "elapsed-seconds" x)) runs-last-entry)))
+         (total-elapsed-seconds (apply #'+  (mapcar (lambda (x) (gethash "elapsed-seconds" x)) runs-last-entry)))
          (elapsed-minutes (monkeytype--utils>seconds-to-minutes total-elapsed-seconds))
          (entries (gethash "input-index" last-entry))
          (errors (gethash "error-count" last-entry))
@@ -850,7 +850,7 @@ Also add correction in SETTLED to mistyped-words-list."
            " Time    "
            " Mends   "
            " Errs    ")))
-    (format "\n|%s|" (mapconcat 'identity log-header "|"))))
+    (format "\n|%s|" (mapconcat #'identity log-header "|"))))
 
 (defun monkeytype--log>entry (entry)
   "Format ENTRY."
@@ -1061,7 +1061,7 @@ Also add correction in SETTLED to mistyped-words-list."
              (final-list '()))
         (cl-loop repeat append-times do
                  (setq final-list (append final-list monkeytype--hard-transition-list)))
-        (monkeytype--init (mapconcat 'identity (monkeytype--utils>nshuffle final-list) " ")))
+        (monkeytype--init (mapconcat #'identity (monkeytype--utils>nshuffle final-list) " ")))
     (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
 
 ;;;###autoload
@@ -1071,7 +1071,7 @@ Also add correction in SETTLED to mistyped-words-list."
 \\[monkeytype-save-mistyped-words]"
   (interactive)
   (let ((path (monkeytype--utils>file-path "words"))
-        (words (mapconcat 'identity monkeytype--mistyped-words-list " ")))
+        (words (mapconcat #'identity monkeytype--mistyped-words-list " ")))
     (with-temp-file path (insert words))
     (message "Monkeytype: Words saved successfully to file: %s" path)))
 
@@ -1082,7 +1082,7 @@ Also add correction in SETTLED to mistyped-words-list."
 \\[monkeytype-save-hard-transition]"
   (interactive)
   (let ((path (monkeytype--utils>file-path "transitions"))
-        (transitions (mapconcat 'identity monkeytype--hard-transition-list " ")))
+        (transitions (mapconcat #'identity monkeytype--hard-transition-list " ")))
     (with-temp-file path (insert transitions))
     (message "Monkeytype: Transitions saved successfully to file: %s" path)))
 
