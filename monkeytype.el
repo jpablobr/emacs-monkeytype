@@ -6,7 +6,7 @@
 ;; Maintainer: Pablo Barrantes <xjpablobrx@gmail.com>
 ;; Version: 0.1.1
 ;; Keywords: games
-;; URL: http://github.com/jpablobr/emacs-monkeytype
+;; URL: https://github.com/jpablobr/emacs-monkeytype
 ;; Package-Requires: ((emacs "25.1"))
 
 ;;; Commentary:
