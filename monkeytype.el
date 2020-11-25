@@ -580,9 +580,11 @@ Also shows SECONDS right next to WPM."
                        "#98be65"
                      "#cc6666") :height 0.7))
    (propertize
-    (concat
      (format " / %.2f)]\n" minutes)
-     "WPM = Gross-WPM - (uncorrected-errors / minutes)")
+    'face
+    'monkeytype-face>header-3)
+   (propertize
+     "WPM = Gross-WPM - (uncorrected-errors / minutes)"
     'face
     'monkeytype-face>header-3)))
 
