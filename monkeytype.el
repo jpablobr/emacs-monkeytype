@@ -158,7 +158,6 @@ of characters. This also makes calculations easier and more accurate."
   :type 'string
   :group 'monkeytype)
 
-;; -------------------------------------------------------------------
 ;;;; Init:
 
 (defvar-local monkeytype--buffer-name "*Monkeytype*")
@@ -218,7 +217,6 @@ of characters. This also makes calculations easier and more accurate."
     (monkeytype--mode-line>report-status)
     (message "Monkeytype: Timer will start when you type the first character.")))
 
-;; -------------------------------------------------------------------
 ;;;; Utils:
 
 (defvar-local monkeytype--chars-list '())
@@ -329,7 +327,6 @@ REPEAT FUNCTION ARGS."
     (setq monkeytype--previous-last-entry-index
           (gethash "source-index" (elt (gethash "entries" run) 0)))))
 
-;; -------------------------------------------------------------------
 ;;;; Calc:
 
 (defun monkeytype--calc>words (chars)
@@ -366,7 +363,6 @@ All CHARS count."
            (accuracy (* (/ a-chars (float chars)) 100.00)))
       accuracy)))
 
-;; -------------------------------------------------------------------
 ;;;; Process Input:
 
 (defun monkeytype--process-input (region-start region-end delete-length)
@@ -482,7 +478,6 @@ ENTRY-STATE = 2 mistyped re-typed char"
              (= (mod char-index monkeytype-mode-line>interval-update) 0))
             (monkeytype--mode-line>report-status)))))
 
-;; -------------------------------------------------------------------
 ;;;; Run:
 
 (defun monkeytype--run>pause ()
@@ -522,7 +517,6 @@ ENTRY-STATE = 2 mistyped re-typed char"
   (add-hook 'after-change-functions 'monkeytype--process-input nil t)
   (add-hook 'first-change-hook 'monkeytype--process-input>timer-init nil t))
 
-;; -------------------------------------------------------------------
 ;;;; Results:
 
 (defun monkeytype--results ()
@@ -691,7 +685,6 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
      "\n\n"
      (monkeytype--results>gross-wpm words elapsed-minutes))))
 
-;; -------------------------------------------------------------------
 ;;;; typed text
 
 (defun monkeytype--typed-text>entry-face (correctp &optional correctionp)
@@ -832,7 +825,6 @@ Also add correction in SETTLED to mistyped-words-list."
      (lambda (entry) (gethash "source-index" entry))
      (reverse (gethash "entries" run))))))
 
-;; -------------------------------------------------------------------
 ;;;; Log:
 
 (defun monkeytype--log (run)
@@ -887,7 +879,6 @@ Also add correction in SETTLED to mistyped-words-list."
             correction-count
             (+ error-count correction-count))))
 
-;; -------------------------------------------------------------------
 ;;; Mode-line
 
 (defvar-local monkeytype--mode-line>current-entry '())
@@ -962,7 +953,6 @@ Also add correction in SETTLED to mistyped-words-list."
      (propertize (format "%d" errors) 'face (if (> errors 0) red green))
      (propertize ")]" 'face normal))))
 
-;; -------------------------------------------------------------------
 ;;;; Interactive:
 
 ;;;###autoload
