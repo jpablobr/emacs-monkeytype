@@ -7,7 +7,7 @@
 ;; Version: 0.1.1
 ;; Keywords: games
 ;; URL: http://github.com/jpablobr/emacs-monkeytype
-;; Package-Requires: ((emacs "25.1") (async "1.9.3"))
+;; Package-Requires: ((emacs "25.1"))
 
 ;;; Commentary:
 
@@ -46,7 +46,6 @@
 (require 'cl-lib)
 (require 'seq)
 (require 'subr-x)
-(require 'async)
 
 ;;;; Customization
 
@@ -559,11 +558,7 @@ ENTRY-STATE = 2 mistyped re-typed char"
 
       (setq run-index (+ run-index 1))
 
-      (when monkeytype-insert-log
-        (async-start
-         `(lambda () ,(monkeytype--log run) 1)
-         (lambda (result)
-           (message "Monkeytype: Log generated successfully. (%s)" result))))))
+      (when monkeytype-insert-log (monkeytype--log run))))
 
   (goto-char (point-min)))
 
