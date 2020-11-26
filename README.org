@@ -53,6 +53,7 @@ At this point you can either practice mistyped words with =monkeytype-mistyped-w
   - Optionally treat newlines as whitespace (see: =monkeytype-treat-newline-as-space=).
   - Optionally auto-fill text to the defaults =fill-column= value (see: =monkeytype-auto-fill=).
   - Auto stop after 5 seconds of no input (=C-c C-c r= [ =monkeytype-resume= ] resumes).
+  - =monkeytype-word-regexp= customises the regexp used for removing characters from words (defaults to: ;:.`",()-?!).
 
 ** To come... (PRs welcome)
 
@@ -119,6 +120,19 @@ or by directly modifying the =custom-set-variables= in your =.emacs= file.
    '(monkeytype-treat-newline-as-space t)
    '(monkeytype-insert-log nil)
    '(monkeytype-directory "~/.monkeytype")
+   '(monkeytype-word-regexp (concat
+     ":\\|"
+     ";\\|"
+     ",\\|"
+     "(\\|"
+     ")\\|"
+     "?\\|"
+     "!\\|"
+     " \\|"
+     "\"\\|"
+     "\n\\|"
+     "\`\\|"
+     "\\."))
   )
 #+END_SRC
 

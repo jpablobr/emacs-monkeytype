@@ -158,6 +158,24 @@ of characters. This also makes calculations easier and more accurate."
   :type 'string
   :group 'monkeytype)
 
+(defcustom monkeytype-word-regexp
+  (concat
+   ":\\|"
+   ";\\|"
+   ",\\|"
+   "(\\|"
+   ")\\|"
+   "?\\|"
+   "!\\|"
+   " \\|"
+   "\"\\|"
+   "\n\\|"
+   "\`\\|"
+   "\\.")
+  "Regexp used for getting valid words."
+  :type 'string
+  :group 'monkeytype)
+
 ;;;; Init:
 
 (defvar-local monkeytype--buffer-name "*Monkeytype*")
@@ -284,7 +302,7 @@ REPEAT FUNCTION ARGS."
 
 (defun monkeytype--utils-index-words ()
   "Index words."
-  (let* ((words (split-string monkeytype--source-text "[ \n]"))
+  (let* ((words (split-string monkeytype--source-text monkeytype-word-regexp t))
          (index 1))
     (dolist (word words)
       (add-to-list 'monkeytype--words-list `(,index . ,word))
@@ -296,7 +314,7 @@ REPEAT FUNCTION ARGS."
          (word-index 1)
          (char-index 1))
     (dolist (char chars)
-      (if (string-match "[ \n\t]" char)
+      (if (string-match monkeytype-word-regexp char)
           (progn
             (setq word-index (+ word-index 1))
             (setq char-index (+ char-index 1)))
@@ -743,8 +761,7 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
   "Find associated word for CHAR and add it to mistyped list."
   (let* ((index (gethash "source-index" char))
          (word (cdr (assoc index monkeytype--chars-to-words-list)))
-         (word (when word (string-trim word)))
-         (word (when word (replace-regexp-in-string "[;.\":,()-?!]" "" word))))
+         (word (when word (replace-regexp-in-string monkeytype-word-regexp "" word))))
     (when word
       (cl-pushnew word monkeytype--mistyped-words-list))))
 
@@ -767,9 +784,11 @@ Also add correction in SETTLED to mistyped-words-list."
     "")))
 
 (defun monkeytype--typed-text-collect-errors (settled)
-  "Add the SETTLED char's associated word and transition to their respective lists."
+  "Add SETTLED char's associated word and transition to their respective lists.
+
+This is unless the char isn't a valid word character in `monkeytype-word-regexp'."
   (unless (= (gethash "state" settled) 1)
-    (unless (string-match "[ \n\t]" (gethash "source-entry" settled))
+    (unless (string-match monkeytype-word-regexp (gethash "source-entry" settled))
       (let* ((char-index (gethash "source-index" settled))
              (hard-transitionp (> char-index 2))
              (hard-transition  (when hard-transitionp
@@ -1049,7 +1068,7 @@ Also add correction in SETTLED to mistyped-words-list."
        (mapconcat
         (lambda (word) (if monkeytype-downcase-mistype (downcase word) word))
         (monkeytype--utils-nshuffle monkeytype--mistyped-words-list)  " "))
-    (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
+    (message "Monkeytype: No word specific related errors. ([C-c C-c t] to repeat.)")))
 
 ;;;###autoload
 (defun monkeytype-hard-transitions ()
@@ -1064,7 +1083,7 @@ Also add correction in SETTLED to mistyped-words-list."
         (cl-loop repeat append-times do
                  (setq final-list (append final-list monkeytype--hard-transition-list)))
         (monkeytype--init (mapconcat #'identity (monkeytype--utils-nshuffle final-list) " ")))
-    (message "Monkeytype: No errors. ([C-c C-c t] to repeat.)")))
+    (message "Monkeytype: No transition specific errors. ([C-c C-c t] to repeat.)")))
 
 ;;;###autoload
 (defun monkeytype-save-mistyped-words ()
