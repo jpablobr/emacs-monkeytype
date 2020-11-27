@@ -1095,15 +1095,14 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
 \\[monkeytype-resume]"
   (interactive)
   (unless monkeytype--status-finished
-    (progn
-      (setq monkeytype--status-paused nil)
-      (switch-to-buffer monkeytype--typing-buffer)
-      (set-buffer-modified-p nil)
-      (monkeytype--run-add-hooks)
-      (monkeytype-mode)
-      (setq buffer-read-only nil)
-      (monkeytype--mode-line-report-status)
-      (message "Monkeytype: Timer will start when you type the first character."))))
+    (setq monkeytype--status-paused nil)
+    (switch-to-buffer monkeytype--typing-buffer)
+    (set-buffer-modified-p nil)
+    (monkeytype--run-add-hooks)
+    (monkeytype-mode)
+    (setq buffer-read-only nil)
+    (monkeytype--mode-line-report-status)
+    (message "Monkeytype: Timer will start when you type the first character.")))
 
 ;;;###autoload
 (defun monkeytype-mistyped-words ()
