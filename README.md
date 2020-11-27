@@ -34,7 +34,7 @@ The buffer should look as follows:
 
 The section inside the red rectangle is Monkeytype's mode-line and the following is the fields breakdown:
 
-**MT[WPM/GWP Accuracy Elapsed-time (words/corrections/errors)]**
+**MT[N-WPM/G-WPM Accuracy Elapsed-time (words/corrections/errors)]**
 
 Then you can either type all the way to the end or stop/finish (`C-c C-C s` / `monkeytype-stop`).
 
