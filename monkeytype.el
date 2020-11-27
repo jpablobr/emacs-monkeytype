@@ -158,6 +158,11 @@ of characters. This also makes calculations easier and more accurate."
   :type 'string
   :group 'monkeytype)
 
+(defcustom monkeytype-randomize t
+  "Toggle randomizing of words."
+  :type 'boolean
+  :group 'monkeytype)
+
 (defcustom monkeytype-word-regexp
   (concat
    ":\\|"
@@ -1067,7 +1072,9 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
       (monkeytype--init
        (mapconcat
         (lambda (word) (if monkeytype-downcase-mistype (downcase word) word))
-        (monkeytype--utils-nshuffle monkeytype--mistyped-words-list)  " "))
+        (if monkeytype-randomize
+            (monkeytype--utils-nshuffle monkeytype--mistyped-words-list)
+          monkeytype--mistyped-words-list)   " "))
     (message "Monkeytype: No word specific related errors. ([C-c C-c t] to repeat.)")))
 
 ;;;###autoload
