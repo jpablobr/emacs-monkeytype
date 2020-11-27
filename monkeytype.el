@@ -1192,7 +1192,9 @@ is set to true.
 
 ;;;###autoload
 (define-minor-mode monkeytype-mode
-  "Monkeytype mode is a minor mode for speed/touch typing"
+  "Monkeytype mode is a minor mode for speed/touch typing.
+
+\\{monkeytype-mode-map}"
   :lighter monkeytype-mode-line
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-c C-c p") 'monkeytype-pause)
