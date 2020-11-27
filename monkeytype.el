@@ -337,7 +337,7 @@ REPEAT FUNCTION ARGS."
 
 (defun monkeytype--utils-index-words ()
   "Index words."
-  (let* ((words (split-string monkeytype--source-text monkeytype-word-regexp t))
+  (let* ((words (split-string monkeytype--source-text monkeytype-word-regexp))
          (index 1))
     (dolist (word words)
       (add-to-list 'monkeytype--words-list `(,index . ,word))
