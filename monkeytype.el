@@ -1115,6 +1115,25 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
     (message "Monkeytype: Transitions saved successfully to file: %s" path)))
 
 ;;;###autoload
+(defun monkeytype-region-as-words (start end)
+  "Put the marked region from START to END in typing buffer.
+
+Words will be randomized if `monkeytype-randomize' is set to true.
+Words will be downcased if `monkeytype-downcase' is set to true.
+Words special characters will get removed based on `monkeytype-word-regexp'.
+Buffer will be filled with the vale of `fill-column' if `monkeytype-auto-fill'
+is set to true.
+
+\\[monkeytype-region-as-words]"
+  (interactive "r")
+  (let* ((text (buffer-substring-no-properties start end))
+         (text (split-string text monkeytype-word-regexp t))
+         (text (mapconcat
+                 (lambda (word) (if monkeytype-downcase (downcase word) word))
+                 (if monkeytype-randomize (monkeytype--utils-nshuffle text) text) " ")))
+    (monkeytype--init text)))
+
+;;;###autoload
 (define-minor-mode monkeytype-mode
   "Monkeytype mode is a minor mode for speed/touch typing"
   :lighter monkeytype-mode-line

@@ -44,6 +44,7 @@ At this point you can either practice mistyped words with =monkeytype-mistyped-w
 * Features
 
   - Type any text you want.
+  - Selected region can be treated as words for practice (e.i., optionally downcased, in randomised order, etc... see: =monkeytype-region-as-words=).
   - Mode-line live WPM (=monkeytype-mode-line-interval-update= adjust the update frequency).
   - Practice mistyped words.
   - Practice troubling/hard key combinations/transitions (useful when practising with different keyboard layouts).
@@ -88,6 +89,7 @@ This can then be enabled with a hook in your =.emacs=:
 |-------------+------------------------------------|
 |             | =monkeytype-region=                |
 |             | =monkeytype-buffer=                |
+|             | =monkeytype-region-as-words=       |
 | C-c C-c f   | =monkeytype-fortune=               |
 | C-c C-c p   | =monkeytype-pause=                 |
 | C-c C-c r   | =monkeytype-resume=                |
