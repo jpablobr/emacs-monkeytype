@@ -541,8 +541,7 @@ ENTRY-STATE = 2 mistyped re-typed char"
 (defun monkeytype--run-pause ()
   "Pause run and optionally PRINT-RESULTS."
   (setq monkeytype--start-time nil)
-  (remove-hook 'after-change-functions #'monkeytype--process-input)
-  (remove-hook 'first-change-hook #'monkeytype--process-input-timer-init)
+  (monkeytype--run-remove-hooks)
   (monkeytype--run-add-to-list)
   (read-only-mode))
 
@@ -550,14 +549,16 @@ ENTRY-STATE = 2 mistyped re-typed char"
   "Remove typing hooks from the buffer and print statistics."
   (setq monkeytype--status-finished t)
 
-  (unless monkeytype--status-paused (monkeytype--run-pause))
+  (unless monkeytype--status-paused
+    (setq monkeytype--start-time nil)
+    (monkeytype--run-remove-hooks)
+    (monkeytype--run-add-to-list))
 
   (set-buffer-modified-p nil)
   (setq buffer-read-only nil)
   (monkeytype--results)
 
   (monkeytype--mode-line-report-status)
-  (monkeytype-mode)
   (read-only-mode))
 
 (defun monkeytype--run-add-to-list ()
@@ -567,6 +568,11 @@ ENTRY-STATE = 2 mistyped re-typed char"
     (puthash "finished-at" (format-time-string "%a-%d-%b-%Y %H:%M:%S") run)
     (puthash "entries" (vconcat monkeytype--current-run-list) run)
     (add-to-list 'monkeytype--run-list run)))
+
+(defun monkeytype--run-remove-hooks ()
+  "Remove hooks."
+  (remove-hook 'after-change-functions #'monkeytype--process-input)
+  (remove-hook 'first-change-hook #'monkeytype--process-input-timer-init))
 
 (defun monkeytype--run-add-hooks ()
   "Add hooks."
