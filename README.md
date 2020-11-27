@@ -45,7 +45,7 @@ The buffer should look as follows:
 This Results buffer re-renders the typed text highlighting errors and either correct or incorrect corrections
 (highlighted with a different background and slightly different colour).
 
-At this point you can either practice mistyped words with `monkeytype-mistyped-words`  or just troubling/hard transitions with `monkeytype--hard-transition` (`C-c C-c h`).
+At this point you can either practice mistyped words with `monkeytype-mistyped-words`  or just troubling/hard transitions with `monkeytype-hard-transitions` (`C-c C-c h`).
 
 ## Features
 
@@ -61,7 +61,7 @@ At this point you can either practice mistyped words with `monkeytype-mistyped-w
 - Optionally auto-fill text to the defaults `fill-column` value (see: `monkeytype-auto-fill`).
 - Select a region of text and treat it as words for practice (e.i., optionally downcased, randomised, etc... see: `monkeytype-region-as-words`).
 - After a test, practice troubling/hard key combinations/transitions (useful when practising with different keyboard layouts).
-- Mistyped words or hard transitions can be saved to `~/.monkeype/{words or transitions}` (see: `monkeytype-directory` `monkeytype-save-mistyped-words` `monkeytype-save-hard-transitions`).
+- Mistyped words or hard transitions can be saved to `~/.monkeytype/{words or transitions}` (see: `monkeytype-directory` `monkeytype-save-mistyped-words` `monkeytype-save-hard-transitions`).
 - Saved mistyped/transitions files (or any file but defaults to `~/.monkeytype/` dir) can be loaded with `monkeytyped-load-words-from-file`.
 - `monkeytype-word-regexp` customises the regexp used for removing characters from words (defaults to: ;:.\`",()-?!).
 
