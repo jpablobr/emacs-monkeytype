@@ -249,30 +249,25 @@ of characters. This also makes calculations easier and more accurate."
 
 (defun monkeytype--init (text)
   "Set up a new buffer for the typing exercise on TEXT."
-  (with-temp-buffer
-    (insert text)
-
-    (when monkeytype-auto-fill
-      (fill-region (point-min) (point-max)))
-
-    (delete-trailing-whitespace)
-    (setq text (buffer-string)))
-
   (setq monkeytype--typing-buffer (generate-new-buffer monkeytype--buffer-name))
-  (let* ((len (length text)))
+
+  (let* ((text (with-temp-buffer
+                 (insert text)
+                 (when monkeytype-auto-fill
+                   (fill-region (point-min) (point-max)))
+                 (delete-trailing-whitespace)
+                 (buffer-string)))
+         (len (length text)))
     (set-buffer monkeytype--typing-buffer)
     (setq monkeytype--source-text text)
-    (setq monkeytype--counter-remaining (length text))
+    (setq monkeytype--counter-remaining len)
     (setq monkeytype--progress-tracker (make-string len 0))
     (erase-buffer)
     (insert monkeytype--source-text)
     (set-buffer-modified-p nil)
     (switch-to-buffer monkeytype--typing-buffer)
     (goto-char 0)
-    (face-remap-add-relative 'default 'monkeytype-face-default)
-    (monkeytype--run-add-hooks)
     (monkeytype-mode)
-    (monkeytype--mode-line-report-status)
     (message "Monkeytype: Timer will start when you type the first character.")))
 
 ;;;; Utils:
@@ -1219,7 +1214,17 @@ is set to true.
             (define-key map (kbd "C-c C-c h") 'monkeytype-hard-transitions)
             (define-key map (kbd "C-c C-c a") 'monkeytype-save-mistyped-words)
             (define-key map (kbd "C-c C-c o") 'monkeytype-save-hard-transitions)
-            map))
+            map)
+  (if monkeytype-mode
+      (progn
+        (font-lock-mode nil)
+        (buffer-face-mode t)
+        (buffer-face-set 'monkeytype-face-default)
+        (monkeytype--run-add-hooks)
+        (monkeytype--mode-line-report-status))
+    (progn
+      (font-lock-mode t)
+      (buffer-face-mode nil))))
 
 (provide 'monkeytype)
 
