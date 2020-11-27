@@ -388,11 +388,13 @@ REPEAT FUNCTION ARGS."
 ;;;; Calc:
 
 (defun monkeytype--calc-words (chars)
-  "Divide all CHARS by divisor."
+  "Divide all CHARS by `monkeytype-word-divisor'."
   (/ chars monkeytype-word-divisor))
 
 (defun monkeytype--calc-gross-wpm (words minutes)
-  "Divides WORDS by MINUTES."
+  "Divides WORDS by MINUTES.
+
+See `monkeytype--calc-words' for WORDS."
   (/ words minutes))
 
 (defun monkeytype--calc-gross-cpm (chars minutes)
@@ -401,14 +403,18 @@ REPEAT FUNCTION ARGS."
 
 (defun monkeytype--calc-net-wpm (words uncorrected-errors minutes)
   "Net WPM is the gross WPM minus the UNCORRECTED-ERRORS by MINUTES.
-All WORDS count."
+
+See `monkeytype--calc-gross-cpm' for gross WPM.
+See `monkeytype--calc-words' for WORDS."
   (let ((net-wpm (- (monkeytype--calc-gross-wpm words minutes)
                     (/ uncorrected-errors minutes))))
     (if (> 0 net-wpm) 0 net-wpm)))
 
 (defun monkeytype--calc-net-cpm (chars uncorrected-errors minutes)
   "Net CPM is the gross CPM minus the UNCORRECTED-ERRORS by MINUTES.
-All CHARS count."
+
+See `monkeytype--calc-gross-cpm' for gross CPM.
+UNCORRECTED-ERRORS are re-mistyped CHARS."
   (let ((net-cpm (- (monkeytype--calc-gross-cpm chars minutes)
                     (/ uncorrected-errors minutes))))
     (if (> 0 net-cpm) 0 net-cpm)))
