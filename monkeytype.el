@@ -148,7 +148,7 @@ of characters. This also makes calculations easier and more accurate."
   :type 'boolean
   :group 'monkeytype)
 
-(defcustom monkeytype-downcase-mistype t
+(defcustom monkeytype-downcase t
   "Toggle downcasing of mistyped words."
   :type 'boolean
   :group 'monkeytype)
@@ -1071,7 +1071,7 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
   (if (> (length monkeytype--mistyped-words-list) 0)
       (monkeytype--init
        (mapconcat
-        (lambda (word) (if monkeytype-downcase-mistype (downcase word) word))
+        (lambda (word) (if monkeytype-downcase (downcase word) word))
         (if monkeytype-randomize
             (monkeytype--utils-nshuffle monkeytype--mistyped-words-list)
           monkeytype--mistyped-words-list)   " "))

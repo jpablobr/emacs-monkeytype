@@ -45,12 +45,13 @@ At this point you can either practice mistyped words with =monkeytype-mistyped-w
 
   - Type any text you want.
   - Mode-line live WPM (=monkeytype-mode-line-interval-update= adjust the update frequency).
-  - Practice mistyped words (see: =monkeytype-downcase-mistyped=).
+  - Practice mistyped words.
   - Practice troubling/hard key combinations/transitions (useful when practising with different keyboard layouts).
   - Ability to save mistyped words or transitions to =~/.monkeytype=  (see: =monkeytype-directory=).
   - Visual representation of typed text including errors and retries/corrections.
   - UI customisation.
   - Optionally randomise practice words/transitions (see: =monkeytype-randomize=).
+  - Optionally downcase practice words/transitions (see: =monkeytype-downcase=).
   - Optionally treat newlines as whitespace (see: =monkeytype-treat-newline-as-space=).
   - Optionally auto-fill text to the defaults =fill-column= value (see: =monkeytype-auto-fill=).
   - Auto stop after 5 seconds of no input (=C-c C-c r= [ =monkeytype-resume= ] resumes).
