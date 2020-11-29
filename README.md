@@ -134,9 +134,9 @@ Or set the variables in your `.emacs` file:
                               "?\\|"
                               "!\\|"
                               " \\|"
+                              "`\\|"
                               "\"\\|"
                               "\n\\|"
-                              "\`\\|"
                               "\\."))
 ```
 
