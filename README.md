@@ -150,7 +150,9 @@ When enabled it should look as follows:
 
 ## Install
 
-Just drop `monkeytype.el` somewhere in your `load-path` and add it to your `.emacs`:
+From MELPA, `M-x package-install RET monkeytype RET`.
+
+Or just drop `monkeytype.el` somewhere in your `load-path` and add it to your `.emacs`:
 
 ``` emacs-lisp
 (add-to-list 'load-path "~/emacs.d/vendor")
