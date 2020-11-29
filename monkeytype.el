@@ -210,7 +210,7 @@ of characters. This also makes calculations easier and more accurate."
    " \\|"
    "\"\\|"
    "\n\\|"
-   "\`\\|"
+   "`\\|"
    "\\.")
   "Regexp used for getting valid words."
   :type 'string
