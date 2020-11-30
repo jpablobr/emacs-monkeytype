@@ -380,6 +380,16 @@ REPEAT FUNCTION ARGS."
     (setq monkeytype--previous-last-entry-index
           (gethash "source-index" (elt (gethash "entries" run) 0)))))
 
+(defun monkeytype--utils-words-to-string (words)
+  "Convert WORDS to string and apply word related settings.
+
+See: `monkeytype-downcase'
+See: `monkeytype-randomize'"
+  (mapconcat
+   (lambda (word) (if monkeytype-downcase (downcase word) word))
+   (if monkeytype-randomize (monkeytype--utils-nshuffle words) words)
+   " "))
+
 ;;;; Calc:
 
 (defun monkeytype--calc-words (chars)
@@ -1112,11 +1122,7 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
   (interactive)
   (if (> (length monkeytype--mistyped-words-list) 0)
       (monkeytype--init
-       (mapconcat
-        (lambda (word) (if monkeytype-downcase (downcase word) word))
-        (if monkeytype-randomize
-            (monkeytype--utils-nshuffle monkeytype--mistyped-words-list)
-          monkeytype--mistyped-words-list)   " "))
+       (monkeytype--utils-words-to-string monkeytype--mistyped-words-list))
     (message "Monkeytype: No word specific related errors. ([C-c C-c t] to repeat.)")))
 
 ;;;###autoload
@@ -1173,9 +1179,7 @@ is set to true.
                   (insert-file-contents file-path)
                   (buffer-string)))
          (words (split-string words monkeytype-word-regexp t))
-         (words (mapconcat
-                 (lambda (word) (if monkeytype-downcase (downcase word) word))
-                 (if monkeytype-randomize (monkeytype--utils-nshuffle words) words) " ")))
+         (words (monkeytype--utils-words-to-string words)))
     (monkeytype--init words)))
 
 ;;;###autoload
@@ -1192,9 +1196,7 @@ is set to true.
   (interactive "r")
   (let* ((text (buffer-substring-no-properties start end))
          (text (split-string text monkeytype-word-regexp t))
-         (text (mapconcat
-                 (lambda (word) (if monkeytype-downcase (downcase word) word))
-                 (if monkeytype-randomize (monkeytype--utils-nshuffle text) text) " ")))
+         (text (monkeytype--utils-words-to-string text)))
     (monkeytype--init text)))
 
 ;;;###autoload
