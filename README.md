@@ -64,6 +64,7 @@ At this point you can either practice mistyped words with `monkeytype-mistyped-w
 - Mistyped words or hard transitions can be saved to `~/.monkeytype/{words or transitions}` (see: `monkeytype-directory` `monkeytype-save-mistyped-words` `monkeytype-save-hard-transitions`).
 - Saved mistyped/transitions files (or any file but defaults to `~/.monkeytype/` dir) can be loaded with `monkeytyped-load-words-from-file`.
 - `monkeytype-word-regexp` customises the regexp used for removing characters from words (defaults to: ;:.\`",()-?!).
+- Ability to type most (saved) mistyped words (the amount of words is configurable with `monkeytype-most-mistyped-amount` [defaults to 100]) see: `monkeytype-most-mistyped-words`
 
 ### To come... (PRs welcome)
 
@@ -100,6 +101,7 @@ This can then be enabled in your `.emacs` with:
 | C-c C-c o   | monkeytype-save-hard-transitions |
 |             | monkeytype-region                |
 |             | monkeytype-buffer                |
+|             | monkeytype-most-mistyped-words   |
 |             | monkeytype-region-as-words       |
 |             | monkeytype-load-words-from-file  |
 
@@ -136,6 +138,8 @@ Or set the variables in your `.emacs` file:
  monkeytype-randomize t
  ;; Toggle downcase text
  monkeytype-dowcase t
+ ;; Amount of words for most mistyped words test
+ monkeytype-most-mistyped-amount 100
  ;;; Regexp used to divide and extracts words
  monkeytype-word-regexp (concat
                          ":\\|"

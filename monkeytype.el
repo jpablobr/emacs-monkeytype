@@ -216,6 +216,11 @@ of characters. This also makes calculations easier and more accurate."
   :type 'string
   :group 'monkeytype)
 
+(defcustom monkeytype-most-mistyped-amount 100
+  "Amount of words in most mistyped words test."
+  :type 'boolean
+  :group 'monkeytype)
+
 ;;;; Init:
 
 (defvar-local monkeytype--buffer-name "*Monkeytype*")
@@ -1198,6 +1203,34 @@ is set to true.
          (text (split-string text monkeytype-word-regexp t))
          (text (monkeytype--utils-words-to-string text)))
     (monkeytype--init text)))
+
+;;;###autoload
+(defun monkeytype-most-mistyped-words ()
+  "Type most mistyped words from all word-files in the `monkeytype-directory'.
+
+See: `monkeytype-save-mistyped-words' for how word-files are saved.
+
+\\[monkeytype-most-mistyped-words]"
+  (interactive)
+  (let* ((dir (concat monkeytype-directory "/words"))
+         (files (directory-files dir t ".txt$" nil))
+         (word-list (with-temp-buffer
+                      (dolist (file files)
+                        (insert-file-contents file))
+                      (split-string (buffer-string))))
+         (grouped-words (seq-group-by #'identity word-list))
+         (grouped-words (seq-group-by #'length grouped-words))
+         (word-list '()))
+
+    (dolist (word-group (reverse grouped-words))
+      (dolist (word (cdr word-group))
+        (cl-pushnew (car word) word-list)))
+
+    (if (> (length word-list) monkeytype-most-mistyped-amount)
+        (progn
+          (setq word-list (seq-take word-list monkeytype-most-mistyped-amount))
+          (monkeytype--init (monkeytype--utils-words-to-string word-list) ))
+      (message "Monkeytype: Not enough mistyped words for test."))))
 
 ;;;###autoload
 (define-minor-mode monkeytype-mode
