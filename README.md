@@ -110,34 +110,46 @@ Run `M-x customize-group RET` `monkeytype RET` or `monkeytype-faces RET`.
 Or set the variables in your `.emacs` file:
 
 ``` emacs-lisp
-(setq monkeytype-face-default '(:family "Menlo" :height 1.6 :foreground "#969896"))
-(setq monkeytype-face-correct '(:foreground "#98be65"))
-(setq monkeytype-face-error '(:foreground "#ff6c6b"))
-(setq monkeytype-face-correction-error '(:inherit region :foreground "#ff6c6b"))
-(setq monkeytype-face-correction-correct '(:inherit region :foreground "#98be65"))
-(setq monkeytype-face-header-1 '(:foreground "#B7950B"))
-(setq monkeytype-face-header-2 '(:foreground "#F1C40F"))
-(setq monkeytype-face-header-3 '(:foreground "#F1C40F"))
-(setq monkeytype-mode-line-interval-update 10)
-(setq monkeytype-treat-newline-as-space t)
-(setq monkeytype-minimum-transitions 50)
-(setq monkeytype-insert-log nil)
-(setq monkeytype-directory "~/.monkeytype")
-(setq monkeytype-randomize t)
-(setq monkeytype-dowcase t)
-(setq monkeytype-word-regexp (concat
-                              ":\\|"
-                              ";\\|"
-                              ",\\|"
-                              "(\\|"
-                              ")\\|"
-                              "?\\|"
-                              "!\\|"
-                              " \\|"
-                              "`\\|"
-                              "\"\\|"
-                              "\n\\|"
-                              "\\."))
+(setq
+ ;; Faces
+ monkeytype-face-default '(:family "Menlo" :height 1.6 :foreground "#969896")
+ monkeytype-face-correct '(:foreground "#98be65")
+ monkeytype-face-error '(:foreground "#ff6c6b")
+ monkeytype-face-correction-error '(:inherit region :foreground "#ff6c6b")
+ monkeytype-face-correction-correct '(:inherit region :foreground "#98be65")
+ monkeytype-face-header-1 '(:foreground "#B7950B")
+ monkeytype-face-header-2 '(:foreground "#F1C40F")
+ monkeytype-face-header-3 '(:foreground "#F1C40F")
+ ;; How often to update mode-line
+ monkeytype-mode-line-interval-update 10
+ ;; Use space instead or newline
+ monkeytype-treat-newline-as-space t
+ ;; Minimum amount of transitions for test
+ ;; If not enough repeat them
+ monkeytype-minimum-transitions 50
+ ;; Inserts debugging log, this can take a while
+ ;; if typing text is too long.
+ monkeytype-insert-log nil
+ ;; Default directory for saving Monkeytype data
+ monkeytype-directory "~/.monkeytype"
+ ;; Toggle randomise text
+ monkeytype-randomize t
+ ;; Toggle downcase text
+ monkeytype-dowcase t
+ ;;; Regexp used to divide and extracts words
+ monkeytype-word-regexp (concat
+                         ":\\|"
+                         ";\\|"
+                         ",\\|"
+                         "(\\|"
+                         ")\\|"
+                         "?\\|"
+                         "!\\|"
+                         " \\|"
+                         "`\\|"
+                         "\"\\|"
+                         "\n\\|"
+                         "\\."))
 ```
 
 ## Log
