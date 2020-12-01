@@ -350,7 +350,7 @@ REPEAT FUNCTION ARGS."
 
 (defun monkeytype--utils-index-words ()
   "Index words."
-  (let* ((words (split-string monkeytype--source-text monkeytype-word-regexp))
+  (let ((words (split-string monkeytype--source-text monkeytype-word-regexp))
          (index 1))
     (dolist (word words)
       (add-to-list 'monkeytype--words-list `(,index . ,word))
@@ -358,7 +358,7 @@ REPEAT FUNCTION ARGS."
 
 (defun monkeytype--utils-index-chars-to-words ()
   "Associate by index cars to words."
-  (let* ((chars (mapcar #'char-to-string monkeytype--source-text))
+  (let ((chars (mapcar #'char-to-string monkeytype--source-text))
          (word-index 1)
          (char-index 1))
     (dolist (char chars)
@@ -367,8 +367,7 @@ REPEAT FUNCTION ARGS."
             (setq word-index (+ word-index 1))
             (setq char-index (+ char-index 1)))
         (progn
-          (let* ((word  (assoc word-index monkeytype--words-list))
-                 (word (cdr word)))
+          (let ((word (cdr (assoc word-index monkeytype--words-list))))
             (add-to-list 'monkeytype--chars-to-words-list `(,char-index . ,word))
             (setq char-index (+ char-index 1))))))))
 
@@ -615,7 +614,7 @@ ENTRY-STATE = 2 mistyped re-typed char"
 
 (defun monkeytype--run-add-to-list ()
   "Add run to run-list."
-  (let* ((run (make-hash-table :test 'equal)))
+  (let ((run (make-hash-table :test 'equal)))
     (puthash "started-at" monkeytype--current-run-start-datetime run)
     (puthash "finished-at" (format-time-string "%a-%d-%b-%Y %H:%M:%S") run)
     (puthash "entries" (vconcat monkeytype--current-run-list) run)
@@ -808,14 +807,13 @@ Total time is the sum of all the last entries' elapsed-seconds from all runs."
 
 (defun monkeytype--typed-text-entry-face (correctp &optional correctionp)
   "Return the face for the CORRECTP and/or CORRECTIONP entry."
-  (let* ((entry-face (if correctionp
-                         (if correctp
-                             'monkeytype-face-correction-correct
-                           'monkeytype-face-correction-error)
-                       (if correctp
-                           'monkeytype-face-correct
-                         'monkeytype-face-error))))
-    entry-face))
+  (if correctionp
+      (if correctp
+          'monkeytype-face-correction-correct
+        'monkeytype-face-correction-error)
+    (if correctp
+        'monkeytype-face-correct
+      'monkeytype-face-error)))
 
 (defun monkeytype--typed-text-newline (source typed)
   "Newline substitutions depending on SOURCE and TYPED char."
@@ -961,18 +959,21 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
 
 (defun monkeytype--log-header ()
   "Log header."
-  (let ((log-header
-         '(" I/S Idx "
-           " S/T Chr "
-           " N/WPM   "
-           " N/CPM   "
-           " G/WPM   "
-           " G/CPM   "
-           " Acc %   "
-           " Time    "
-           " Mends   "
-           " Errs    ")))
-    (format "\n|%s|" (mapconcat #'identity log-header "|"))))
+  (format
+   "\n|%s|"
+   (mapconcat
+    #'identity
+    '(" I/S Idx "
+      " S/T Chr "
+      " N/WPM   "
+      " N/CPM   "
+      " G/WPM   "
+      " G/CPM   "
+      " Acc %   "
+      " Time    "
+      " Mends   "
+      " Errs    ")
+    "|")))
 
 (defun monkeytype--log-entry (entry)
   "Format ENTRY."
@@ -1102,12 +1103,11 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
 
 \\[monkeytype-dummy-text]"
   (interactive)
-  (let* ((text
-          (concat
-           "\"I have had a dream past the wit of man to say what dream it was,\n"
-           "says Bottom.\"")))
-    (monkeytype--init
-     (monkeytype--utils-format-text text))))
+  (monkeytype--init
+   (monkeytype--utils-format-text
+    (concat
+     "\"I have had a dream past the wit of man to say what dream it was,\n"
+     "says Bottom.\""))))
 
 ;;;###autoload
 (defun monkeytype-fortune ()
