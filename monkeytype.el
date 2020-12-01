@@ -1025,7 +1025,7 @@ This is unless the char doesn't belong to any word as defined by the
    (mapconcat
     (lambda (entry)
       (monkeytype--log-entry entry))
-    (gethash "entries" run)
+    (reverse (gethash "entries" run))
     "\n")
    "\n"))
 
