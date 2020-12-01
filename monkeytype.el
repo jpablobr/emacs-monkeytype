@@ -341,7 +341,7 @@ REPEAT FUNCTION ARGS."
       0)))
 
 (defun monkeytype--utils-check-same (source typed)
-  "Return non-nil if both POS (SOURCE and TYPED) are white space or the same."
+  "Return non-nil if both SOURCE and TYPED are white space or the same."
   (if monkeytype-treat-newline-as-space
       (or (string= source typed)
           (and
@@ -402,7 +402,7 @@ REPEAT FUNCTION ARGS."
           (gethash "source-index" (elt (gethash "entries" run) 0)))))
 
 (defun monkeytype--utils-format-words (words)
-  "Format WORDS to text for test by apply word related customization settings.
+  "Format WORDS (for test) by applying word related customization settings.
 
 See: `monkeytype-downcase'
 See: `monkeytype-randomize'
@@ -427,7 +427,7 @@ See: `monkeytype-delete-trailing-whitespace'"
     text))
 
 (defun monkeytype--utils-format-text (text)
-  "Format TEXT for test by applying customization settings.
+  "Format TEXT (for test) by applying customization settings.
 
 See: `monkeytype-auto-fill'
 See: `monkeytype-delete-trailing-whitespace'"
@@ -604,7 +604,7 @@ See: `monkeytype--utils-local-idle-timer'"
     (monkeytype--utils-local-idle-timer 5 nil 'monkeytype-pause)))
 
 (defun monkeytype--process-input-update-mode-line ()
-  "Update mode-line."
+  "Update `monkeytype-mode-line' by sending it the current entry info."
   (if monkeytype-mode-line-interval-update
       (let* ((entry (elt monkeytype--current-run-list 0))
              (char-index (if entry (gethash "source-index" entry) 0)))
@@ -616,14 +616,14 @@ See: `monkeytype--utils-local-idle-timer'"
 ;;;; Run:
 
 (defun monkeytype--run-pause ()
-  "Pause run and optionally PRINT-RESULTS."
+  "Pause run by resetting hooks and `monkeytype--start-time'."
   (setq monkeytype--start-time nil)
   (monkeytype--run-remove-hooks)
   (monkeytype--run-add-to-list)
   (read-only-mode))
 
 (defun monkeytype--run-finish ()
-  "Remove typing hooks from the buffer and print statistics."
+  "Remove typing hooks and print results."
   (setq monkeytype--status-finished t)
 
   (unless monkeytype--status-paused
@@ -639,7 +639,7 @@ See: `monkeytype--utils-local-idle-timer'"
   (read-only-mode))
 
 (defun monkeytype--run-add-to-list ()
-  "Add run to run-list."
+  "Add current run to `monkeytype--run-list'."
   (let ((run (make-hash-table :test 'equal)))
     (puthash "started-at" monkeytype--current-run-start-datetime run)
     (puthash "finished-at" (format-time-string "%a-%d-%b-%Y %H:%M:%S") run)
