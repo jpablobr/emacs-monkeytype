@@ -15,6 +15,7 @@ A typing game/tutor inspired by the open source and community driven [monkeytype
     - [Log](#log)
     - [Install](#install)
     - [Changelog](#changelog)
+        - [0.1.3](#013)
         - [0.1.2](#012)
         - [0.1.1](#011)
         - [0.1.0](#010)
