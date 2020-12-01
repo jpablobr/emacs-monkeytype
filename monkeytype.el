@@ -1079,7 +1079,7 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
 
 ;;;###autoload
 (defun monkeytype-region (start end)
-  "Type marked region form START to END.
+  "Type marked region from START to END.
 
 \\[monkeytype-region]"
   (interactive "r")
