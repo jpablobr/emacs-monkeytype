@@ -184,6 +184,25 @@ Or just drop `monkeytype.el` somewhere in your `load-path` and add it to your `.
 
 ## Changelog
 
+### 0.1.3
+
+**Additions**
+
+- Available on MELPA
+- `monkeytype-most-mistyped-words`
+- Toggable option `monkeytype-words-auto-fill`
+- Toggable option `monkeytype-delete-trailing-whitespace`
+
+**Changes**
+
+**Internal**
+
+- Init text processing rewrite
+
+**Fixes**
+
+- Fix for misindexing of chars to words
+
 ### 0.1.2
 
 **Additions**
