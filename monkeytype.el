@@ -1166,7 +1166,7 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
 
 ;;;###autoload
 (defun monkeytype-mistyped-words ()
-  "Practice mistyped words.
+  "Practice mistyped words for current test.
 
 \\[monkeytype-mistyped-words]"
   (interactive)
@@ -1177,7 +1177,7 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
 
 ;;;###autoload
 (defun monkeytype-hard-transitions ()
-  "Practice hard key combinations/transitions.
+  "Practice hard key combinations/transitions for current test.
 
 \\[monkeytype-hard-transitions]"
   (interactive)
@@ -1193,7 +1193,10 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
 
 ;;;###autoload
 (defun monkeytype-save-mistyped-words ()
-  "Save mistyped words.
+  "Save mistyped words for current test.
+
+See also: `monkeytype-load-words-from-file'
+See also: `monkeytype-most-mistyped-words'
 
 \\[monkeytype-save-mistyped-words]"
   (interactive)
@@ -1204,7 +1207,9 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
 
 ;;;###autoload
 (defun monkeytype-save-hard-transitions ()
-  "Save hard transitions.
+  "Save hard transitions for current test.
+
+See also: `monkeytype-load-words-from-file'
 
 \\[monkeytype-save-hard-transition]"
   (interactive)
@@ -1220,8 +1225,8 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
 Words will be randomized if `monkeytype-randomize' is set to true.
 Words will be downcased if `monkeytype-downcase' is set to true.
 Words special characters will get removed based on `monkeytype-word-regexp'.
-Buffer will be filled with the vale of `fill-column' if `monkeytype-auto-fill'
-is set to true.
+Buffer will be filled with the vale of `fill-column' if
+`monkeytype-words-auto-fill' is set to true.
 
 \\[monkeytype-load-words-from-file]"
   (interactive)
