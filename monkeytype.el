@@ -178,13 +178,19 @@ of characters. This also makes calculations easier and more accurate."
   :type 'integer
   :group 'monkeytype)
 
-(defcustom monkeytype-auto-fill t
-  "Toggle auto fill to the defaults `fill-column' setting."
+(defcustom monkeytype-auto-fill nil
+  "Toggle auto fill for typing text.
+
+Defaults `fill-column' setting
+See also: `monkeytype-words-auto-fill'"
   :type 'boolean
   :group 'monkeytype)
 
 (defcustom monkeytype-words-auto-fill t
-  "Toggle auto fill to the defaults `fill-column' setting for words/transitions."
+  "Toggle auto fill for words/transitions.
+
+It defaults `fill-column' setting
+See also: `monkeytype-auto-fill'"
   :type 'boolean
   :group 'monkeytype)
 
