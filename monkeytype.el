@@ -373,12 +373,11 @@ REPEAT FUNCTION ARGS."
           (progn
             (setq word-index (+ word-index 1))
             (setq char-index (+ char-index 1)))
-        (progn
-          (let ((word (cdr (assoc word-index monkeytype--words-list))))
-            (add-to-list
-             'monkeytype--chars-to-words-list
-             `(,char-index . ,word))
-            (setq char-index (+ char-index 1))))))))
+        (let ((word (cdr (assoc word-index monkeytype--words-list))))
+          (add-to-list
+           'monkeytype--chars-to-words-list
+           `(,char-index . ,word))
+          (setq char-index (+ char-index 1)))))))
 
 (defun monkeytype--utils-index-chars (run)
   "RUN Index chars."
@@ -908,13 +907,12 @@ Total time is the sum of all the last entries' elapsed-seconds for each runs."
         (progn
           (pop monkeytype--chars-list)
           "")
-      (progn
-        (cl-loop repeat (+ skipped-length 1) do
-                 (pop monkeytype--chars-list))
-        (substring
-         monkeytype--source-text
-         (- source-index 1)
-         (- settled-index 1))))))
+      (cl-loop repeat (+ skipped-length 1) do
+               (pop monkeytype--chars-list))
+      (substring
+       monkeytype--source-text
+       (- source-index 1)
+       (- settled-index 1)))))
 
 (defun monkeytype--typed-text-add-to-mistyped-list (char)
   "Find associated word for CHAR and add it to mistyped list."
@@ -1445,9 +1443,8 @@ See: `monkeytype-save-mistyped-words' for how word-files are saved.
         (buffer-face-set 'monkeytype-face-default)
         (monkeytype--run-add-hooks)
         (monkeytype--mode-line-report-status))
-    (progn
-      (font-lock-mode t)
-      (buffer-face-mode nil))))
+    (font-lock-mode t)
+    (buffer-face-mode nil)))
 
 (provide 'monkeytype)
 
