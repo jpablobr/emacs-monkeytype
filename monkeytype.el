@@ -306,7 +306,7 @@ REPEAT FUNCTION ARGS."
                     (cancel-timer ,timer)
                   (with-current-buffer ,(current-buffer)
                     (apply (function ,function) args))))))
-    (fset fns fn)
+    (defalias fns fn)
     fn))
 
 (defun monkeytype--utils-file-path (type)
