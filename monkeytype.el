@@ -668,7 +668,8 @@ ENTRY-STATE = 2 mistyped re-typed char"
 
       (setq run-index (+ run-index 1))
 
-      (when monkeytype-insert-log (monkeytype--log run))))
+      (when monkeytype-insert-log
+        (insert (monkeytype--log run)))))
 
   (goto-char (point-min)))
 
@@ -948,13 +949,15 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
 
 (defun monkeytype--log (run)
   "Log for the RUN."
-  (insert "Log:")
-  (insert (monkeytype--log-header))
-  (dotimes (i (length (gethash "entries" run)))
-    (let* ((entries  (reverse (gethash "entries" run)))
-           (entry (elt entries i)))
-      (insert (monkeytype--log-entry entry))))
-  (insert "\n\n"))
+  (concat
+   "Log:"
+   (monkeytype--log-header)
+   (mapconcat
+    (lambda (entry)
+      (monkeytype--log-entry entry))
+    (gethash "entries" run)
+    "\n")
+   "\n"))
 
 (defun monkeytype--log-header ()
   "Log header."
