@@ -59,6 +59,7 @@ At this point you can either practice mistyped words with `monkeytype-mistyped-w
 - Optionally downcase practice words/transitions (see: `monkeytype-downcase`).
 - Optionally treat newlines as whitespace (see: `monkeytype-treat-newline-as-space`).
 - Optionally auto-fill text to the defaults `fill-column` value (see: `monkeytype-auto-fill`).
+- Optionally delete trailing whitespace (see: `monkeytype-delete-trailing-whitespace`).
 - Select a region of text and treat it as words for practice (e.i., optionally downcased, randomised, etc... see: `monkeytype-region-as-words`).
 - After a test, practice troubling/hard key combinations/transitions (useful when practising with different keyboard layouts).
 - Mistyped words or hard transitions can be saved to `~/.monkeytype/{words or transitions}` (see: `monkeytype-directory` `monkeytype-save-mistyped-words` `monkeytype-save-hard-transitions`).
@@ -140,6 +141,12 @@ Or set the variables in your `.emacs` file:
  monkeytype-dowcase t
  ;; Amount of words for most mistyped words test
  monkeytype-most-mistyped-amount 100
+ ;; Toggle auto-fill on typing text
+ monkeytype-auto-fill nil
+ ;; Toggle auto-fill on words related typing text
+ monkeytype-words-auto-fill t
+ ;; Toggle auto deletion of trailing white space
+ monkeytype-delete-trailing-whitespace t
  ;;; Regexp used to divide and extracts words
  monkeytype-word-regexp (concat
                          ":\\|"

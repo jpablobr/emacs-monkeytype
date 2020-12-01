@@ -183,6 +183,16 @@ of characters. This also makes calculations easier and more accurate."
   :type 'boolean
   :group 'monkeytype)
 
+(defcustom monkeytype-words-auto-fill t
+  "Toggle auto fill to the defaults `fill-column' setting for words/transitions."
+  :type 'boolean
+  :group 'monkeytype)
+
+(defcustom monkeytype-delete-trailing-whitespace t
+  "Toggle delete trailing whitespace."
+  :type 'boolean
+  :group 'monkeytype)
+
 (defcustom monkeytype-downcase t
   "Toggle downcasing of mistyped words."
   :type 'boolean
@@ -255,25 +265,17 @@ of characters. This also makes calculations easier and more accurate."
 (defun monkeytype--init (text)
   "Set up a new buffer for the typing exercise on TEXT."
   (setq monkeytype--typing-buffer (generate-new-buffer monkeytype--buffer-name))
-
-  (let* ((text (with-temp-buffer
-                 (insert text)
-                 (when monkeytype-auto-fill
-                   (fill-region (point-min) (point-max)))
-                 (delete-trailing-whitespace)
-                 (buffer-string)))
-         (len (length text)))
-    (set-buffer monkeytype--typing-buffer)
-    (setq monkeytype--source-text text)
-    (setq monkeytype--counter-remaining len)
-    (setq monkeytype--progress-tracker (make-string len 0))
-    (erase-buffer)
-    (insert monkeytype--source-text)
-    (set-buffer-modified-p nil)
-    (switch-to-buffer monkeytype--typing-buffer)
-    (goto-char 0)
-    (monkeytype-mode)
-    (message "Monkeytype: Timer will start when you type the first character.")))
+  (set-buffer monkeytype--typing-buffer)
+  (setq monkeytype--source-text text)
+  (setq monkeytype--counter-remaining (length text))
+  (setq monkeytype--progress-tracker (make-string (length text) 0))
+  (erase-buffer)
+  (insert monkeytype--source-text)
+  (set-buffer-modified-p nil)
+  (switch-to-buffer monkeytype--typing-buffer)
+  (goto-char 0)
+  (monkeytype-mode)
+  (message "Monkeytype: Timer will start when you type the first character."))
 
 ;;;; Utils:
 
@@ -385,15 +387,43 @@ REPEAT FUNCTION ARGS."
     (setq monkeytype--previous-last-entry-index
           (gethash "source-index" (elt (gethash "entries" run) 0)))))
 
-(defun monkeytype--utils-words-to-string (words)
-  "Convert WORDS to string and apply word related settings.
+(defun monkeytype--utils-format-words (words)
+  "Format WORDS to text for test by apply word related customization settings.
 
 See: `monkeytype-downcase'
-See: `monkeytype-randomize'"
-  (mapconcat
-   (lambda (word) (if monkeytype-downcase (downcase word) word))
-   (if monkeytype-randomize (monkeytype--utils-nshuffle words) words)
-   " "))
+See: `monkeytype-randomize'
+See: `monkeytype-words-auto-fill'
+See: `monkeytype-delete-trailing-whitespace'"
+  (let* ((text (mapconcat
+                (lambda (word)
+                  (if monkeytype-downcase
+                      (downcase word)
+                    word))
+                (if monkeytype-randomize
+                    (monkeytype--utils-nshuffle words)
+                  words)
+                " "))
+         (text (with-temp-buffer
+                 (insert text)
+                 (when monkeytype-words-auto-fill
+                   (fill-region (point-min) (point-max)))
+                 (when monkeytype-delete-trailing-whitespace
+                   (delete-trailing-whitespace))
+                 (buffer-string))))
+    text))
+
+(defun monkeytype--utils-format-text (text)
+  "Format TEXT for test by applying customization settings.
+
+See: `monkeytype-auto-fill'
+See: `monkeytype-delete-trailing-whitespace'"
+  (with-temp-buffer
+    (insert text)
+    (when monkeytype-auto-fill
+      (fill-region (point-min) (point-max)))
+    (when monkeytype-delete-trailing-whitespace
+      (delete-trailing-whitespace))
+    (buffer-string)))
 
 ;;;; Calc:
 
@@ -1044,7 +1074,9 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
 
 \\[monkeytype-region]"
   (interactive "r")
-  (monkeytype--init (buffer-substring-no-properties start end)))
+  (monkeytype--init
+   (monkeytype--utils-format-text
+    (buffer-substring-no-properties start end))))
 
 ;;;###autoload
 (defun monkeytype-repeat ()
@@ -1052,7 +1084,8 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
 
 \\[monkeytype-repeat]"
   (interactive)
-  (monkeytype--init monkeytype--source-text))
+  (monkeytype--init
+   (monkeytype--utils-format-text monkeytype--source-text)))
 
 ;;;###autoload
 (defun monkeytype-dummy-text ()
@@ -1064,7 +1097,8 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
           (concat
            "\"I have had a dream past the wit of man to say what dream it was,\n"
            "says Bottom.\"")))
-    (monkeytype--init text)))
+    (monkeytype--init
+     (monkeytype--utils-format-text text))))
 
 ;;;###autoload
 (defun monkeytype-fortune ()
@@ -1081,7 +1115,9 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
 
 \\[monkeytype-buffer]"
   (interactive)
-  (monkeytype--init (buffer-substring-no-properties (point-min) (point-max))))
+  (monkeytype--init
+   (monkeytype--utils-format-text
+    (buffer-substring-no-properties (point-min) (point-max)))))
 
 ;;;###autoload
 (defun monkeytype-pause ()
@@ -1127,7 +1163,7 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
   (interactive)
   (if (> (length monkeytype--mistyped-words-list) 0)
       (monkeytype--init
-       (monkeytype--utils-words-to-string monkeytype--mistyped-words-list))
+       (monkeytype--utils-format-words monkeytype--mistyped-words-list))
     (message "Monkeytype: No word specific related errors. ([C-c C-c t] to repeat.)")))
 
 ;;;###autoload
@@ -1142,7 +1178,8 @@ This is unless the char isn't a valid word character in `monkeytype-word-regexp'
              (final-list '()))
         (cl-loop repeat append-times do
                  (setq final-list (append final-list monkeytype--hard-transition-list)))
-        (monkeytype--init (mapconcat #'identity (monkeytype--utils-nshuffle final-list) " ")))
+        (monkeytype--init
+         (monkeytype--utils-format-words (mapconcat #'identity final-list " "))))
     (message "Monkeytype: No transition specific errors. ([C-c C-c t] to repeat.)")))
 
 ;;;###autoload
@@ -1184,7 +1221,7 @@ is set to true.
                   (insert-file-contents file-path)
                   (buffer-string)))
          (words (split-string words monkeytype-word-regexp t))
-         (words (monkeytype--utils-words-to-string words)))
+         (words (monkeytype--utils-format-words words)))
     (monkeytype--init words)))
 
 ;;;###autoload
@@ -1201,7 +1238,7 @@ is set to true.
   (interactive "r")
   (let* ((text (buffer-substring-no-properties start end))
          (text (split-string text monkeytype-word-regexp t))
-         (text (monkeytype--utils-words-to-string text)))
+         (text (monkeytype--utils-format-words text)))
     (monkeytype--init text)))
 
 ;;;###autoload
@@ -1229,7 +1266,7 @@ See: `monkeytype-save-mistyped-words' for how word-files are saved.
     (if (> (length word-list) monkeytype-most-mistyped-amount)
         (progn
           (setq word-list (seq-take word-list monkeytype-most-mistyped-amount))
-          (monkeytype--init (monkeytype--utils-words-to-string word-list) ))
+          (monkeytype--init (monkeytype--utils-format-words word-list)))
       (message "Monkeytype: Not enough mistyped words for test."))))
 
 ;;;###autoload
