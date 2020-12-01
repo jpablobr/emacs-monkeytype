@@ -46,7 +46,7 @@ The buffer should look as follows:
 This Results buffer re-renders the typed text highlighting errors and either correct or incorrect corrections
 (highlighted with a different background and slightly different colour).
 
-At this point you can either practice mistyped words with `monkeytype-mistyped-words` (`C-c C-c m`) or just troubling/hard transitions with `monkeytype-hard-transitions` (`C-c C-c h`).
+At this point you can either practice mistyped words with `monkeytype-mistyped-words` (`C-c C-c m`) or just troubling/hard transitions with `monkeytype-hard-transitions` (`C-c C-c h`). You can also save them with `monkeytype-save-mistyped-words` or `monkeytype-save-hard-transitions` and later on type/practice the most mistyped words in history with `monkeytype-most-mistyped-words`.
 
 ## Features
 
