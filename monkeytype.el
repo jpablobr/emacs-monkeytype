@@ -4,7 +4,7 @@
 
 ;; Author: Pablo Barrantes <xjpablobrx@gmail.com>
 ;; Maintainer: Pablo Barrantes <xjpablobrx@gmail.com>
-;; Version: 0.1.1
+;; Version: 0.1.3
 ;; Keywords: games
 ;; URL: https://github.com/jpablobr/emacs-monkeytype
 ;; Package-Requires: ((emacs "25.1"))
