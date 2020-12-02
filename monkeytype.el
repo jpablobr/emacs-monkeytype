@@ -143,7 +143,7 @@
   "Runs performance header 3"
   :group 'monkeytype-faces)
 
-;;;; Configurable settings:
+;;;; Configurable Settings:
 
 (defcustom monkeytype-treat-newline-as-space t
   "Allow continuing to the next line by pressing space."
@@ -176,6 +176,7 @@ when typing too fast."
 
 (defcustom monkeytype-word-divisor 5.0
   "5 is the most common number for these calculations.
+
 Proper word count doesn't work as well since words have different number
 of characters. This also makes calculations easier and more accurate."
   :type 'integer
@@ -192,8 +193,7 @@ See also: `monkeytype-words-auto-fill'"
 (defcustom monkeytype-words-auto-fill t
   "Toggle auto fill for words/transitions.
 
-It defaults `fill-column' setting
-See also: `monkeytype-auto-fill'"
+It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
   :type 'boolean
   :group 'monkeytype)
 
@@ -864,7 +864,7 @@ Total time is the sum of all the last entries' elapsed-seconds for each runs."
       words
       elapsed-minutes))))
 
-;;;; typed text
+;;;; Typed Text
 
 (defun monkeytype--typed-text-entry-face (correctp &optional correctionp)
   "Return the face for the CORRECTP and/or CORRECTIONP entry."
