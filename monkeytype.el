@@ -1314,7 +1314,9 @@ This is unless the char doesn't belong to any word as defined by the
   (interactive)
   (if (> (length monkeytype--hard-transition-list) 0)
       (let* ((transitions-count (length monkeytype--hard-transition-list))
-             (append-times (/ monkeytype-minimum-transitions transitions-count))
+             (append-times (/
+                            monkeytype-minimum-transitions
+                            transitions-count))
              (final-list '()))
         (cl-loop repeat append-times do
                  (setq final-list
