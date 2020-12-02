@@ -361,7 +361,7 @@ REPEAT FUNCTION ARGS."
          (index 1))
     (dolist (word words)
       (add-to-list 'monkeytype--words-list `(,index . ,word))
-      (setq index (+ index 1)))))
+      (setq index (1+ index)))))
 
 (defun monkeytype--utils-index-chars-to-words ()
   "Associate by index cars to words."
@@ -371,13 +371,13 @@ REPEAT FUNCTION ARGS."
     (dolist (char chars)
       (if (string-match monkeytype-word-regexp char)
           (progn
-            (setq word-index (+ word-index 1))
-            (setq char-index (+ char-index 1)))
+            (setq word-index (1+ word-index))
+            (setq char-index (1+ char-index)))
         (let ((word (cdr (assoc word-index monkeytype--words-list))))
           (add-to-list
            'monkeytype--chars-to-words-list
            `(,char-index . ,word))
-          (setq char-index (+ char-index 1)))))))
+          (setq char-index (1+ char-index)))))))
 
 (defun monkeytype--utils-index-chars (run)
   "RUN Index chars."
@@ -394,7 +394,7 @@ REPEAT FUNCTION ARGS."
          (chars-list '())
          (index first-entry-index))
     (dolist (char chars)
-      (setq index (+ 1 index))
+      (setq index (1+ index))
       (cl-pushnew `(,index . ,char) chars-list))
     (setq monkeytype--chars-list (reverse chars-list))
     (setq monkeytype--previous-last-entry-index
@@ -692,7 +692,7 @@ See: `monkeytype--utils-local-idle-timer'"
         (monkeytype--results-run (gethash "entries" run))
         "\n\n"))
 
-      (setq run-index (+ run-index 1))
+      (setq run-index (1+ run-index))
 
       (when monkeytype-insert-log
         (insert (monkeytype--log run)))))
@@ -907,12 +907,12 @@ Total time is the sum of all the last entries' elapsed-seconds for each runs."
         (progn
           (pop monkeytype--chars-list)
           "")
-      (cl-loop repeat (+ skipped-length 1) do
+      (cl-loop repeat (1+ skipped-length) do
                (pop monkeytype--chars-list))
       (substring
        monkeytype--source-text
-       (- source-index 1)
-       (- settled-index 1)))))
+       (1- source-index)
+       (1- settled-index)))))
 
 (defun monkeytype--typed-text-add-to-mistyped-list (char)
   "Find associated word for CHAR and add it to mistyped list."
