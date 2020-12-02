@@ -533,7 +533,7 @@ DELETED is the number of deleted chars before current char input."
                     (+ source-start monkeytype--counter-remaining)
                     (length monkeytype--source-text)) )
          (correctionp (> state 0))
-         (deleted-textp (> deleted 0)))
+         (deleted-text-p (> deleted 0)))
 
     ;; On skips update remaining-counter to reflect current position
     (when skippedp
@@ -550,7 +550,7 @@ DELETED is the number of deleted chars before current char input."
       (store-substring monkeytype--progress-tracker source-start 0))
 
     ;; Re-insert deleted text
-    (when deleted-textp
+    (when deleted-text-p
       (insert (substring
                monkeytype--source-text
                source-start
@@ -952,17 +952,17 @@ This is unless the char doesn't belong to any word as defined by the
              monkeytype-word-regexp
              (gethash "source-entry" settled))
       (let* ((char-index (gethash "source-index" settled))
-             (hard-transitionp (> char-index 2))
-             (hard-transition  (when hard-transitionp
+             (hard-transition-p (> char-index 2))
+             (hard-transition  (when hard-transition-p
                                  (substring
                                   monkeytype--source-text
                                   (- char-index 2)
                                   char-index)))
-             (hard-transitionp (and
-                                hard-transitionp
+             (hard-transition-p (and
+                                hard-transition-p
                                 (string-match "[^ \n\t]" hard-transition))))
 
-        (when hard-transitionp
+        (when hard-transition-p
           (cl-pushnew hard-transition monkeytype--hard-transition-list))
         (monkeytype--typed-text-add-to-mistyped-list settled)))))
 
@@ -1118,7 +1118,7 @@ This is unless the char doesn't belong to any word as defined by the
                            elapsed-seconds))
          (previous-last-entry (when monkeytype--mode-line-previous-run
                                 monkeytype--mode-line-previous-run-last-entry))
-         (previous-run-entryp (and
+         (previous-run-entry-p (and
                                monkeytype--mode-line-previous-run
                                (>
                                 (gethash
@@ -1126,7 +1126,7 @@ This is unless the char doesn't belong to any word as defined by the
                                  monkeytype--mode-line-current-entry
                                  0)
                                 0)))
-         (entries (if previous-run-entryp
+         (entries (if previous-run-entry-p
                       (-
                        (gethash
                         "input-index"
@@ -1138,7 +1138,7 @@ This is unless the char doesn't belong to any word as defined by the
                      "input-index"
                      monkeytype--mode-line-current-entry
                      0)))
-         (errors (if previous-run-entryp
+         (errors (if previous-run-entry-p
                      (-
                       (gethash
                        "error-count"
@@ -1150,7 +1150,7 @@ This is unless the char doesn't belong to any word as defined by the
                     "error-count"
                     monkeytype--mode-line-current-entry
                     0)))
-         (corrections (if previous-run-entryp
+         (corrections (if previous-run-entry-p
                           (-
                            (gethash
                             "correction-count"
