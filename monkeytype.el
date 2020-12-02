@@ -11,8 +11,8 @@
 
 ;;; Commentary:
 
-;; Emacs Monkeytype is a typing game/tutor inspired by
-;; monkeytype.com but for Emacs.
+;; Emacs Monkeytype is a typing game/tutor inspired by monkeytype.com but for
+;; Emacs.
 
 ;; Features:
 
