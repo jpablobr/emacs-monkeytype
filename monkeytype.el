@@ -52,7 +52,7 @@
 ;; - Saved mistyped/transitions files (or any file but defaults to
 ;; `~/.monkeytype/` dir) can be loaded with `monkeytyped-load-words-from-file'.
 
-;; - `monkeytype-word-regexp' customises the regexp used for removing characters
+;; - `monkeytype-excluded-chars-regexp' customises the regexp used for removing characters
 ;; from words (defaults to: ;:.\`",()-?!).
 
 ;; - Ability to type most (saved) mistyped words (the amount of words is
@@ -217,7 +217,7 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
   :type 'boolean
   :group 'monkeytype)
 
-(defcustom monkeytype-word-regexp "[^[:alnum:]']"
+(defcustom monkeytype-excluded-chars-regexp "[^[:alnum:]']"
   "Regexp used for getting valid words."
   :type 'string
   :group 'monkeytype)
@@ -344,7 +344,7 @@ REPEAT FUNCTION ARGS."
   "Index words."
   (let ((words (split-string
                 monkeytype--source-text
-                monkeytype-word-regexp))
+                monkeytype-excluded-chars-regexp))
          (index 1))
     (dolist (word words)
       (add-to-list 'monkeytype--words-list `(,index . ,word))
@@ -356,7 +356,7 @@ REPEAT FUNCTION ARGS."
          (word-index 1)
          (char-index 1))
     (dolist (char chars)
-      (if (string-match monkeytype-word-regexp char)
+      (if (string-match monkeytype-excluded-chars-regexp char)
           (progn
             (setq word-index (1+ word-index))
             (setq char-index (1+ char-index)))
@@ -906,7 +906,7 @@ Total time is the sum of all the last entries' elapsed-seconds for each runs."
   (let* ((index (gethash "source-index" char))
          (word (cdr (assoc index monkeytype--chars-to-words-list)))
          (word (when word
-                 (replace-regexp-in-string monkeytype-word-regexp "" word))))
+                 (replace-regexp-in-string monkeytype-excluded-chars-regexp "" word))))
     (when word
       (cl-pushnew word monkeytype--mistyped-words-list))))
 
@@ -933,10 +933,10 @@ Also add corrections in ENTRY to `monkeytype--mistyped-word-list'."
   "Add SETTLED char's associated word and transitions to their respective list.
 
 This is unless the char doesn't belong to any word as defined by the
-`monkeytype-word-regexp'."
+`monkeytype-excluded-chars-regexp'."
   (unless (= (gethash "state" settled) 1)
     (unless (string-match
-             monkeytype-word-regexp
+             monkeytype-excluded-chars-regexp
              (gethash "source-entry" settled))
       (let* ((char-index (gethash "source-index" settled))
              (hard-transition-p (> char-index 2))
@@ -1349,7 +1349,7 @@ See also: `monkeytype-load-words-from-file'
 
 Words will be randomized if `monkeytype-randomize' is set to true.
 Words will be downcased if `monkeytype-downcase' is set to true.
-Words special characters will get removed based on `monkeytype-word-regexp'.
+Words special characters will get removed based on `monkeytype-excluded-chars-regexp'.
 Buffer will be filled with the vale of `fill-column' if
 `monkeytype-words-auto-fill' is set to true.
 
@@ -1359,7 +1359,7 @@ Buffer will be filled with the vale of `fill-column' if
          (words (with-temp-buffer
                   (insert-file-contents file-path)
                   (buffer-string)))
-         (words (split-string words monkeytype-word-regexp t))
+         (words (split-string words monkeytype-excluded-chars-regexp t))
          (words (monkeytype--utils-format-words words)))
     (monkeytype--init words)))
 
@@ -1369,14 +1369,14 @@ Buffer will be filled with the vale of `fill-column' if
 
 Words will be randomized if `monkeytype-randomize' is set to true.
 Words will be downcased if `monkeytype-downcase' is set to true.
-Words special characters will get removed based on `monkeytype-word-regexp'.
+Words special characters will get removed based on `monkeytype-excluded-chars-regexp'.
 Buffer will be filled with the vale of `fill-column' if `monkeytype-auto-fill'
 is set to true.
 
 \\[monkeytype-region-as-words]"
   (interactive "r")
   (let* ((text (buffer-substring-no-properties start end))
-         (text (split-string text monkeytype-word-regexp t))
+         (text (split-string text monkeytype-excluded-chars-regexp t))
          (text (monkeytype--utils-format-words text)))
     (monkeytype--init text)))
 
