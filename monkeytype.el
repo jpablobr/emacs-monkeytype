@@ -228,6 +228,8 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
    "!\\|"
    " \\|"
    "`\\|"
+   "-\\|"
+   "_\\|"
    "\"\\|"
    "\n\\|"
    "\\.")
