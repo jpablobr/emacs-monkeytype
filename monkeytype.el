@@ -217,22 +217,7 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
   :type 'boolean
   :group 'monkeytype)
 
-(defcustom monkeytype-word-regexp
-  (concat
-   ":\\|"
-   ";\\|"
-   ",\\|"
-   "(\\|"
-   ")\\|"
-   "?\\|"
-   "!\\|"
-   " \\|"
-   "`\\|"
-   "-\\|"
-   "_\\|"
-   "\"\\|"
-   "\n\\|"
-   "\\.")
+(defcustom monkeytype-word-regexp "[^[:alnum:]']"
   "Regexp used for getting valid words."
   :type 'string
   :group 'monkeytype)
