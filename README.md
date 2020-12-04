@@ -121,9 +121,15 @@ Or set the variables in your `.emacs` file:
  monkeytype-error '(:foreground "#ff6c6b")
  monkeytype-correction-error '(:inherit region :foreground "#ff6c6b")
  monkeytype-correction-correct '(:inherit region :foreground "#98be65")
- monkeytype-header-1 '(:foreground "#B7950B")
- monkeytype-header-2 '(:foreground "#F1C40F")
- monkeytype-header-3 '(:foreground "#F1C40F")
+ monkeytype-title '(:foreground "#B7950B")
+ monkeytype-legend-1 '(:foreground "#B7950B")
+ monkeytype-legend-2 '(:foreground "#F1C40F")
+ monkeytype-results-success '(:foreground "#98be65")
+ monkeytype-results-error '(:foreground "#cc6666")
+ monkeytype-mode-line-success '(:foreground "#98be65")
+ monkeytype-mode-line-error '(:foreground "#ff6c6b")
+ monkeytype-mode-line-normal '(:foreground "#F1C40F")
+ monkeytype-mode-line-info '(:foreground "#B7950D")
  ;; How often to update mode-line
  monkeytype-mode-line-interval-update 10
  ;; Use space instead or newline
