@@ -169,7 +169,7 @@
   :group 'monkeytype-faces)
 
 (defface monkeytype-mode-line-info
-  '((t (:foreground "##B7950B")))
+  '((t (:foreground "#B7950B")))
   "Face for mode-line info text."
   :group 'monkeytype-faces)
 
