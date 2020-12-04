@@ -884,16 +884,11 @@ Total time is the sum of all the last entries' elapsed-seconds for each runs."
 (defun monkeytype--typed-text-skipped-text (settled-index)
   "Handle skipped text before the typed char at SETTLED-INDEX."
   (let* ((source-index (car (car monkeytype--chars-list)))
-         (source-entry (cdr (car monkeytype--chars-list)))
          (skipped-length (if source-index
                              (- settled-index source-index)
                            0)))
-    (if (or
-         (string-match "[ \n\t]" source-entry)
-         (= skipped-length 0))
-        (progn
-          (pop monkeytype--chars-list)
-          "")
+    (if (= skipped-length 0)
+        (progn (pop monkeytype--chars-list) "")
       (cl-loop repeat (1+ skipped-length) do
                (pop monkeytype--chars-list))
       (substring
