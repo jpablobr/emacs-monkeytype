@@ -99,12 +99,12 @@
   :group 'faces)
 
 (defface monkeytype-default
-  '((t (:family "Menlo" :foreground "#999999")))
+  '((t :inherit default))
   "Face for text area."
   :group 'monkeytype-faces)
 
 (defface monkeytype-correct
-  '((t (:foreground "#666666")))
+  '((t :inherit font-lock-comment-face))
   "Face for correctly typed char."
   :group 'monkeytype-faces)
 
