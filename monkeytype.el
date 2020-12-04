@@ -906,7 +906,10 @@ Total time is the sum of all the last entries' elapsed-seconds for each runs."
   (let* ((index (gethash "source-index" char))
          (word (cdr (assoc index monkeytype--chars-to-words-list)))
          (word (when word
-                 (replace-regexp-in-string monkeytype-excluded-chars-regexp "" word))))
+                 (replace-regexp-in-string
+                  monkeytype-excluded-chars-regexp
+                  ""
+                  word))))
     (when word
       (cl-pushnew word monkeytype--mistyped-words-list))))
 
