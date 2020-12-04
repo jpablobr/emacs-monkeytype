@@ -153,6 +153,26 @@
   "Face for results error text."
   :group 'monkeytype-faces)
 
+(defface monkeytype-mode-line-success
+  '((t (:foreground "#98be65")))
+  "Face for mode-line success text."
+  :group 'monkeytype-faces)
+
+(defface monkeytype-mode-line-error
+  '((t (:foreground "#ff6c6b")))
+  "Face for mode-line error text."
+  :group 'monkeytype-faces)
+
+(defface monkeytype-mode-line-normal
+  '((t :inherit default))
+  "Face for mode-line normal text."
+  :group 'monkeytype-faces)
+
+(defface monkeytype-mode-line-info
+  '((t (:foreground "##B7950B")))
+  "Face for mode-line info text."
+  :group 'monkeytype-faces)
+
 ;;;; Configurable Settings:
 
 (defcustom monkeytype-treat-newline-as-space t
@@ -1088,6 +1108,12 @@ This is unless the char doesn't belong to any word as defined by the
 (defvar-local monkeytype--mode-line-previous-run '())
 (defvar-local monkeytype--mode-line-previous-run-last-entry nil)
 
+(defun monkeytype--mode-line-get-face (successp)
+"Get success or error face based on SUCCESSP."
+(if successp
+    'monkeytype-mode-line-success
+  'monkeytype-mode-line-error))
+
 (defun monkeytype--mode-line-report-status ()
   "Take care of mode-line updating."
   (setq monkeytype--mode-line-current-entry
@@ -1180,29 +1206,27 @@ This is unless the char doesn't belong to any word as defined by the
                      0))
          (elapsed-time (format
                         "%s"
-                        (format-seconds "%.2h:%z%.2m:%.2s" elapsed-seconds)))
-         (green '(:foreground "#98be65"))
-         (normal '(:foreground "#c5c8c6"))
-         (orange '(:foreground "#B7950B"))
-         (red '(:foreground "#ff6c6b")))
+                        (format-seconds "%.2h:%z%.2m:%.2s" elapsed-seconds))))
 
     (concat
-     (propertize "MT[" 'face normal)
-     (propertize (format "%d" net-wpm) 'face green)
-     (propertize "/" 'face normal)
-     (propertize (format "%d" gross-wpm) 'face normal)
-     (propertize " " 'face normal)
-     (propertize (format "%d " accuracy) 'face normal)
-     (propertize elapsed-time 'face orange)
-     (propertize (format " (%d/" words) 'face normal)
-     (propertize (format "%d" corrections) 'face (if (> corrections 0)
-                                                     red
-                                                   green))
-     (propertize "/" 'face normal)
-     (propertize (format "%d" errors) 'face (if (> errors 0)
-                                                red
-                                              green))
-     (propertize ")]" 'face normal))))
+     (propertize "MT[" 'face 'monkeytype-mode-line-normal)
+     (propertize (format "%d" net-wpm) 'face 'monkeytype-mode-line-success)
+     (propertize "/" 'face 'monkeytype-mode-line-normal)
+     (propertize (format "%d" gross-wpm) 'face 'monkeytype-mode-line-normal)
+     (propertize " " 'face 'monkeytype-mode-line-normal)
+     (propertize (format "%d " accuracy) 'face 'monkeytype-mode-line-normal)
+     (propertize elapsed-time 'face 'monkeytype-mode-line-info)
+     (propertize (format " (%d/" words) 'face 'monkeytype-mode-line-normal)
+     (propertize
+      (format "%d" corrections)
+      'face
+      (monkeytype--mode-line-get-face (= corrections 0)))
+     (propertize "/" 'face 'monkeytype-mode-line-normal)
+     (propertize
+      (format "%d" errors)
+      'face
+      (monkeytype--mode-line-get-face (= errors 0)))
+     (propertize ")]" 'face 'monkeytype-mode-line-normal))))
 
 ;;;; Interactive:
 
