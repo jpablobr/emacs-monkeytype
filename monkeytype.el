@@ -1122,70 +1122,35 @@ This is unless the char doesn't belong to any word as defined by the
 
 (defun monkeytype--mode-line-text ()
   "Show status in mode line."
-  (let* ((elapsed-seconds (gethash
-                           "elapsed-seconds"
-                           monkeytype--mode-line-current-entry
-                           0))
-         (elapsed-minutes (monkeytype--utils-seconds-to-minutes
-                           elapsed-seconds))
+  (let* ((current-entry monkeytype--mode-line-current-entry)
+         (seconds (gethash "elapsed-seconds" current-entry 0))
+         (minutes (monkeytype--utils-seconds-to-minutes seconds))
          (previous-last-entry (when monkeytype--mode-line-previous-run
                                 monkeytype--mode-line-previous-run-last-entry))
          (previous-run-entry-p (and
-                               monkeytype--mode-line-previous-run
-                               (>
-                                (gethash
-                                 "input-index"
-                                 monkeytype--mode-line-current-entry
-                                 0)
-                                0)))
+                                monkeytype--mode-line-previous-run
+                                (> (gethash "input-index" current-entry 0) 0)))
          (entries (if previous-run-entry-p
-                      (-
-                       (gethash
-                        "input-index"
-                        monkeytype--mode-line-current-entry)
-                       (gethash
-                        "input-index"
-                        previous-last-entry))
-                    (gethash
-                     "input-index"
-                     monkeytype--mode-line-current-entry
+                      (- (gethash "input-index" current-entry)
+                         (gethash "input-index" previous-last-entry))
+                    (gethash "input-index" current-entry
                      0)))
          (errors (if previous-run-entry-p
                      (-
-                      (gethash
-                       "error-count"
-                       monkeytype--mode-line-current-entry)
-                      (gethash
-                       "error-count"
-                       previous-last-entry))
-                   (gethash
-                    "error-count"
-                    monkeytype--mode-line-current-entry
-                    0)))
+                      (gethash "error-count" current-entry)
+                      (gethash "error-count" previous-last-entry))
+                   (gethash "error-count" current-entry 0)))
          (corrections (if previous-run-entry-p
                           (-
-                           (gethash
-                            "correction-count"
-                            monkeytype--mode-line-current-entry)
-                           (gethash
-                            "correction-count"
-                            previous-last-entry))
-                        (gethash
-                         "correction-count"
-                         monkeytype--mode-line-current-entry
-                         0)))
-
+                           (gethash "correction-count" current-entry)
+                           (gethash "correction-count" previous-last-entry))
+                        (gethash "correction-count" current-entry 0)))
          (words (monkeytype--calc-words entries))
          (net-wpm (if (> words 1)
-                      (monkeytype--calc-net-wpm
-                       words
-                       errors
-                       elapsed-minutes)
+                      (monkeytype--calc-net-wpm words errors minutes)
                     0))
          (gross-wpm (if (> words 1)
-                        (monkeytype--calc-gross-wpm
-                         words
-                         elapsed-minutes)
+                        (monkeytype--calc-gross-wpm words minutes)
                       0))
          (accuracy (if (> words 1)
                        (monkeytype--calc-accuracy
@@ -1193,9 +1158,7 @@ This is unless the char doesn't belong to any word as defined by the
                         (- entries errors)
                         corrections)
                      0))
-         (elapsed-time (format
-                        "%s"
-                        (format-seconds "%.2h:%z%.2m:%.2s" elapsed-seconds))))
+         (time (format "%s" (format-seconds "%.2h:%z%.2m:%.2s" seconds))))
 
     (concat
      (propertize "MT[" 'face 'monkeytype-mode-line-normal)
@@ -1204,7 +1167,7 @@ This is unless the char doesn't belong to any word as defined by the
      (propertize (format "%d" gross-wpm) 'face 'monkeytype-mode-line-normal)
      (propertize " " 'face 'monkeytype-mode-line-normal)
      (propertize (format "%d " accuracy) 'face 'monkeytype-mode-line-normal)
-     (propertize elapsed-time 'face 'monkeytype-mode-line-info)
+     (propertize time 'face 'monkeytype-mode-line-info)
      (propertize (format " (%d/" words) 'face 'monkeytype-mode-line-normal)
      (propertize
       (format "%d" corrections)
