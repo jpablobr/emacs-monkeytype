@@ -1070,7 +1070,8 @@ This is unless the char doesn't belong to any word as defined by the
          (typed-entry-face (monkeytype--typed-text-entry-face (= state 1)))
          (propertized-typed-entry (propertize
                                    (format "%S" typed-entry)
-                                   'face typed-entry-face)))
+                                   'face
+                                   typed-entry-face)))
     (format "\n|%9s|%9s|%9d|%9d|%9d|%9d|%9.2f|%9s|%9d|%9d|"
             (format "%s %s" input-index source-index)
             (format "%S %s" source-entry propertized-typed-entry)
@@ -1133,8 +1134,7 @@ This is unless the char doesn't belong to any word as defined by the
          (entries (if previous-run-entry-p
                       (- (gethash "input-index" current-entry)
                          (gethash "input-index" previous-last-entry))
-                    (gethash "input-index" current-entry
-                     0)))
+                    (gethash "input-index" current-entry 0)))
          (errors (if previous-run-entry-p
                      (-
                       (gethash "error-count" current-entry)
