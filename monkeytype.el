@@ -52,8 +52,8 @@
 ;; - Saved mistyped/transitions files (or any file but defaults to
 ;; `~/.monkeytype/` dir) can be loaded with `monkeytyped-load-words-from-file'.
 
-;; - `monkeytype-excluded-chars-regexp' customises the regexp used for removing characters
-;; from words (defaults to: ;:.\`",()-?!).
+;; - `monkeytype-excluded-chars-regexp' customises the regexp used for removing
+;; characters from words (defaults to: "[^[:alnum:]']").
 
 ;; - Ability to type most (saved) mistyped words (the amount of words is
 ;; configurable with `monkeytype-most-mistyped-amount' [defaults to 100]) see:
@@ -1347,7 +1347,8 @@ See also: `monkeytype-load-words-from-file'
 
 Words will be randomized if `monkeytype-randomize' is set to true.
 Words will be downcased if `monkeytype-downcase' is set to true.
-Words special characters will get removed based on `monkeytype-excluded-chars-regexp'.
+Words special characters will get removed based on
+`monkeytype-excluded-chars-regexp'.
 Buffer will be filled with the vale of `fill-column' if
 `monkeytype-words-auto-fill' is set to true.
 
@@ -1367,7 +1368,8 @@ Buffer will be filled with the vale of `fill-column' if
 
 Words will be randomized if `monkeytype-randomize' is set to true.
 Words will be downcased if `monkeytype-downcase' is set to true.
-Words special characters will get removed based on `monkeytype-excluded-chars-regexp'.
+Words special characters will get removed based on
+`monkeytype-excluded-chars-regexp'.
 Buffer will be filled with the vale of `fill-column' if `monkeytype-auto-fill'
 is set to true.
 
