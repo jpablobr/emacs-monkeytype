@@ -82,6 +82,33 @@
 (require 'seq)
 (require 'subr-x)
 
+;;;###autoload
+(define-minor-mode monkeytype-mode
+  "Monkeytype mode is a minor mode for speed/touch typing.
+
+\\{monkeytype-mode-map}"
+  :lighter monkeytype-mode-line
+  :keymap (let ((map (make-sparse-keymap)))
+            (define-key map (kbd "C-c C-c p") 'monkeytype-pause)
+            (define-key map (kbd "C-c C-c r") 'monkeytype-resume)
+            (define-key map (kbd "C-c C-c s") 'monkeytype-stop)
+            (define-key map (kbd "C-c C-c t") 'monkeytype-repeat)
+            (define-key map (kbd "C-c C-c f") 'monkeytype-fortune)
+            (define-key map (kbd "C-c C-c m") 'monkeytype-mistyped-words)
+            (define-key map (kbd "C-c C-c h") 'monkeytype-hard-transitions)
+            (define-key map (kbd "C-c C-c a") 'monkeytype-save-mistyped-words)
+            (define-key map (kbd "C-c C-c o") 'monkeytype-save-hard-transitions)
+            map)
+  (if monkeytype-mode
+      (progn
+        (font-lock-mode nil)
+        (buffer-face-mode t)
+        (buffer-face-set 'monkeytype-default)
+        (monkeytype--run-add-hooks)
+        (monkeytype--mode-line-report-status))
+    (font-lock-mode t)
+    (buffer-face-mode nil)))
+
 ;;;; Customization
 
 (defgroup monkeytype nil
@@ -1395,33 +1422,6 @@ See: `monkeytype-save-mistyped-words' for how word-files are saved.
           (setq word-list (seq-take word-list monkeytype-most-mistyped-amount))
           (monkeytype--init (monkeytype--utils-format-words word-list)))
       (message "Monkeytype: Not enough mistyped words for test."))))
-
-;;;###autoload
-(define-minor-mode monkeytype-mode
-  "Monkeytype mode is a minor mode for speed/touch typing.
-
-\\{monkeytype-mode-map}"
-  :lighter monkeytype-mode-line
-  :keymap (let ((map (make-sparse-keymap)))
-            (define-key map (kbd "C-c C-c p") 'monkeytype-pause)
-            (define-key map (kbd "C-c C-c r") 'monkeytype-resume)
-            (define-key map (kbd "C-c C-c s") 'monkeytype-stop)
-            (define-key map (kbd "C-c C-c t") 'monkeytype-repeat)
-            (define-key map (kbd "C-c C-c f") 'monkeytype-fortune)
-            (define-key map (kbd "C-c C-c m") 'monkeytype-mistyped-words)
-            (define-key map (kbd "C-c C-c h") 'monkeytype-hard-transitions)
-            (define-key map (kbd "C-c C-c a") 'monkeytype-save-mistyped-words)
-            (define-key map (kbd "C-c C-c o") 'monkeytype-save-hard-transitions)
-            map)
-  (if monkeytype-mode
-      (progn
-        (font-lock-mode nil)
-        (buffer-face-mode t)
-        (buffer-face-set 'monkeytype-default)
-        (monkeytype--run-add-hooks)
-        (monkeytype--mode-line-report-status))
-    (font-lock-mode t)
-    (buffer-face-mode nil)))
 
 (provide 'monkeytype)
 
