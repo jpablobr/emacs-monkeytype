@@ -98,24 +98,24 @@
   :group 'monkeytype
   :group 'faces)
 
-(defface monkeytype-face-default
+(defface monkeytype-default
   '((t (:family "Menlo" :foreground "#999999")))
   "Face for text area."
   :group 'monkeytype-faces)
 
-(defface monkeytype-face-correct
+(defface monkeytype-correct
   '((t (:foreground "#666666")))
   "Face for correctly typed char."
   :group 'monkeytype-faces)
 
-(defface monkeytype-face-error
+(defface monkeytype-error
   '((t (
         :foreground "#cc6666"
         :underline (:color "#cc6666" :style wave))))
   "Face for wrongly typed char."
   :group 'monkeytype-faces)
 
-(defface monkeytype-face-correction-error
+(defface monkeytype-correction-error
   '((t (
         :inherit region
         :foreground "#ff6c6b"
@@ -123,22 +123,22 @@
   "Face for wrongly typed correction."
   :group 'monkeytype-faces)
 
-(defface monkeytype-face-correction-correct
+(defface monkeytype-correction-correct
   '((t (:inherit region :foreground "#b9ca4a")))
   "Face for correctly typed correction."
   :group 'monkeytype-faces)
 
-(defface monkeytype-face-header-1
+(defface monkeytype-header-1
   '((t (:foreground "#c5c8c6" :height 1.1)))
   "Runs performance header 1"
   :group 'monkeytype-faces)
 
-(defface monkeytype-face-header-2
+(defface monkeytype-header-2
   '((t (:foreground "#B7950B")))
   "Runs performance header 2"
   :group 'monkeytype-faces)
 
-(defface monkeytype-face-header-3
+(defface monkeytype-header-3
   '((t (:foreground "#969896" :height 0.7)))
   "Runs performance header 3"
   :group 'monkeytype-faces)
@@ -656,16 +656,16 @@ See: `monkeytype--utils-local-idle-timer'"
       (propertize
        (format "%s" "Overall Results:\n")
        'face
-       'monkeytype-face-header-1)
+       'monkeytype-header-1)
       (propertize
        (format "(Tally of %d runs)\n\n" (length monkeytype--run-list))
        'face
-       'monkeytype-face-header-3)
+       'monkeytype-header-3)
       (monkeytype--results-final)
       (propertize
        "\n\nBreakdown by Runs:\n\n"
        'face
-       'monkeytype-face-header-1))))
+       'monkeytype-header-1))))
 
   (let ((run-index 1))
     (dolist (run (reverse monkeytype--run-list))
@@ -674,7 +674,7 @@ See: `monkeytype--utils-local-idle-timer'"
         (propertize
          (format "--(%d)-%s--:\n" run-index (gethash "started-at" run))
          'face
-         'monkeytype-face-header-2)
+         'monkeytype-header-2)
         (monkeytype--typed-text run)
         (monkeytype--results-run (gethash "entries" run))
         "\n\n"))
@@ -698,11 +698,11 @@ Also shows SECONDS right next to WPM."
      (monkeytype--calc-net-wpm words uncorrected-errors minutes)
      (format-seconds "%.2h:%z%.2m:%.2s" seconds))
     'face
-    'monkeytype-face-header-2)
+    'monkeytype-header-2)
    (propertize
     (format "[%.2f - (" (monkeytype--calc-gross-wpm words minutes))
     'face
-    'monkeytype-face-header-3)
+    'monkeytype-header-3)
    (propertize
     (format "%d" uncorrected-errors)
     'face
@@ -712,11 +712,11 @@ Also shows SECONDS right next to WPM."
    (propertize
      (format " / %.2f)]\n" minutes)
     'face
-    'monkeytype-face-header-3)
+    'monkeytype-header-3)
    (propertize
      "WPM = Gross-WPM - (uncorrected-errors / minutes)"
     'face
-    'monkeytype-face-header-3)))
+    'monkeytype-header-3)))
 
 (defun monkeytype--results-gross-wpm (words minutes)
   "Gross WPM performance result.
@@ -726,11 +726,11 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format "%.2f" (monkeytype--calc-gross-wpm words minutes))
     'face
-    'monkeytype-face-header-2)
+    'monkeytype-header-2)
    (propertize
     "["
     'face
-    'monkeytype-face-header-3)
+    'monkeytype-header-3)
    (propertize
     (format "%.2f" words)
     'face
@@ -738,11 +738,11 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format " / %.2f]" minutes)
     'face
-    'monkeytype-face-header-3)
+    'monkeytype-header-3)
    (propertize
     "\nGross-WPM = words / minutes"
     'face
-    'monkeytype-face-header-3)))
+    'monkeytype-header-3)))
 
 (defun monkeytype--results-accuracy (chars correct-chars corrections)
   "CHARS CORRECT-CHARS CORRECTIONS."
@@ -753,11 +753,11 @@ Gross-WPM = WORDS / MINUTES."
                       correct-chars
                       corrections))
     'face
-    'monkeytype-face-header-2)
+    'monkeytype-header-2)
    (propertize
     (format "[((%.2f - " correct-chars)
     'face
-    'monkeytype-face-header-3)
+    'monkeytype-header-3)
    (propertize
     (format "%d" corrections)
     'face
@@ -767,11 +767,11 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format ") / %.2f) * 100]" chars)
     'face
-    'monkeytype-face-header-3)
+    'monkeytype-header-3)
    (propertize
     "\nAccuracy = ((correct-chars - corrections) / total-chars) * 100"
     'face
-    'monkeytype-face-header-3)))
+    'monkeytype-header-3)))
 
 (defun monkeytype--results-run (run)
   "Performance results for RUN."
@@ -857,11 +857,11 @@ Total time is the sum of all the last entries' elapsed-seconds for each runs."
   "Return the face for the CORRECTP and/or CORRECTIONP entry."
   (if correctionp
       (if correctp
-          'monkeytype-face-correction-correct
-        'monkeytype-face-correction-error)
+          'monkeytype-correction-correct
+        'monkeytype-correction-error)
     (if correctp
-        'monkeytype-face-correct
-      'monkeytype-face-error)))
+        'monkeytype-correct
+      'monkeytype-error)))
 
 (defun monkeytype--typed-text-newline (source typed)
   "Newline substitutions depending on SOURCE and TYPED char."
@@ -1429,7 +1429,7 @@ See: `monkeytype-save-mistyped-words' for how word-files are saved.
       (progn
         (font-lock-mode nil)
         (buffer-face-mode t)
-        (buffer-face-set 'monkeytype-face-default)
+        (buffer-face-set 'monkeytype-default)
         (monkeytype--run-add-hooks)
         (monkeytype--mode-line-report-status))
     (font-lock-mode t)

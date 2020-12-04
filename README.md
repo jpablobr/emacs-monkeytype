@@ -116,14 +116,14 @@ Or set the variables in your `.emacs` file:
 ``` emacs-lisp
 (setq
  ;; Faces
- monkeytype-face-default '(:family "Menlo" :height 1.6 :foreground "#969896")
- monkeytype-face-correct '(:foreground "#98be65")
- monkeytype-face-error '(:foreground "#ff6c6b")
- monkeytype-face-correction-error '(:inherit region :foreground "#ff6c6b")
- monkeytype-face-correction-correct '(:inherit region :foreground "#98be65")
- monkeytype-face-header-1 '(:foreground "#B7950B")
- monkeytype-face-header-2 '(:foreground "#F1C40F")
- monkeytype-face-header-3 '(:foreground "#F1C40F")
+ monkeytype-default '(:family "Menlo" :height 1.6 :foreground "#969896")
+ monkeytype-correct '(:foreground "#98be65")
+ monkeytype-error '(:foreground "#ff6c6b")
+ monkeytype-correction-error '(:inherit region :foreground "#ff6c6b")
+ monkeytype-correction-correct '(:inherit region :foreground "#98be65")
+ monkeytype-header-1 '(:foreground "#B7950B")
+ monkeytype-header-2 '(:foreground "#F1C40F")
+ monkeytype-header-3 '(:foreground "#F1C40F")
  ;; How often to update mode-line
  monkeytype-mode-line-interval-update 10
  ;; Use space instead or newline
