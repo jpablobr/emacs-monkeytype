@@ -143,6 +143,16 @@
   "Runs performance header 3"
   :group 'monkeytype-faces)
 
+(defface monkeytype-results-success
+  '((t (:foreground "#98be65" :height 0.7)))
+  "Face for results success text."
+  :group 'monkeytype-faces)
+
+(defface monkeytype-results-error
+  '((t (:foreground "#cc6666" :height 0.7)))
+  "Face for results error text."
+  :group 'monkeytype-faces)
+
 ;;;; Configurable Settings:
 
 (defcustom monkeytype-treat-newline-as-space t
@@ -686,6 +696,12 @@ See: `monkeytype--utils-local-idle-timer'"
 
   (goto-char (point-min)))
 
+(defun monkeytype--results-get-face (successp)
+"Get success or error face based on SUCCESSP."
+(if successp
+    'monkeytype-results-success
+  'monkeytype-results-error))
+
 (defun monkeytype--results-net-wpm (words uncorrected-errors minutes seconds)
   "Net WPM performance result for total WORDS.
 
@@ -706,15 +722,13 @@ Also shows SECONDS right next to WPM."
    (propertize
     (format "%d" uncorrected-errors)
     'face
-    `(:foreground ,(if (= uncorrected-errors 0)
-                       "#98be65"
-                     "#cc6666") :height 0.7))
+    (monkeytype--results-get-face (= uncorrected-errors 0)))
    (propertize
-     (format " / %.2f)]\n" minutes)
+    (format " / %.2f)]\n" minutes)
     'face
     'monkeytype-header-3)
    (propertize
-     "WPM = Gross-WPM - (uncorrected-errors / minutes)"
+    "WPM = Gross-WPM - (uncorrected-errors / minutes)"
     'face
     'monkeytype-header-3)))
 
@@ -734,7 +748,7 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format "%.2f" words)
     'face
-    '(:foreground "#98be65" :height 0.7))
+    'monkytype-results-success)
    (propertize
     (format " / %.2f]" minutes)
     'face
@@ -761,9 +775,7 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format "%d" corrections)
     'face
-    `(:foreground ,(if (= corrections 0)
-                       "#98be65"
-                     "#cc6666") :height 0.7))
+    (monkeytype--results-get-face (= corrections 0)))
    (propertize
     (format ") / %.2f) * 100]" chars)
     'face
