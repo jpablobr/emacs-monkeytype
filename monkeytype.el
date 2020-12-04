@@ -128,28 +128,28 @@
   "Face for correctly typed correction."
   :group 'monkeytype-faces)
 
-(defface monkeytype-header-1
-  '((t (:foreground "#c5c8c6" :height 1.1)))
-  "Runs performance header 1"
+(defface monkeytype-title
+  '((t :inherit default))
+  "Face for results titles."
   :group 'monkeytype-faces)
 
-(defface monkeytype-header-2
-  '((t (:foreground "#B7950B")))
-  "Runs performance header 2"
+(defface monkeytype-legend-1
+  '((t :inherit font-lock-warning-face))
+  "Face for results legend 1."
   :group 'monkeytype-faces)
 
-(defface monkeytype-header-3
-  '((t (:foreground "#969896" :height 0.7)))
-  "Runs performance header 3"
+(defface monkeytype-legend-2
+  '((t :inherit font-lock-doc-face :height 0.9))
+  "Face for results legend 2."
   :group 'monkeytype-faces)
 
 (defface monkeytype-results-success
-  '((t (:foreground "#98be65" :height 0.7)))
+  '((t (:foreground "#98be65" :height 0.9)))
   "Face for results success text."
   :group 'monkeytype-faces)
 
 (defface monkeytype-results-error
-  '((t (:foreground "#cc6666" :height 0.7)))
+  '((t (:foreground "#cc6666" :height 0.9)))
   "Face for results error text."
   :group 'monkeytype-faces)
 
@@ -683,19 +683,8 @@ See: `monkeytype--utils-local-idle-timer'"
   (when (> (length monkeytype--run-list) 1)
     (insert
      (concat
-      (propertize
-       (format "%s" "Overall Results:\n")
-       'face
-       'monkeytype-header-1)
-      (propertize
-       (format "(Tally of %d runs)\n\n" (length monkeytype--run-list))
-       'face
-       'monkeytype-header-3)
       (monkeytype--results-final)
-      (propertize
-       "\n\nBreakdown by Runs:\n\n"
-       'face
-       'monkeytype-header-1))))
+      (propertize "\n\nRuns Breakdown:\n\n" 'face 'monkeytype-title))))
 
   (let ((run-index 1))
     (dolist (run (reverse monkeytype--run-list))
@@ -704,7 +693,7 @@ See: `monkeytype--utils-local-idle-timer'"
         (propertize
          (format "--(%d)-%s--:\n" run-index (gethash "started-at" run))
          'face
-         'monkeytype-header-2)
+         'monkeytype-title)
         (monkeytype--typed-text run)
         (monkeytype--results-run (gethash "entries" run))
         "\n\n"))
@@ -734,11 +723,11 @@ Also shows SECONDS right next to WPM."
      (monkeytype--calc-net-wpm words uncorrected-errors minutes)
      (format-seconds "%.2h:%z%.2m:%.2s" seconds))
     'face
-    'monkeytype-header-2)
+    'monkeytype-legend-1)
    (propertize
     (format "[%.2f - (" (monkeytype--calc-gross-wpm words minutes))
     'face
-    'monkeytype-header-3)
+    'monkeytype-legend-2)
    (propertize
     (format "%d" uncorrected-errors)
     'face
@@ -746,11 +735,11 @@ Also shows SECONDS right next to WPM."
    (propertize
     (format " / %.2f)]\n" minutes)
     'face
-    'monkeytype-header-3)
+    'monkeytype-legend-2)
    (propertize
     "WPM = Gross-WPM - (uncorrected-errors / minutes)"
     'face
-    'monkeytype-header-3)))
+    'monkeytype-legend-2)))
 
 (defun monkeytype--results-gross-wpm (words minutes)
   "Gross WPM performance result.
@@ -760,23 +749,23 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format "%.2f" (monkeytype--calc-gross-wpm words minutes))
     'face
-    'monkeytype-header-2)
+    'monkeytype-legend-1)
    (propertize
     "["
     'face
-    'monkeytype-header-3)
+    'monkeytype-legend-2)
    (propertize
     (format "%.2f" words)
     'face
-    'monkytype-results-success)
+    'monkeytype-results-success)
    (propertize
     (format " / %.2f]" minutes)
     'face
-    'monkeytype-header-3)
+    'monkeytype-legend-2)
    (propertize
     "\nGross-WPM = words / minutes"
     'face
-    'monkeytype-header-3)))
+    'monkeytype-legend-2)))
 
 (defun monkeytype--results-accuracy (chars correct-chars corrections)
   "CHARS CORRECT-CHARS CORRECTIONS."
@@ -787,11 +776,11 @@ Gross-WPM = WORDS / MINUTES."
                       correct-chars
                       corrections))
     'face
-    'monkeytype-header-2)
+    'monkeytype-legend-1)
    (propertize
     (format "[((%.2f - " correct-chars)
     'face
-    'monkeytype-header-3)
+    'monkeytype-legend-2)
    (propertize
     (format "%d" corrections)
     'face
@@ -799,11 +788,11 @@ Gross-WPM = WORDS / MINUTES."
    (propertize
     (format ") / %.2f) * 100]" chars)
     'face
-    'monkeytype-header-3)
+    'monkeytype-legend-2)
    (propertize
     "\nAccuracy = ((correct-chars - corrections) / total-chars) * 100"
     'face
-    'monkeytype-header-3)))
+    'monkeytype-legend-2)))
 
 (defun monkeytype--results-run (run)
   "Performance results for RUN."
