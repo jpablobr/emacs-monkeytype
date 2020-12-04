@@ -65,7 +65,7 @@ At this point you can either practice mistyped words with `monkeytype-mistyped-w
 - After a test, practice troubling/hard key combinations/transitions (useful when practising with different keyboard layouts).
 - Mistyped words or hard transitions can be saved to `~/.monkeytype/{words or transitions}` (see: `monkeytype-directory` `monkeytype-save-mistyped-words` `monkeytype-save-hard-transitions`).
 - Saved mistyped/transitions files (or any file but defaults to `~/.monkeytype/` dir) can be loaded with `monkeytyped-load-words-from-file`.
-- `monkeytype-excluded-chars-regexp` customises the regexp used for removing characters from words (defaults to: ="[^[:alnum:]']"=)
+- `monkeytype-excluded-chars-regexp` customises the regexp used for removing characters from words (defaults to: `"[^[:alnum:]']"`)
 - Ability to type most (saved) mistyped words (the amount of words is configurable with `monkeytype-most-mistyped-amount` [defaults to 100]) see: `monkeytype-most-mistyped-words`
 
 ### To come... (PRs welcome)
