@@ -164,7 +164,7 @@
   :group 'monkeytype-faces)
 
 (defface monkeytype-mode-line-normal
-  '((t :inherit default))
+  '((t :inherit mode-line-buffer-id))
   "Face for mode-line normal text."
   :group 'monkeytype-faces)
 
