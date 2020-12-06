@@ -350,7 +350,7 @@ TEXT-FILE-P is used to know if the test is text-file based."
 ;;;; Utils:
 
 (defvar-local monkeytype--chars '())
-(defvar-local monkeytype--words-list '())
+(defvar-local monkeytype--words '())
 (defvar-local monkeytype--mistyped-words-list '())
 (defvar-local monkeytype--chars-to-words-list '())
 (defvar-local monkeytype--hard-transition-list '())
@@ -431,7 +431,7 @@ REPEAT, FUNCTION and ARGS are passed directly to `run-with-idle-timer'."
                 monkeytype-excluded-chars-regexp))
          (index 1))
     (dolist (word words)
-      (add-to-list 'monkeytype--words-list `(,index . ,word))
+      (add-to-list 'monkeytype--words `(,index . ,word))
       (setq index (1+ index)))))
 
 (defun monkeytype--utils-index-chars-to-words ()
@@ -447,7 +447,7 @@ See: `monkeytype--utils-index-chars'"
           (progn
             (setq word-index (1+ word-index))
             (setq char-index (1+ char-index)))
-        (let ((word (cdr (assoc word-index monkeytype--words-list))))
+        (let ((word (cdr (assoc word-index monkeytype--words))))
           (add-to-list
            'monkeytype--chars-to-words-list
            `(,char-index . ,word))
