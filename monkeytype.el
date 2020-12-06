@@ -679,7 +679,10 @@ See: `monkeytype--utils-local-idle-timer'"
     (insert
      (concat
       (monkeytype--results-final)
-      (propertize "\n\nRuns Breakdown:\n\n" 'face 'monkeytype-title))))
+      (propertize
+       (format "\n\nRuns(%d) Breakdown:\n\n" (length monkeytype--run-list))
+       'face
+       'monkeytype-title))))
 
   (let ((run-index 1))
     (dolist (run (reverse monkeytype--run-list))
