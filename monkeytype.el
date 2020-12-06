@@ -352,7 +352,7 @@ TEXT-FILE-P is used to know if the test is text-file based."
 (defvar-local monkeytype--chars '())
 (defvar-local monkeytype--words '())
 (defvar-local monkeytype--mistyped-words '())
-(defvar-local monkeytype--chars-to-words-list '())
+(defvar-local monkeytype--chars-to-words '())
 (defvar-local monkeytype--hard-transition-list '())
 
 (defun monkeytype--utils-nshuffle (sequence)
@@ -449,7 +449,7 @@ See: `monkeytype--utils-index-chars'"
             (setq char-index (1+ char-index)))
         (let ((word (cdr (assoc word-index monkeytype--words))))
           (add-to-list
-           'monkeytype--chars-to-words-list
+           'monkeytype--chars-to-words
            `(,char-index . ,word))
           (setq char-index (1+ char-index)))))))
 
@@ -955,7 +955,7 @@ run."
 (defun monkeytype--typed-text-add-to-mistyped-list (char)
   "Find associated word for CHAR and add it to mistyped list."
   (let* ((index (gethash 'source-index char))
-         (word (cdr (assoc index monkeytype--chars-to-words-list))))
+         (word (cdr (assoc index monkeytype--chars-to-words))))
     (when word
       (cl-pushnew
        (replace-regexp-in-string monkeytype-excluded-chars-regexp "" word)
