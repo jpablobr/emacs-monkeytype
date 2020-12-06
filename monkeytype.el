@@ -1431,7 +1431,9 @@ Buffer will be filled with the vale of `fill-column' if
                  (unless (file-exists-p dir) (make-directory dir))
                  (read-file-name "Enter text file for typing:" dir)))
          (dir (concat (string-trim path nil ".txt") "/"))
-         (runs (directory-files dir t ".json$" nil))
+         (runs (progn
+                 (unless (file-exists-p dir) (make-directory dir))
+                 (directory-files dir t ".json$" nil)))
          (last-run (when runs (elt (reverse runs) 0)))
          (last-run (when last-run (json-read-file last-run)))
          (entries (when last-run (cdr (assoc 'entries last-run))))
