@@ -353,7 +353,7 @@ TEXT-FILE-P is used to know if the test is text-file based."
 (defvar-local monkeytype--words '())
 (defvar-local monkeytype--mistyped-words '())
 (defvar-local monkeytype--chars-to-words '())
-(defvar-local monkeytype--hard-transition-list '())
+(defvar-local monkeytype--hard-transitions '())
 
 (defun monkeytype--utils-nshuffle (sequence)
   "Shuffle given SEQUENCE.
@@ -999,7 +999,7 @@ This is unless the char doesn't belong to any word as defined by the
                             (string-match "[^ \n\t]" transition))))
 
         (when transition-p
-          (cl-pushnew transition monkeytype--hard-transition-list))
+          (cl-pushnew transition monkeytype--hard-transitions))
         (monkeytype--typed-text-add-to-mistyped-list settled)))))
 
 (defun monkeytype--typed-text-to-string (entries)
@@ -1316,15 +1316,15 @@ This is unless the char doesn't belong to any word as defined by the
 
 \\[monkeytype-hard-transitions]"
   (interactive)
-  (if (> (length monkeytype--hard-transition-list) 0)
-      (let* ((transitions-count (length monkeytype--hard-transition-list))
+  (if (> (length monkeytype--hard-transitions) 0)
+      (let* ((transitions-count (length monkeytype--hard-transitions))
              (append-times (/
                             monkeytype-minimum-transitions
                             transitions-count))
              (final-list '()))
         (cl-loop repeat append-times do
                  (setq final-list
-                       (append final-list monkeytype--hard-transition-list)))
+                       (append final-list monkeytype--hard-transitions)))
         (monkeytype--init
          (monkeytype--utils-format-words
           (mapconcat #'identity final-list " "))))
@@ -1355,7 +1355,7 @@ See also: `monkeytype-load-words-from-file'
   (let ((path (monkeytype--utils-file-path "transitions"))
         (transitions (mapconcat
                       #'identity
-                      monkeytype--hard-transition-list
+                      monkeytype--hard-transitions
                       " ")))
     (with-temp-file path (insert transitions))
     (message "Monkeytype: Transitions saved successfully to file: %s" path)))
