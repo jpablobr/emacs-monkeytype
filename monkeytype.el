@@ -351,7 +351,7 @@ TEXT-FILE-P is used to know if the test is text-file based."
 
 (defvar-local monkeytype--chars '())
 (defvar-local monkeytype--words '())
-(defvar-local monkeytype--mistyped-words-list '())
+(defvar-local monkeytype--mistyped-words '())
 (defvar-local monkeytype--chars-to-words-list '())
 (defvar-local monkeytype--hard-transition-list '())
 
@@ -959,7 +959,7 @@ run."
     (when word
       (cl-pushnew
        (replace-regexp-in-string monkeytype-excluded-chars-regexp "" word)
-       monkeytype--mistyped-words-list))))
+       monkeytype--mistyped-words))))
 
 (defun monkeytype--typed-text-concat-corrections (corrections entry settled)
   "Concat propertized CORRECTIONS to SETTLED char.
@@ -1305,9 +1305,9 @@ This is unless the char doesn't belong to any word as defined by the
 
 \\[monkeytype-mistyped-words]"
   (interactive)
-  (if (> (length monkeytype--mistyped-words-list) 0)
+  (if (> (length monkeytype--mistyped-words) 0)
       (monkeytype--init
-       (monkeytype--utils-format-words monkeytype--mistyped-words-list))
+       (monkeytype--utils-format-words monkeytype--mistyped-words))
     (message "Monkeytype: No word-errors. ([C-c C-c t] to repeat.)")))
 
 ;;;###autoload
@@ -1340,7 +1340,7 @@ See also: `monkeytype-most-mistyped-words'
 \\[monkeytype-save-mistyped-words]"
   (interactive)
   (let ((path (monkeytype--utils-file-path "words"))
-        (words (mapconcat #'identity monkeytype--mistyped-words-list " ")))
+        (words (mapconcat #'identity monkeytype--mistyped-words " ")))
     (with-temp-file path (insert words))
     (message "Monkeytype: Words saved successfully to file: %s" path)))
 
