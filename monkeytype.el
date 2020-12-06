@@ -942,7 +942,7 @@ run."
   "Whitespace substitutions depending on SOURCE and TYPED char."
   (if (and (string= " " typed) (not (string= typed source))) "·" typed))
 
-(defun monkeytype--typed-text-skipped-text (settled)
+(defun monkeytype--typed-text-skipped (settled)
   "Handle skipped text before the typed char at SETTLED."
   (let* ((start (car (car monkeytype--chars)))
          (skipped-length (when start (- settled start))))
@@ -1018,22 +1018,21 @@ This is unless the char doesn't belong to any word as defined by the
                           typed-entry))
             (settled-correctp (= (gethash 'state settled) 1))
             (settled-index (gethash 'source-index settled))
-            (skipped-text  (monkeytype--typed-text-skipped-text settled-index))
-            (propertized-settled (concat
-                                  skipped-text
-                                  (propertize
-                                   (format "%s" typed-entry)
-                                   'face
-                                   (monkeytype--typed-text-entry-face
-                                    settled-correctp))))
+            (skipped-text  (monkeytype--typed-text-skipped settled-index))
+            (prop-settled (propertize
+                           (format "%s" typed-entry)
+                           'face
+                           (monkeytype--typed-text-entry-face
+                            settled-correctp)))
+            (prop-settled (concat skipped-text prop-settled))
             (corrections (when correctionsp (butlast tries))))
        (if correctionsp
            (monkeytype--typed-text-concat-corrections
             corrections
             settled
-            propertized-settled)
+            prop-settled)
          (monkeytype--typed-text-collect-errors settled)
-         (format "%s" propertized-settled))))
+         (format "%s" prop-settled))))
    entries
    ""))
 
@@ -1092,8 +1091,7 @@ This is unless the char doesn't belong to any word as defined by the
          (input-index (gethash 'input-index entry))
          (state (gethash 'state entry))
          (elapsed-seconds (gethash 'elapsed-seconds entry))
-         (minutes (monkeytype--utils-seconds-to-minutes
-                           elapsed-seconds))
+         (minutes (monkeytype--utils-seconds-to-minutes elapsed-seconds))
          (typed-entry-face (monkeytype--typed-text-entry-face (= state 1)))
          (propertized-typed-entry (propertize
                                    (format "%S" typed-entry)
@@ -1126,10 +1124,8 @@ This is unless the char doesn't belong to any word as defined by the
 (defvar-local monkeytype--mode-line-previous-run-last-entry nil)
 
 (defun monkeytype--mode-line-get-face (successp)
-"Get success or error face based on SUCCESSP."
-(if successp
-    'monkeytype-mode-line-success
-  'monkeytype-mode-line-error))
+  "Get success or error face based on SUCCESSP."
+  (if successp 'monkeytype-mode-line-success 'monkeytype-mode-line-error))
 
 (defun monkeytype--mode-line-report-status ()
   "Take care of mode-line updating."
@@ -1317,10 +1313,8 @@ This is unless the char doesn't belong to any word as defined by the
 \\[monkeytype-hard-transitions]"
   (interactive)
   (if (> (length monkeytype--hard-transitions) 0)
-      (let* ((transitions-count (length monkeytype--hard-transitions))
-             (append-times (/
-                            monkeytype-minimum-transitions
-                            transitions-count))
+      (let* ((count (length monkeytype--hard-transitions))
+             (append-times (/ monkeytype-minimum-transitions count))
              (final-list '()))
         (cl-loop repeat append-times do
                  (setq final-list
@@ -1352,18 +1346,14 @@ See also: `monkeytype-load-words-from-file'
 
 \\[monkeytype-save-hard-transition]"
   (interactive)
-  (let ((path (monkeytype--utils-file-path "transitions"))
-        (transitions (mapconcat
-                      #'identity
-                      monkeytype--hard-transitions
-                      " ")))
-    (with-temp-file path (insert transitions))
-    (message "Monkeytype: Transitions saved successfully to file: %s" path)))
+  (let ((path (monkeytype--utils-file-path "transitions")))
+    (with-temp-file path
+      (insert (mapconcat #'identity monkeytype--hard-transitions " ")))
+    (message "Monkeytype: Transitions saved successfully in: %s" path)))
 
 ;;;###autoload
 (defun monkeytype-load-text-from-file ()
   "Prompt user to enter text-file to use for typing.
-
 Buffer will be filled with the vale of `fill-column' if
 `monkeytype-auto-fill' is set to true.
 
@@ -1381,10 +1371,8 @@ Buffer will be filled with the vale of `fill-column' if
          (last-run (when last-run (json-read-file last-run)))
          (entries (when last-run (cdr (assoc 'entries last-run))))
          (last-entry (when entries (elt entries 0)))
-         (text (monkeytype--utils-format-text (with-temp-buffer
-                                                (insert-file-contents path)
-                                                (buffer-string)))))
-
+         (text (with-temp-buffer (insert-file-contents path) (buffer-string)))
+         (text (monkeytype--utils-format-text text)))
     (setq monkeytype--text-file-last-entry last-entry)
     (setq monkeytype--text-file-directory dir)
     (setq monkeytype--text-file path)
@@ -1403,9 +1391,9 @@ Buffer will be filled with the vale of `fill-column' if
 
 \\[monkeytype-load-words-from-file]"
   (interactive)
-  (let* ((file-path (read-file-name "Enter words file:" monkeytype-directory))
+  (let* ((path (read-file-name "Enter words file:" monkeytype-directory))
          (words (with-temp-buffer
-                  (insert-file-contents file-path)
+                  (insert-file-contents path)
                   (buffer-string)))
          (words (split-string words monkeytype-excluded-chars-regexp t))
          (words (monkeytype--utils-format-words words)))
@@ -1419,8 +1407,8 @@ Words will be randomized if `monkeytype-randomize' is set to true.
 Words will be downcased if `monkeytype-downcase' is set to true.
 Words special characters will get removed based on
 `monkeytype-excluded-chars-regexp'.
-Buffer will be filled with the vale of `fill-column' if `monkeytype-auto-fill'
-is set to true.
+Buffer will be filled with the vale of `fill-column' if
+`monkeytype-auto-fill' is set to true.
 
 \\[monkeytype-region-as-words]"
   (interactive "r")
@@ -1431,7 +1419,7 @@ is set to true.
 
 ;;;###autoload
 (defun monkeytype-most-mistyped-words ()
-  "Type most mistyped words from all word-files in the `monkeytype-directory'.
+  "Type most mistyped words from all word-files in `monkeytype-directory'.
 
 See: `monkeytype-save-mistyped-words' for how word-files are saved.
 
@@ -1439,22 +1427,22 @@ See: `monkeytype-save-mistyped-words' for how word-files are saved.
   (interactive)
   (let* ((dir (concat monkeytype-directory "/words"))
          (files (directory-files dir t ".txt$" nil))
-         (word-list (with-temp-buffer
+         (words (with-temp-buffer
                       (dolist (file files)
                         (insert-file-contents file))
                       (split-string (buffer-string))))
-         (grouped-words (seq-group-by #'identity word-list))
+         (grouped-words (seq-group-by #'identity words))
          (grouped-words (seq-group-by #'length grouped-words))
-         (word-list '()))
+         (words '()))
 
     (dolist (word-group (reverse grouped-words))
       (dolist (word (cdr word-group))
-        (cl-pushnew (car word) word-list)))
+        (cl-pushnew (car word) words)))
 
-    (if (> (length word-list) monkeytype-most-mistyped-amount)
+    (if (> (length words) monkeytype-most-mistyped-amount)
         (progn
-          (setq word-list (seq-take word-list monkeytype-most-mistyped-amount))
-          (monkeytype--init (monkeytype--utils-format-words word-list)))
+          (setq words (seq-take words monkeytype-most-mistyped-amount))
+          (monkeytype--init (monkeytype--utils-format-words words)))
       (message "Monkeytype: Not enough mistyped words for test."))))
 
 (provide 'monkeytype)
