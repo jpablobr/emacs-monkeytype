@@ -265,7 +265,7 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
 ;;;; Init:
 
 (defvar-local monkeytype--buffer-name "*Monkeytype*")
-(defvar-local monkeytype--run-list '())
+(defvar-local monkeytype--runs '())
 (defvar-local monkeytype--start-time nil)
 (defvar monkeytype--typing-buffer nil)
 (defvar monkeytype--source-text "")
@@ -684,7 +684,7 @@ See: `monkeytype--utils-local-idle-timer'"
   (monkeytype--run-remove-hooks)
   (monkeytype--run-add-to-list)
   (when monkeytype--text-file
-    (monkeytype--utils-save-run (elt monkeytype--run-list 0)))
+    (monkeytype--utils-save-run (elt monkeytype--runs 0)))
   (read-only-mode))
 
 (defun monkeytype--run-finish ()
@@ -703,7 +703,7 @@ See: `monkeytype--utils-local-idle-timer'"
     (monkeytype--run-remove-hooks)
     (monkeytype--run-add-to-list)
     (when monkeytype--text-file
-      (monkeytype--utils-save-run (elt monkeytype--run-list 0))))
+      (monkeytype--utils-save-run (elt monkeytype--runs 0))))
 
   (setq buffer-read-only nil)
   (monkeytype--results)
@@ -712,12 +712,12 @@ See: `monkeytype--utils-local-idle-timer'"
   (read-only-mode))
 
 (defun monkeytype--run-add-to-list ()
-  "Add current run to `monkeytype--run-list'."
+  "Add current run to `monkeytype--runs'."
   (let ((run (make-hash-table :test 'equal)))
     (puthash 'started-at monkeytype--current-run-start-datetime run)
     (puthash 'finished-at (format-time-string "%a-%d-%b-%Y %H:%M:%S") run)
     (puthash 'entries monkeytype--current-run-list run)
-    (add-to-list 'monkeytype--run-list run)))
+    (add-to-list 'monkeytype--runs run)))
 
 (defun monkeytype--run-remove-hooks ()
   "Remove hooks."
@@ -741,7 +741,7 @@ See: `monkeytype--utils-local-idle-timer'"
     (let* ((path monkeytype--text-file)
            (dir (concat (string-trim path nil ".txt") "/"))
            (runs (directory-files dir t ".json$" nil)))
-      (setq monkeytype--run-list '())
+      (setq monkeytype--runs '())
       (dolist (run runs)
         (let* ((run (json-read-file run))
               (ht (make-hash-table :test 'equal))
@@ -751,19 +751,19 @@ See: `monkeytype--utils-local-idle-timer'"
           (puthash 'started-at (cdr (assoc 'started-at run)) ht)
           (puthash 'finished-at (cdr (assoc 'finished-at run)) ht)
           (puthash 'entries entries ht)
-          (add-to-list 'monkeytype--run-list ht)))))
+          (add-to-list 'monkeytype--runs ht)))))
 
-  (when (> (length monkeytype--run-list) 1)
+  (when (> (length monkeytype--runs) 1)
     (insert
      (concat
       (monkeytype--results-final)
       (propertize
-       (format "\n\nRuns(%d) Breakdown:\n\n" (length monkeytype--run-list))
+       (format "\n\nRuns(%d) Breakdown:\n\n" (length monkeytype--runs))
        'face
        'monkeytype-title))))
 
   (let ((run-index 1))
-    (dolist (run (reverse monkeytype--run-list))
+    (dolist (run (reverse monkeytype--runs))
       (insert
        (concat
         (propertize
@@ -903,7 +903,7 @@ Total time is the sum of all the last entries' elapsed-seconds for each
 run."
   (let* ((last-entries (mapcar
                         (lambda (x) (elt (gethash 'entries x) 0))
-                        monkeytype--run-list))
+                        monkeytype--runs))
          (last-entry (elt last-entries 0))
          (total-seconds (mapcar
                          (lambda (x) (gethash 'elapsed-seconds x))
@@ -1136,7 +1136,7 @@ This is unless the char doesn't belong to any word as defined by the
   (setq monkeytype--mode-line-current-entry
         (elt monkeytype--current-run-list 0))
   (setq monkeytype--mode-line-previous-run
-        (elt monkeytype--run-list 0))
+        (elt monkeytype--runs 0))
 
   (when monkeytype--mode-line-previous-run
     (setq monkeytype--mode-line-previous-run-last-entry
