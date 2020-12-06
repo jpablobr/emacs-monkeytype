@@ -84,6 +84,7 @@
 (require 'seq)
 (require 'subr-x)
 (require 'json)
+(require 'map)
 
 ;;;###autoload
 (define-minor-mode monkeytype-mode
