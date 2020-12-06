@@ -287,7 +287,7 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
 
 ;; Run
 (defvar-local monkeytype--progress-tracker "")
-(defvar-local monkeytype--current-run-list '())
+(defvar-local monkeytype--current-run '())
 (defvar-local monkeytype--current-entry '())
 (defvar-local monkeytype--current-run-start-datetime nil)
 
@@ -635,7 +635,7 @@ ENTRY-STATE = 2 mistyped re-typed char"
          (cl-incf monkeytype--counter-correction))))
 
 (defun monkeytype--process-input-add-to-entries (start typed source)
-  "Add entry to `monkeytype--current-run-list'.
+  "Add entry to `monkeytype--current-run'.
 
 START is used for indexing purposes.
 TYPED is the char input by the user.
@@ -654,7 +654,7 @@ SOURCE is the original char."
     (puthash 'state (aref monkeytype--progress-tracker start) entry)
     (puthash 'elapsed-seconds (monkeytype--utils-elapsed-seconds) entry)
     (puthash 'formatted-seconds seconds entry)
-    (add-to-list 'monkeytype--current-run-list entry)))
+    (add-to-list 'monkeytype--current-run entry)))
 
 (defun monkeytype--process-input-timer-init ()
   "Start the idle timer (to wait 5 seconds before pausing).
@@ -669,7 +669,7 @@ See: `monkeytype--utils-local-idle-timer'"
 (defun monkeytype--process-input-update-mode-line ()
   "Update `monkeytype-mode-line' by sending it the current entry info."
   (if monkeytype-mode-line-interval-update
-      (let* ((entry (elt monkeytype--current-run-list 0))
+      (let* ((entry (elt monkeytype--current-run 0))
              (char-index (if entry (gethash 'source-index entry) 0)))
         (if (and
              (> char-index monkeytype-mode-line-interval-update)
@@ -716,7 +716,7 @@ See: `monkeytype--utils-local-idle-timer'"
   (let ((run (make-hash-table :test 'equal)))
     (puthash 'started-at monkeytype--current-run-start-datetime run)
     (puthash 'finished-at (format-time-string "%a-%d-%b-%Y %H:%M:%S") run)
-    (puthash 'entries monkeytype--current-run-list run)
+    (puthash 'entries monkeytype--current-run run)
     (add-to-list 'monkeytype--runs run)))
 
 (defun monkeytype--run-remove-hooks ()
@@ -1134,7 +1134,7 @@ This is unless the char doesn't belong to any word as defined by the
 (defun monkeytype--mode-line-report-status ()
   "Take care of mode-line updating."
   (setq monkeytype--mode-line-current-entry
-        (elt monkeytype--current-run-list 0))
+        (elt monkeytype--current-run 0))
   (setq monkeytype--mode-line-previous-run
         (elt monkeytype--runs 0))
 
@@ -1267,7 +1267,7 @@ This is unless the char doesn't belong to any word as defined by the
   (interactive)
   (setq monkeytype--status-paused t)
   (when monkeytype--start-time (monkeytype--run-pause))
-  (setq monkeytype--current-run-list '())
+  (setq monkeytype--current-run '())
   (unless monkeytype--status-finished
     (message "Monkeytype: Paused ([C-c C-c r] to resume.)")))
 
