@@ -120,6 +120,72 @@
           :tag
           "GitHub" "https://github.com/jpablobr/emacs-monkeytype"))
 
+(defcustom monkeytype-treat-newline-as-space t
+  "Allow continuing to the next line by pressing space."
+  :type 'boolean)
+
+(defcustom monkeytype-insert-log nil
+  "Show log in results section."
+  :type 'boolean)
+
+(defcustom monkeytype-minimum-transitions 50
+  "Minimum amount of transitions to practice."
+  :type 'integer)
+
+(defcustom monkeytype-mode-line '(:eval (monkeytype--mode-line-text))
+  "Monkeytype mode line."
+  :type 'sexp
+  :risky t)
+
+(defcustom monkeytype-mode-line-interval-update 1
+  "Number of keystrokes after each mode-line update.
+Reducing the frequency of the updates helps reduce lagging on longer text or
+when typing too fast."
+  :type 'integer)
+
+(defcustom monkeytype-word-divisor 5.0
+  "5 is the most common number for these calculations.
+Proper word count doesn't work as well since words have different number
+of characters. This also makes calculations easier and more accurate."
+  :type 'integer)
+
+(defcustom monkeytype-auto-fill nil
+  "Toggle auto fill for typing text.
+Defaults `fill-column' setting
+See also: `monkeytype-words-auto-fill'"
+  :type 'boolean)
+
+(defcustom monkeytype-words-auto-fill t
+  "Toggle auto fill for words/transitions.
+It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
+  :type 'boolean)
+
+(defcustom monkeytype-delete-trailing-whitespace t
+  "Toggle delete trailing whitespace."
+  :type 'boolean)
+
+(defcustom monkeytype-downcase t
+  "Toggle downcasing of mistyped words."
+  :type 'boolean)
+
+(defcustom monkeytype-directory "~/.monkeytype/"
+  "Monkeytype directory."
+  :type 'string)
+
+(defcustom monkeytype-randomize t
+  "Toggle randomizing of words."
+  :type 'boolean)
+
+(defcustom monkeytype-excluded-chars-regexp "[^[:alnum:]']"
+  "Regexp used for getting valid words."
+  :type 'string)
+
+(defcustom monkeytype-most-mistyped-amount 100
+  "Amount of words in most mistyped words test."
+  :type 'boolean)
+
+;;;; Faces
+
 (defgroup monkeytype-faces nil
   "Faces used by Monkeytype."
   :group 'monkeytype
@@ -127,162 +193,64 @@
 
 (defface monkeytype-default
   '((t :inherit default))
-  "Face for text area."
-  :group 'monkeytype-faces)
+  "Face for text area.")
 
 (defface monkeytype-correct
   '((t :inherit font-lock-comment-face))
-  "Face for correctly typed char."
-  :group 'monkeytype-faces)
+  "Face for correctly typed char.")
 
 (defface monkeytype-error
   '((t (
         :foreground "#cc6666"
         :underline (:color "#cc6666" :style wave))))
-  "Face for wrongly typed char."
-  :group 'monkeytype-faces)
+  "Face for wrongly typed char.")
 
 (defface monkeytype-correction-error
   '((t (
         :inherit region
         :foreground "#ff6c6b"
         :underline (:color "#ff6c6b" :style wave))))
-  "Face for wrongly typed correction."
-  :group 'monkeytype-faces)
+  "Face for wrongly typed correction.")
 
 (defface monkeytype-correction-correct
   '((t (:inherit region :foreground "#b9ca4a")))
-  "Face for correctly typed correction."
-  :group 'monkeytype-faces)
+  "Face for correctly typed correction.")
 
 (defface monkeytype-title
   '((t :inherit default))
-  "Face for results titles."
-  :group 'monkeytype-faces)
+  "Face for results titles.")
 
 (defface monkeytype-legend-1
   '((t :inherit font-lock-warning-face))
-  "Face for results legend 1."
-  :group 'monkeytype-faces)
+  "Face for results legend 1.")
 
 (defface monkeytype-legend-2
   '((t :inherit font-lock-doc-face :height 0.9))
-  "Face for results legend 2."
-  :group 'monkeytype-faces)
+  "Face for results legend 2.")
 
 (defface monkeytype-results-success
   '((t (:foreground "#98be65" :height 0.9)))
-  "Face for results success text."
-  :group 'monkeytype-faces)
+  "Face for results success text.")
 
 (defface monkeytype-results-error
   '((t (:foreground "#cc6666" :height 0.9)))
-  "Face for results error text."
-  :group 'monkeytype-faces)
+  "Face for results error text.")
 
 (defface monkeytype-mode-line-success
   '((t (:foreground "#98be65")))
-  "Face for mode-line success text."
-  :group 'monkeytype-faces)
+  "Face for mode-line success text.")
 
 (defface monkeytype-mode-line-error
   '((t (:foreground "#ff6c6b")))
-  "Face for mode-line error text."
-  :group 'monkeytype-faces)
+  "Face for mode-line error text.")
 
 (defface monkeytype-mode-line-normal
   '((t :inherit mode-line-buffer-id))
-  "Face for mode-line normal text."
-  :group 'monkeytype-faces)
+  "Face for mode-line normal text.")
 
 (defface monkeytype-mode-line-info
   '((t (:foreground "#B7950B")))
-  "Face for mode-line info text."
-  :group 'monkeytype-faces)
-
-;;;; Configurable Settings:
-
-(defcustom monkeytype-treat-newline-as-space t
-  "Allow continuing to the next line by pressing space."
-  :type 'boolean
-  :group 'monkeytype)
-
-(defcustom monkeytype-insert-log nil
-  "Show log in results section."
-  :type 'boolean
-  :group 'monkeytype)
-
-(defcustom monkeytype-minimum-transitions 50
-  "Minimum amount of transitions to practice."
-  :type 'integer
-  :group 'monkeytype)
-
-(defcustom monkeytype-mode-line '(:eval (monkeytype--mode-line-text))
-  "Monkeytype mode line."
-  :group 'monkeytype
-  :type 'sexp
-  :risky t)
-
-(defcustom monkeytype-mode-line-interval-update 1
-  "Number of keystrokes after each mode-line update.
-
-Reducing the frequency of the updates helps reduce lagging on longer text or
-when typing too fast."
-  :type 'integer
-  :group 'monkeytype)
-
-(defcustom monkeytype-word-divisor 5.0
-  "5 is the most common number for these calculations.
-
-Proper word count doesn't work as well since words have different number
-of characters. This also makes calculations easier and more accurate."
-  :type 'integer
-  :group 'monkeytype)
-
-(defcustom monkeytype-auto-fill nil
-  "Toggle auto fill for typing text.
-
-Defaults `fill-column' setting
-See also: `monkeytype-words-auto-fill'"
-  :type 'boolean
-  :group 'monkeytype)
-
-(defcustom monkeytype-words-auto-fill t
-  "Toggle auto fill for words/transitions.
-
-It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
-  :type 'boolean
-  :group 'monkeytype)
-
-(defcustom monkeytype-delete-trailing-whitespace t
-  "Toggle delete trailing whitespace."
-  :type 'boolean
-  :group 'monkeytype)
-
-(defcustom monkeytype-downcase t
-  "Toggle downcasing of mistyped words."
-  :type 'boolean
-  :group 'monkeytype)
-
-(defcustom monkeytype-directory "~/.monkeytype/"
-  "Monkeytype directory."
-  :type 'string
-  :group 'monkeytype)
-
-(defcustom monkeytype-randomize t
-  "Toggle randomizing of words."
-  :type 'boolean
-  :group 'monkeytype)
-
-(defcustom monkeytype-excluded-chars-regexp "[^[:alnum:]']"
-  "Regexp used for getting valid words."
-  :type 'string
-  :group 'monkeytype)
-
-(defcustom monkeytype-most-mistyped-amount 100
-  "Amount of words in most mistyped words test."
-  :type 'boolean
-  :group 'monkeytype)
+  "Face for mode-line info text.")
 
 ;;;; Init:
 
