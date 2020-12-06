@@ -11,21 +11,21 @@
 
 ;;; Commentary:
 
-;; Emacs Monkeytype is a typing game/tutor inspired by monkeytype.com but for
-;; Emacs.
+;; Emacs Monkeytype is a typing game/tutor inspired by monkeytype.com
+;; but for Emacs.
 
 ;; Features:
 
 ;; - Type any text you want.
 
-;; - Mode-line live WPM (`monkeytype-mode-line-interval-update' adjust the
-;; update frequency).
+;; - Mode-line live WPM (`monkeytype-mode-line-interval-update' adjust
+;; the update frequency).
 
 ;; - Visual representation of typed text including errors and
 ;; retries/corrections.
 
-;; - Auto stop after 5 seconds of no input (`C-c C-c r` [`monkeytype-resume']
-;; resumes).
+;; - Auto stop after 5 seconds of no input (`C-c C-c r`
+;; [`monkeytype-resume'] resumes).
 
 ;; - Optionally randomise practice words/transitions (see:
 ;; `monkeytype-randomize').
@@ -40,41 +40,43 @@
 ;; `monkeytype-auto-fill').
 
 ;; - Select a region of text and treat it as words for practice (e.i.,
-;; optionally downcased, randomised, etc... see: `monkeytype-region-as-words').
+;; optionally downcased, randomised, etc... see:
+;; `monkeytype-region-as-words').
 
-;; - After a test, practice troubling/hard key combinations/transitions (useful
-;; when practising with different keyboard layouts).
+;; - After a test, practice troubling/hard key combinations/transitions
+;; (useful when practising with different keyboard layouts).
 
-;; - Mistyped words or hard transitions can be saved to `~/.monkeytype/{words or
-;; transitions}` (see: `monkeytype-directory' `monkeytype-save-mistyped-words'
-;; `monkeytype-save-hard-transitions').
+;; - Mistyped words or hard transitions can be saved to
+;; `~/.monkeytype/{words or transitions}` (see: `monkeytype-directory'
+;; `monkeytype-save-mistyped-words' `monkeytype-save-hard-transitions').
 
 ;; - Saved mistyped/transitions files (or any file but defaults to
-;; `~/.monkeytype/` dir) can be loaded with `monkeytyped-load-words-from-file'.
+;; `~/.monkeytype/` dir) can be loaded with
+;; `monkeytyped-load-words-from-file'.
 
-;; - `monkeytype-excluded-chars-regexp' customises the regexp used for removing
-;; characters from words (defaults to: "[^[:alnum:]']").
+;; - `monkeytype-excluded-chars-regexp' customises the regexp used for
+;; removing characters from words (defaults to: "[^[:alnum:]']").
 
 ;; - Ability to type most (saved) mistyped words (the amount of words is
-;; configurable with `monkeytype-most-mistyped-amount' [defaults to 100]) see:
-;; `monkeytype-most-mistyped-words'
+;; configurable with `monkeytype-most-mistyped-amount' [defaults to
+;; 100]) see: `monkeytype-most-mistyped-words'
 
 ;;; License:
 
 ;; This file is NOT part of GNU Emacs.
 ;;
-;; This program is free software; you can redistribute it and/or modify it under
-;; the terms of the GNU General Public License as published by the Free Software
-;; Foundation, either version 2 of the License, or (at your option) any later
-;; version.
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 2 of the License, or (at
+;; your option) any later version.
 
-;; This program is distributed in the hope that it will be useful, but WITHOUT
-;; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-;; FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
-;; details.
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+;; General Public License for more details.
 
-;; You should have received a copy of the GNU General Public License along with
-;; this program. If not, see <https://www.gnu.org/licenses/>.
+;; You should have received a copy of the GNU General Public License
+;; along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 ;;; Code:
 
@@ -89,17 +91,18 @@
 
 \\{monkeytype-mode-map}"
   :lighter monkeytype-mode-line
-  :keymap (let ((map (make-sparse-keymap)))
-            (define-key map (kbd "C-c C-c p") 'monkeytype-pause)
-            (define-key map (kbd "C-c C-c r") 'monkeytype-resume)
-            (define-key map (kbd "C-c C-c s") 'monkeytype-stop)
-            (define-key map (kbd "C-c C-c t") 'monkeytype-repeat)
-            (define-key map (kbd "C-c C-c f") 'monkeytype-fortune)
-            (define-key map (kbd "C-c C-c m") 'monkeytype-mistyped-words)
-            (define-key map (kbd "C-c C-c h") 'monkeytype-hard-transitions)
-            (define-key map (kbd "C-c C-c a") 'monkeytype-save-mistyped-words)
-            (define-key map (kbd "C-c C-c o") 'monkeytype-save-hard-transitions)
-            map)
+  :keymap
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-c p") 'monkeytype-pause)
+    (define-key map (kbd "C-c C-c r") 'monkeytype-resume)
+    (define-key map (kbd "C-c C-c s") 'monkeytype-stop)
+    (define-key map (kbd "C-c C-c t") 'monkeytype-repeat)
+    (define-key map (kbd "C-c C-c f") 'monkeytype-fortune)
+    (define-key map (kbd "C-c C-c m") 'monkeytype-mistyped-words)
+    (define-key map (kbd "C-c C-c h") 'monkeytype-hard-transitions)
+    (define-key map (kbd "C-c C-c a") 'monkeytype-save-mistyped-words)
+    (define-key map (kbd "C-c C-c o") 'monkeytype-save-hard-transitions)
+    map)
   (if monkeytype-mode
       (progn
         (font-lock-mode nil)
@@ -116,10 +119,11 @@
   "Speed/touch typing."
   :group 'games
   :tag "Monkeytype"
-  :link '(
-          url-link
-          :tag
-          "GitHub" "https://github.com/jpablobr/emacs-monkeytype"))
+  :link
+  '(
+    url-link
+    :tag
+    "GitHub" "https://github.com/jpablobr/emacs-monkeytype"))
 
 (defcustom monkeytype-treat-newline-as-space t
   "Allow continuing to the next line by pressing space."
@@ -140,8 +144,8 @@
 
 (defcustom monkeytype-mode-line-interval-update 1
   "Number of keystrokes after each mode-line update.
-Reducing the frequency of the updates helps reduce lagging on longer text or
-when typing too fast."
+Reducing the frequency of the updates helps reduce lagging on longer
+text or when typing too fast."
   :type 'integer)
 
 (defcustom monkeytype-word-divisor 5.0
@@ -293,7 +297,6 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
 
 (defun monkeytype--init (text &optional text-file-p)
   "Set up a new buffer for the typing exercise on TEXT.
-
 TEXT-FILE-P is used to know if the test is text-file based."
   (setq monkeytype--typing-buffer
         (generate-new-buffer monkeytype--buffer-name))
@@ -333,9 +336,9 @@ TEXT-FILE-P is used to know if the test is text-file based."
     (setq monkeytype--text-file nil)
     (goto-char 0))
 
-  ;; `set-buffer-modified-p' has no be set to nil before adding
-  ;; the change hooks for them to work, so it has to happen right
-  ;; before loading `monkeytype-mode'.
+  ;; `set-buffer-modified-p' has no be set to nil before adding the
+  ;; change hooks for them to work, so it has to happen right before
+  ;; loading `monkeytype-mode'.
   (set-buffer-modified-p nil)
   (monkeytype-mode)
 
@@ -362,9 +365,8 @@ URL `https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle'"
 
 (defun monkeytype--utils-local-idle-timer (secs repeat function &rest args)
   "Like `run-with-idle-timer', but always run in `current-buffer'.
-
 Cancels itself, if this buffer is killed or after 5 SECS.
-REPEAT FUNCTION ARGS."
+REPEAT, FUNCTION and ARGS are passed directly to `run-with-idle-timer'."
   (let* ((fns (make-symbol "local-idle-timer"))
          (timer (apply #'run-with-idle-timer secs repeat fns args))
          (fn `(lambda (&rest args)
@@ -432,10 +434,13 @@ REPEAT FUNCTION ARGS."
       (setq index (1+ index)))))
 
 (defun monkeytype--utils-index-chars-to-words ()
-  "Associate by index cars to words."
+  "Associate by their index chars to words.
+
+See: `monkeytype--utils-index-words'
+See: `monkeytype--utils-index-chars'"
   (let ((chars (mapcar #'char-to-string monkeytype--source-text))
-         (word-index 1)
-         (char-index 1))
+        (word-index 1)
+        (char-index 1))
     (dolist (char chars)
       (if (string-match monkeytype-excluded-chars-regexp char)
           (progn
@@ -448,7 +453,7 @@ REPEAT FUNCTION ARGS."
           (setq char-index (1+ char-index)))))))
 
 (defun monkeytype--utils-index-chars (run)
-  "RUN Index chars."
+  "Index chars for given RUN."
   (unless monkeytype--previous-last-entry-index
     (setq monkeytype--previous-last-entry-index 0))
 
@@ -469,7 +474,7 @@ REPEAT FUNCTION ARGS."
           (gethash 'source-index (elt (gethash 'entries run) 0)))))
 
 (defun monkeytype--utils-format-words (words)
-  "Format WORDS (for test) by applying word related customization settings.
+  "Format WORDS by applying word related customization settings.
 
 See: `monkeytype-downcase'
 See: `monkeytype-randomize'
@@ -477,9 +482,7 @@ See: `monkeytype-words-auto-fill'
 See: `monkeytype-delete-trailing-whitespace'"
   (let* ((text (mapconcat
                 (lambda (word)
-                  (if monkeytype-downcase
-                      (downcase word)
-                    word))
+                  (if monkeytype-downcase (downcase word) word))
                 (if monkeytype-randomize
                     (monkeytype--utils-nshuffle words)
                   words)
@@ -550,52 +553,42 @@ UNCORRECTED-ERRORS are re-mistyped CHARS."
 
 ;;;; Process Input:
 
-(defun monkeytype--process-input (region-start region-end delete-length)
-  "Process input from REGION-START to REGION-END.
-
+(defun monkeytype--process-input (start end delete-length)
+  "Process input from region START to region END.
 DELETE-LENGTH is the amount of deleted chars in case of deletion."
-  (let* ((source-start (1- region-start))
-         (source-end (1- region-end))
+  (let* ((source-start (1- start))
+         (source-end (1- end))
          (entry (substring-no-properties
-                 (buffer-substring region-start region-end)))
+                 (buffer-substring start end)))
          (source (substring monkeytype--source-text source-start source-end))
-         (entry-state (aref monkeytype--progress-tracker source-start))
+         (state (aref monkeytype--progress-tracker source-start))
          (correctp (monkeytype--utils-check-same source entry))
+         (tracker (if correctp 1 2))
          (face-for-entry (monkeytype--typed-text-entry-face correctp))
          (valid-input (and
                        ;; No char entered e.g., a command.
-                       (/= region-start region-end)
+                       (/= start end)
                        ;; On abrupt finish source becomes the rest of text.
                        (<= (length source) 1))))
 
-    (monkeytype--process-input-restabilize-region
-     region-start
-     region-end
-     entry-state
-     delete-length)
+    (monkeytype--process-input-restabilize start end state delete-length)
 
     (when valid-input
-      (store-substring
-       monkeytype--progress-tracker
-       source-start
-       (if correctp 1 2))
+      (store-substring monkeytype--progress-tracker source-start tracker)
 
       (cl-incf monkeytype--counter-entries)
       (cl-decf monkeytype--counter-remaining)
       (unless correctp (cl-incf monkeytype--counter-error))
 
-      (set-text-properties
-       region-start
-       (1+ region-start)
-       `(face ,face-for-entry))
+      (set-text-properties start (1+ start) `(face ,face-for-entry))
       (monkeytype--process-input-add-to-entries source-start entry source)
       (monkeytype--process-input-update-mode-line))
 
-    (goto-char region-end)
+    (goto-char end)
     (when (= monkeytype--counter-remaining 0) (monkeytype--run-finish))))
 
-(defun monkeytype--process-input-restabilize-region (start end state deleted)
-  "Restabilize current char input region from START to END.
+(defun monkeytype--process-input-restabilize (start end state deleted)
+  "Restabilize input-region from START to END.
 
 STATE keeps track of text already typed but deleted (e.i., correction).
 DELETED is the number of deleted chars before current char input."
@@ -604,7 +597,8 @@ DELETED is the number of deleted chars before current char input."
                     (+ source-start monkeytype--counter-remaining)
                     (length monkeytype--source-text)) )
          (correctionp (> state 0))
-         (deleted-text-p (> deleted 0)))
+         (deleted-text-p (> deleted 0))
+         (deleted-end (+ source-start deleted)))
 
     ;; On skips update remaining-counter to reflect current position
     (when skippedp
@@ -622,10 +616,8 @@ DELETED is the number of deleted chars before current char input."
 
     ;; Re-insert deleted text
     (when deleted-text-p
-      (insert (substring
-               monkeytype--source-text
-               source-start
-               (+ source-start deleted))))))
+      (insert
+       (substring monkeytype--source-text source-start deleted-end)))))
 
 (defun monkeytype--process-input-rectify-counters (entry-state)
   "Update counters on corrections/re-tries based on the ENTRY-STATE.
@@ -753,8 +745,7 @@ See: `monkeytype--utils-local-idle-timer'"
         (let* ((run (json-read-file run))
               (ht (make-hash-table :test 'equal))
               (entries (mapcar
-                        (lambda (x)
-                          (map-into x 'hash-table))
+                        (lambda (x) (map-into x 'hash-table))
                         (cdr (car run)))))
           (puthash 'started-at (cdr (assoc 'started-at run)) ht)
           (puthash 'finished-at (cdr (assoc 'finished-at run)) ht)
@@ -791,20 +782,18 @@ See: `monkeytype--utils-local-idle-timer'"
 
 (defun monkeytype--results-get-face (successp)
 "Get success or error face based on SUCCESSP."
-(if successp
-    'monkeytype-results-success
-  'monkeytype-results-error))
+(if successp 'monkeytype-results-success 'monkeytype-results-error))
 
-(defun monkeytype--results-net-wpm (words uncorrected-errors minutes seconds)
+(defun monkeytype--results-net-wpm (words errors minutes seconds)
   "Net WPM performance result for total WORDS.
 
-Gross-WPM - (UNCORRECTED-ERRORS / MINUTES).
+Gross-WPM - (ERRORS / MINUTES).
 Also shows SECONDS right next to WPM."
   (concat
    (propertize
     (format
      "%.2f/%s"
-     (monkeytype--calc-net-wpm words uncorrected-errors minutes)
+     (monkeytype--calc-net-wpm words errors minutes)
      (format-seconds "%.2h:%z%.2m:%.2s" seconds))
     'face
     'monkeytype-legend-1)
@@ -813,9 +802,9 @@ Also shows SECONDS right next to WPM."
     'face
     'monkeytype-legend-2)
    (propertize
-    (format "%d" uncorrected-errors)
+    (format "%d" errors)
     'face
-    (monkeytype--results-get-face (= uncorrected-errors 0)))
+    (monkeytype--results-get-face (= errors 0)))
    (propertize
     (format " / %.2f)]\n" minutes)
     'face
@@ -851,18 +840,15 @@ Gross-WPM = WORDS / MINUTES."
     'face
     'monkeytype-legend-2)))
 
-(defun monkeytype--results-accuracy (chars correct-chars corrections)
-  "CHARS CORRECT-CHARS CORRECTIONS."
+(defun monkeytype--results-accuracy (chars correct corrections)
+  "Calculate accuracy: ((CORRECT - CORRECTIONS) / CHARS) * 100."
   (concat
    (propertize
-    (format "%.2f%%" (monkeytype--calc-accuracy
-                      chars
-                      correct-chars
-                      corrections))
+    (format "%.2f%%" (monkeytype--calc-accuracy chars correct corrections))
     'face
     'monkeytype-legend-1)
    (propertize
-    (format "[((%.2f - " correct-chars)
+    (format "[((%.2f - " correct)
     'face
     'monkeytype-legend-2)
    (propertize
@@ -881,141 +867,101 @@ Gross-WPM = WORDS / MINUTES."
 (defun monkeytype--results-run (run)
   "Performance results for RUN."
   (let* ((last-entry (elt run 0))
-         (elapsed-seconds (gethash 'elapsed-seconds last-entry))
-         (elapsed-minutes (monkeytype--utils-seconds-to-minutes
-                           elapsed-seconds))
-         (entries (if monkeytype--previous-run-last-entry
+         (previous-entry monkeytype--previous-run-last-entry)
+         (seconds (gethash 'elapsed-seconds last-entry))
+         (minutes (monkeytype--utils-seconds-to-minutes seconds))
+         (entries (if previous-entry
                       (-
                        (gethash 'input-index last-entry)
-                       (gethash
-                        'input-index
-                        monkeytype--previous-run-last-entry))
+                       (gethash 'input-index previous-entry))
                     (gethash 'input-index last-entry)))
-         (errors (if monkeytype--previous-run-last-entry
+         (errors (if previous-entry
                      (-
                       (gethash 'error-count last-entry)
-                      (gethash
-                       'error-count
-                       monkeytype--previous-run-last-entry))
+                      (gethash 'error-count previous-entry))
                    (gethash 'error-count last-entry)))
-         (corrections (if monkeytype--previous-run-last-entry
+         (corrections (if previous-entry
                           (-
                            (gethash 'correction-count last-entry)
-                           (gethash
-                            'correction-count
-                            monkeytype--previous-run-last-entry))
+                           (gethash 'correction-count previous-entry))
                         (gethash 'correction-count last-entry)))
          (words (monkeytype--calc-words entries)))
+
     (setq monkeytype--previous-run-last-entry (elt run 0))
+
     (concat
-     (monkeytype--results-net-wpm
-      words
-      errors
-      elapsed-minutes
-      elapsed-seconds)
+     (monkeytype--results-net-wpm words errors minutes seconds)
      "\n\n"
-     (monkeytype--results-accuracy
-      entries
-      (- entries errors) corrections)
+     (monkeytype--results-accuracy entries (- entries errors) corrections)
      "\n\n"
-     (monkeytype--results-gross-wpm
-      words
-      elapsed-minutes))))
+     (monkeytype--results-gross-wpm words minutes))))
 
 (defun monkeytype--results-final ()
   "Final results for typed run(s).
-
-Total time is the sum of all the last entries' elapsed-seconds for each runs."
-  (let* ((runs-last-entry (mapcar
-                           (lambda (x) (elt (gethash 'entries x) 0))
-                           monkeytype--run-list))
-         (last-entry (elt runs-last-entry 0))
-         (total-elapsed-seconds (apply
-                                 #'+
-                                 (mapcar
-                                  (lambda (x) (gethash 'elapsed-seconds x))
-                                  runs-last-entry)))
-         (elapsed-minutes (monkeytype--utils-seconds-to-minutes
-                           total-elapsed-seconds))
+Total time is the sum of all the last entries' elapsed-seconds for each
+run."
+  (let* ((last-entries (mapcar
+                        (lambda (x) (elt (gethash 'entries x) 0))
+                        monkeytype--run-list))
+         (last-entry (elt last-entries 0))
+         (total-seconds (mapcar
+                         (lambda (x) (gethash 'elapsed-seconds x))
+                         last-entries))
+         (total-seconds (apply #'+ total-seconds))
+         (minutes (monkeytype--utils-seconds-to-minutes total-seconds))
          (entries (gethash 'input-index last-entry))
          (errors (gethash 'error-count last-entry))
          (corrections (gethash 'correction-count last-entry))
          (words (monkeytype--calc-words entries)))
+
     (concat
-     (monkeytype--results-net-wpm
-      words
-      errors
-      elapsed-minutes
-      total-elapsed-seconds)
+     (monkeytype--results-net-wpm words errors minutes total-seconds)
      "\n\n"
-     (monkeytype--results-accuracy
-      entries
-      (- entries errors) corrections)
+     (monkeytype--results-accuracy entries (- entries errors) corrections)
      "\n\n"
-     (monkeytype--results-gross-wpm
-      words
-      elapsed-minutes))))
+     (monkeytype--results-gross-wpm words minutes))))
 
 ;;;; Typed Text
 
 (defun monkeytype--typed-text-entry-face (correctp &optional correctionp)
   "Return the face for the CORRECTP and/or CORRECTIONP entry."
   (if correctionp
-      (if correctp
-          'monkeytype-correction-correct
-        'monkeytype-correction-error)
-    (if correctp
-        'monkeytype-correct
-      'monkeytype-error)))
+      (if correctp 'monkeytype-correction-correct 'monkeytype-correction-error)
+    (if correctp 'monkeytype-correct 'monkeytype-error)))
 
 (defun monkeytype--typed-text-newline (source typed)
   "Newline substitutions depending on SOURCE and TYPED char."
   (if (string= "\n" source)
-      (if (or
-           (string= " " typed)
-           (string= source typed))
+      (if (or (string= " " typed) (string= source typed))
           "↵\n"
         (concat typed "↵\n"))
     typed))
 
 (defun monkeytype--typed-text-whitespace (source typed)
   "Whitespace substitutions depending on SOURCE and TYPED char."
-  (if (and
-       (string= " " typed)
-       (not (string= typed source)))
-      "·"
-    typed))
+  (if (and (string= " " typed) (not (string= typed source))) "·" typed))
 
-(defun monkeytype--typed-text-skipped-text (settled-index)
-  "Handle skipped text before the typed char at SETTLED-INDEX."
-  (let* ((source-index (car (car monkeytype--chars-list)))
-         (skipped-length (if source-index
-                             (- settled-index source-index)
-                           0)))
-    (if (= skipped-length 0)
+(defun monkeytype--typed-text-skipped-text (settled)
+  "Handle skipped text before the typed char at SETTLED."
+  (let* ((start (car (car monkeytype--chars-list)))
+         (skipped-length (when start (- settled start))))
+    (if skipped-length
         (progn (pop monkeytype--chars-list) "")
       (cl-loop repeat (1+ skipped-length) do
                (pop monkeytype--chars-list))
-      (substring
-       monkeytype--source-text
-       (1- source-index)
-       (1- settled-index)))))
+      (substring monkeytype--source-text (1- start) (1- settled)))))
 
 (defun monkeytype--typed-text-add-to-mistyped-list (char)
   "Find associated word for CHAR and add it to mistyped list."
   (let* ((index (gethash 'source-index char))
-         (word (cdr (assoc index monkeytype--chars-to-words-list)))
-         (word (when word
-                 (replace-regexp-in-string
-                  monkeytype-excluded-chars-regexp
-                  ""
-                  word))))
+         (word (cdr (assoc index monkeytype--chars-to-words-list))))
     (when word
-      (cl-pushnew word monkeytype--mistyped-words-list))))
+      (cl-pushnew
+       (replace-regexp-in-string monkeytype-excluded-chars-regexp "" word)
+       monkeytype--mistyped-words-list))))
 
 (defun monkeytype--typed-text-concat-corrections (corrections entry settled)
   "Concat propertized CORRECTIONS to SETTLED char.
-
 Also add corrections in ENTRY to `monkeytype--mistyped-word-list'."
   (monkeytype--typed-text-add-to-mistyped-list entry)
 
@@ -1033,27 +979,26 @@ Also add corrections in ENTRY to `monkeytype--mistyped-word-list'."
     "")))
 
 (defun monkeytype--typed-text-collect-errors (settled)
-  "Add SETTLED char's associated word and transitions to their respective list.
-
+  "Add SETTLED char's associated word/transition to their respective list.
 This is unless the char doesn't belong to any word as defined by the
 `monkeytype-excluded-chars-regexp'."
   (unless (= (gethash 'state settled) 1)
     (unless (string-match
              monkeytype-excluded-chars-regexp
              (gethash 'source-entry settled))
-      (let* ((char-index (gethash 'source-index settled))
-             (hard-transition-p (> char-index 2))
-             (hard-transition  (when hard-transition-p
-                                 (substring
-                                  monkeytype--source-text
-                                  (- char-index 2)
-                                  char-index)))
-             (hard-transition-p (and
-                                hard-transition-p
-                                (string-match "[^ \n\t]" hard-transition))))
+      (let* ((index (gethash 'source-index settled))
+             (transition-p (> index 2))
+             (transition  (when transition-p
+                            (substring
+                             monkeytype--source-text
+                             (- index 2)
+                             index)))
+             (transition-p (and
+                            transition-p
+                            (string-match "[^ \n\t]" transition))))
 
-        (when hard-transition-p
-          (cl-pushnew hard-transition monkeytype--hard-transition-list))
+        (when transition-p
+          (cl-pushnew transition monkeytype--hard-transition-list))
         (monkeytype--typed-text-add-to-mistyped-list settled)))))
 
 (defun monkeytype--typed-text-to-string (entries)
@@ -1062,9 +1007,7 @@ This is unless the char doesn't belong to any word as defined by the
    (lambda (entries-for-source)
      (let* ((tries (cdr entries-for-source))
             (correctionsp (> (length tries) 1))
-            (settled (if correctionsp
-                         (car (last tries))
-                       (car tries)))
+            (settled (if correctionsp (car (last tries)) (car tries)))
             (source-entry (gethash 'source-entry settled))
             (typed-entry (monkeytype--typed-text-newline
                           source-entry
@@ -1113,8 +1056,7 @@ This is unless the char doesn't belong to any word as defined by the
    "Log:"
    (monkeytype--log-header)
    (mapconcat
-    (lambda (entry)
-      (monkeytype--log-entry entry))
+    (lambda (entry) (monkeytype--log-entry entry))
     (reverse (gethash 'entries run))
     "\n")
    "\n"))
@@ -1149,7 +1091,7 @@ This is unless the char doesn't belong to any word as defined by the
          (input-index (gethash 'input-index entry))
          (state (gethash 'state entry))
          (elapsed-seconds (gethash 'elapsed-seconds entry))
-         (elapsed-minutes (monkeytype--utils-seconds-to-minutes
+         (minutes (monkeytype--utils-seconds-to-minutes
                            elapsed-seconds))
          (typed-entry-face (monkeytype--typed-text-entry-face (= state 1)))
          (propertized-typed-entry (propertize
@@ -1162,12 +1104,12 @@ This is unless the char doesn't belong to any word as defined by the
             (monkeytype--calc-net-wpm
              (monkeytype--calc-words input-index)
              error-count
-             elapsed-minutes)
-            (monkeytype--calc-net-cpm input-index error-count elapsed-minutes)
+             minutes)
+            (monkeytype--calc-net-cpm input-index error-count minutes)
             (monkeytype--calc-gross-wpm
              (monkeytype--calc-words input-index)
-             elapsed-minutes)
-            (monkeytype--calc-gross-cpm input-index elapsed-minutes)
+             minutes)
+            (monkeytype--calc-gross-cpm input-index minutes)
             (monkeytype--calc-accuracy
              input-index
              (- input-index error-count)
