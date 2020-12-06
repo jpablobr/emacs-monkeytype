@@ -349,7 +349,7 @@ TEXT-FILE-P is used to know if the test is text-file based."
 
 ;;;; Utils:
 
-(defvar-local monkeytype--chars-list '())
+(defvar-local monkeytype--chars '())
 (defvar-local monkeytype--words-list '())
 (defvar-local monkeytype--mistyped-words-list '())
 (defvar-local monkeytype--chars-to-words-list '())
@@ -470,7 +470,7 @@ See: `monkeytype--utils-index-chars'"
     (dolist (char chars)
       (setq index (1+ index))
       (cl-pushnew `(,index . ,char) chars-list))
-    (setq monkeytype--chars-list (reverse chars-list))
+    (setq monkeytype--chars (reverse chars-list))
     (setq monkeytype--previous-last-entry-index
           (gethash 'source-index (elt (gethash 'entries run) 0)))))
 
@@ -944,12 +944,12 @@ run."
 
 (defun monkeytype--typed-text-skipped-text (settled)
   "Handle skipped text before the typed char at SETTLED."
-  (let* ((start (car (car monkeytype--chars-list)))
+  (let* ((start (car (car monkeytype--chars)))
          (skipped-length (when start (- settled start))))
     (if skipped-length
-        (progn (pop monkeytype--chars-list) "")
+        (progn (pop monkeytype--chars) "")
       (cl-loop repeat (1+ skipped-length) do
-               (pop monkeytype--chars-list))
+               (pop monkeytype--chars))
       (substring monkeytype--source-text (1- start) (1- settled)))))
 
 (defun monkeytype--typed-text-add-to-mistyped-list (char)
