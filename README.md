@@ -67,6 +67,7 @@ At this point you can either practice mistyped words with `monkeytype-mistyped-w
 - Saved mistyped/transitions files (or any file but defaults to `~/.monkeytype/` dir) can be loaded with `monkeytyped-load-words-from-file`.
 - `monkeytype-excluded-chars-regexp` customises the regexp used for removing characters from words (defaults to: `"[^[:alnum:]']"`)
 - Ability to type most (saved) mistyped words (the amount of words is configurable with `monkeytype-most-mistyped-amount` [defaults to 100]) see: `monkeytype-most-mistyped-words`
+- Text for typing can be saved in `~/.monkeytype/text/` (see: `monkeytype-directory`) which can then be loaded with `monkeytyped-load-text-from-file` with the added benefit of being able to pause/stop test/runs saving to progress in file so later on, even after quitting Emacs, the text-file can be loaded again continuing from where you were left off.
 
 ### To come... (PRs welcome)
 
@@ -106,6 +107,7 @@ This can then be enabled in your `.emacs` with:
 |             | monkeytype-most-mistyped-words   |
 |             | monkeytype-region-as-words       |
 |             | monkeytype-load-words-from-file  |
+|             | monkeytype-load-text-from-file   |
 
 ## Customisation
 

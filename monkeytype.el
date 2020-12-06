@@ -81,6 +81,7 @@
 (require 'cl-lib)
 (require 'seq)
 (require 'subr-x)
+(require 'json)
 
 ;;;###autoload
 (define-minor-mode monkeytype-mode
@@ -216,6 +217,10 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
   '((t (:inherit region :foreground "#b9ca4a")))
   "Face for correctly typed correction.")
 
+(defface monkeytype-read-only
+  '((t :inherit region :strike-through t))
+  "Face for results titles.")
+
 (defface monkeytype-title
   '((t :inherit default))
   "Face for results titles.")
@@ -259,6 +264,9 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
 (defvar-local monkeytype--start-time nil)
 (defvar monkeytype--typing-buffer nil)
 (defvar monkeytype--source-text "")
+(defvar monkeytype--text-file-directory nil)
+(defvar monkeytype--text-file-last-entry nil)
+(defvar monkeytype--text-file nil)
 
 ;; Status
 (defvar-local monkeytype--status-finished nil)
@@ -283,8 +291,10 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
 (defvar-local monkeytype--previous-run-last-entry nil)
 (defvar-local monkeytype--previous-run '())
 
-(defun monkeytype--init (text)
-  "Set up a new buffer for the typing exercise on TEXT."
+(defun monkeytype--init (text &optional text-file-p)
+  "Set up a new buffer for the typing exercise on TEXT.
+
+TEXT-FILE-P is used to know if the test is text-file based."
   (setq monkeytype--typing-buffer
         (generate-new-buffer monkeytype--buffer-name))
   (set-buffer monkeytype--typing-buffer)
@@ -293,11 +303,45 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
   (setq monkeytype--progress-tracker (make-string (length text) 0))
   (erase-buffer)
   (insert monkeytype--source-text)
+
+  (if text-file-p
+      (if monkeytype--text-file-last-entry
+          (let* ((last-entry monkeytype--text-file-last-entry)
+                 (index (cdr (assoc 'source-index last-entry)))
+                 (input-index (cdr (assoc 'input-index last-entry)))
+                 (errors (cdr (assoc 'error-count last-entry)))
+                 (corrections (cdr (assoc 'correction-count last-entry)))
+                 (end-point (1+ index))
+                 (remaining-counter (- end-point (length text)))
+                 (disabled-prop `(
+                                  read-only t
+                                  rear-nonsticky (read-only)
+                                  front-sticky (read-only)
+                                  face monkeytype-read-only)))
+
+            (setq monkeytype--counter-remaining remaining-counter)
+            (setq monkeytype--counter-entries input-index)
+            (setq monkeytype--counter-input input-index)
+            (setq monkeytype--counter-error errors)
+            (setq monkeytype--counter-correction corrections)
+            (setq monkeytype--counter-ignored-change 0)
+            (add-text-properties 1 end-point disabled-prop)
+            (goto-char end-point))
+        (goto-char 0))
+    (setq monkeytype--text-file-directory nil)
+    (setq monkeytype--text-file-last-entry nil)
+    (setq monkeytype--text-file nil)
+    (goto-char 0))
+
+  ;; `set-buffer-modified-p' has no be set to nil before adding
+  ;; the change hooks for them to work, so it has to happen right
+  ;; before loading `monkeytype-mode'.
   (set-buffer-modified-p nil)
-  (switch-to-buffer monkeytype--typing-buffer)
-  (goto-char 0)
   (monkeytype-mode)
-  (message "Monkeytype: Timer will start when you type the first character."))
+
+  (switch-to-buffer monkeytype--typing-buffer)
+
+  (message "Monkeytype: Timer will start when you start typing."))
 
 ;;;; Utils:
 
@@ -344,6 +388,18 @@ REPEAT FUNCTION ARGS."
    (format "%s/" type)
    (format "%s" (downcase (format-time-string "%a-%d-%b-%Y-%H-%M-%S")))
    ".txt"))
+
+(defun monkeytype--utils-text-file-name ()
+  "Name for the text-file run's JSON file."
+  (format "%s" (downcase (format-time-string "%a-%d-%b-%Y-%H-%M-%S"))))
+
+(defun monkeytype--utils-save-run (run)
+  "Save RUN as JSON format `monkeytype--text-file-directory'."
+  (let* ((dir monkeytype--text-file-directory)
+         (path (concat dir (monkeytype--utils-text-file-name) ".json")))
+    (unless (file-exists-p dir) (make-directory dir))
+    (when (> (length (gethash 'entries run)) 0)
+      (with-temp-file path (insert (json-encode run))))))
 
 (defun monkeytype--utils-elapsed-seconds ()
   "Return float with the total time since start."
@@ -506,8 +562,11 @@ DELETE-LENGTH is the amount of deleted chars in case of deletion."
          (entry-state (aref monkeytype--progress-tracker source-start))
          (correctp (monkeytype--utils-check-same source entry))
          (face-for-entry (monkeytype--typed-text-entry-face correctp))
-         ;; No char entered e.g., a command.
-         (valid-input (/= region-start region-end)))
+         (valid-input (and
+                       ;; No char entered e.g., a command.
+                       (/= region-start region-end)
+                       ;; On abrupt finish source becomes the rest of text.
+                       (<= (length source) 1))))
 
     (monkeytype--process-input-restabilize-region
      region-start
@@ -631,18 +690,28 @@ See: `monkeytype--utils-local-idle-timer'"
   (setq monkeytype--start-time nil)
   (monkeytype--run-remove-hooks)
   (monkeytype--run-add-to-list)
+  (when monkeytype--text-file
+    (monkeytype--utils-save-run (elt monkeytype--run-list 0)))
   (read-only-mode))
 
 (defun monkeytype--run-finish ()
   "Remove typing hooks and print results."
   (setq monkeytype--status-finished t)
 
+  ;; Allow writing for further text processing.
+  (setq inhibit-read-only t)
+  ;; Remove read-only text properties
+  (set-text-properties (point-min) (point-max) nil)
+  ;; Disable inhibit-read-only back again.
+  (setq inhibit-read-only nil)
+
   (unless monkeytype--status-paused
     (setq monkeytype--start-time nil)
     (monkeytype--run-remove-hooks)
-    (monkeytype--run-add-to-list))
+    (monkeytype--run-add-to-list)
+    (when monkeytype--text-file
+      (monkeytype--utils-save-run (elt monkeytype--run-list 0))))
 
-  (set-buffer-modified-p nil)
   (setq buffer-read-only nil)
   (monkeytype--results)
 
@@ -674,6 +743,23 @@ See: `monkeytype--utils-local-idle-timer'"
 (defun monkeytype--results ()
   "Print all results."
   (erase-buffer)
+
+  (when monkeytype--text-file
+    (let* ((path monkeytype--text-file)
+           (dir (concat (string-trim path nil ".txt") "/"))
+           (runs (directory-files dir t ".json$" nil)))
+      (setq monkeytype--run-list '())
+      (dolist (run runs)
+        (let* ((run (json-read-file run))
+              (ht (make-hash-table :test 'equal))
+              (entries (mapcar
+                        (lambda (x)
+                          (map-into x 'hash-table))
+                        (cdr (car run)))))
+          (puthash 'started-at (cdr (assoc 'started-at run)) ht)
+          (puthash 'finished-at (cdr (assoc 'finished-at run)) ht)
+          (puthash 'entries entries ht)
+          (add-to-list 'monkeytype--run-list ht)))))
 
   (when (> (length monkeytype--run-list) 1)
     (insert
@@ -1259,9 +1345,13 @@ This is unless the char doesn't belong to any word as defined by the
   (unless monkeytype--status-finished
     (setq monkeytype--status-paused nil)
     (switch-to-buffer monkeytype--typing-buffer)
+
+    ;; `set-buffer-modified-p' has no be set to nil before adding
+    ;; the change-hooks for them to work, so it has to happen right
+    ;; before loading monkeytype-mode.
     (set-buffer-modified-p nil)
-    (monkeytype--run-add-hooks)
     (monkeytype-mode)
+
     (setq buffer-read-only nil)
     (monkeytype--mode-line-report-status)
     (message "Monkeytype: Timer will start when you start typing.")))
@@ -1326,6 +1416,34 @@ See also: `monkeytype-load-words-from-file'
                       " ")))
     (with-temp-file path (insert transitions))
     (message "Monkeytype: Transitions saved successfully to file: %s" path)))
+
+;;;###autoload
+(defun monkeytype-load-text-from-file ()
+  "Prompt user to enter text-file to use for typing.
+
+Buffer will be filled with the vale of `fill-column' if
+`monkeytype-auto-fill' is set to true.
+
+\\[monkeytype-load-text-from-file]"
+  (interactive)
+  (let* ((dir (concat monkeytype-directory "text/"))
+         (path (progn
+                 (unless (file-exists-p dir) (make-directory dir))
+                 (read-file-name "Enter text file for typing:" dir)))
+         (dir (concat (string-trim path nil ".txt") "/"))
+         (runs (directory-files dir t ".json$" nil))
+         (last-run (when runs (elt (reverse runs) 0)))
+         (last-run (when last-run (json-read-file last-run)))
+         (entries (when last-run (cdr (assoc 'entries last-run))))
+         (last-entry (when entries (elt entries 0)))
+         (text (monkeytype--utils-format-text (with-temp-buffer
+                                                (insert-file-contents path)
+                                                (buffer-string)))))
+
+    (setq monkeytype--text-file-last-entry last-entry)
+    (setq monkeytype--text-file-directory dir)
+    (setq monkeytype--text-file path)
+    (monkeytype--init text t)))
 
 ;;;###autoload
 (defun monkeytype-load-words-from-file ()
