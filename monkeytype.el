@@ -698,8 +698,8 @@ See: `monkeytype--utils-idle-timer'"
 
   (when monkeytype--text-file
     (let* ((path monkeytype--text-file)
-           (dir (concat (string-trim path nil ".txt") "/"))
-           (runs (directory-files dir t ".json$" nil)))
+           (dir (concat (string-trim path nil "\\.txt\\'") "/"))
+           (runs (directory-files dir t "\\.json\\'" nil)))
       (setq monkeytype--runs '())
       (dolist (run runs)
         (let* ((run (json-read-file run))
@@ -1258,10 +1258,10 @@ Buffer will be filled with the vale of `fill-column' if
          (path (progn
                  (unless (file-exists-p dir) (make-directory dir))
                  (read-file-name "Enter text file for typing:" dir)))
-         (dir (concat (string-trim path nil ".txt") "/"))
+         (dir (concat (string-trim path nil "\\.txt\\'") "/"))
          (runs (progn
                  (unless (file-exists-p dir) (make-directory dir))
-                 (directory-files dir t ".json$" nil)))
+                 (directory-files dir t "\\.json\\'" nil)))
          (last-run (when runs (elt (reverse runs) 0)))
          (last-run (when last-run (json-read-file last-run)))
          (entries (when last-run (cdr (assoc 'entries last-run))))
@@ -1322,7 +1322,7 @@ See: `monkeytype-save-mistyped-words' for how word-files are saved.
 \\[monkeytype-most-mistyped-words]"
   (interactive)
   (let* ((dir (concat monkeytype-directory "/words"))
-         (files (directory-files dir t ".txt$" nil))
+         (files (directory-files dir t "\\.txt\\'" nil))
          (words (with-temp-buffer
                       (dolist (file files)
                         (insert-file-contents file))
