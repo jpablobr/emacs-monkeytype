@@ -86,34 +86,6 @@
 (require 'json)
 (require 'map)
 
-;;;###autoload
-(define-minor-mode monkeytype-mode
-  "Monkeytype mode is a minor mode for speed/touch typing.
-
-\\{monkeytype-mode-map}"
-  :lighter monkeytype-mode-line
-  :keymap
-  (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "C-c C-c p") 'monkeytype-pause)
-    (define-key map (kbd "C-c C-c r") 'monkeytype-resume)
-    (define-key map (kbd "C-c C-c s") 'monkeytype-stop)
-    (define-key map (kbd "C-c C-c t") 'monkeytype-repeat)
-    (define-key map (kbd "C-c C-c f") 'monkeytype-fortune)
-    (define-key map (kbd "C-c C-c m") 'monkeytype-mistyped-words)
-    (define-key map (kbd "C-c C-c h") 'monkeytype-hard-transitions)
-    (define-key map (kbd "C-c C-c a") 'monkeytype-save-mistyped-words)
-    (define-key map (kbd "C-c C-c o") 'monkeytype-save-hard-transitions)
-    map)
-  (if monkeytype-mode
-      (progn
-        (font-lock-mode nil)
-        (buffer-face-mode t)
-        (buffer-face-set 'monkeytype-default)
-        (monkeytype--run-add-hooks)
-        (monkeytype--mode-line-report-status))
-    (font-lock-mode t)
-    (buffer-face-mode nil)))
-
 ;;;; Customization
 
 (defgroup monkeytype nil
@@ -345,7 +317,6 @@ TEXT-FILE-P is used to know if the test is text-file based."
   (monkeytype-mode)
 
   (switch-to-buffer monkeytype--typing-buffer)
-
   (message "Monkeytype: Timer will start when you start typing."))
 
 ;;;; Utils:
@@ -482,21 +453,17 @@ See: `monkeytype-downcase'
 See: `monkeytype-randomize'
 See: `monkeytype-words-auto-fill'
 See: `monkeytype-delete-trailing-whitespace'"
-  (let* ((text (mapconcat
-                (lambda (word)
-                  (if monkeytype-downcase (downcase word) word))
-                (if monkeytype-randomize
-                    (monkeytype--utils-nshuffle words)
-                  words)
-                " "))
-         (text (with-temp-buffer
-                 (insert text)
-                 (when monkeytype-words-auto-fill
-                   (fill-region (point-min) (point-max)))
-                 (when monkeytype-delete-trailing-whitespace
-                   (delete-trailing-whitespace))
-                 (buffer-string))))
-    text))
+  (with-temp-buffer
+    (insert
+     (mapconcat
+      (lambda (word) (if monkeytype-downcase (downcase word) word))
+      (if monkeytype-randomize (monkeytype--utils-nshuffle words) words)
+      " "))
+    (when monkeytype-words-auto-fill
+      (fill-region (point-min) (point-max)))
+    (when monkeytype-delete-trailing-whitespace
+      (delete-trailing-whitespace))
+    (buffer-string)))
 
 (defun monkeytype--utils-format-text (text)
   "Format TEXT (for test) by applying customization settings.
@@ -505,10 +472,8 @@ See: `monkeytype-auto-fill'
 See: `monkeytype-delete-trailing-whitespace'"
   (with-temp-buffer
     (insert text)
-    (when monkeytype-auto-fill
-      (fill-region (point-min) (point-max)))
-    (when monkeytype-delete-trailing-whitespace
-      (delete-trailing-whitespace))
+    (when monkeytype-auto-fill (fill-region (point-min) (point-max)))
+    (when monkeytype-delete-trailing-whitespace (delete-trailing-whitespace))
     (buffer-string)))
 
 ;;;; Calc:
@@ -756,25 +721,19 @@ See: `monkeytype--utils-local-idle-timer'"
           (add-to-list 'monkeytype--runs ht)))))
 
   (when (> (length monkeytype--runs) 1)
-    (insert
-     (concat
-      (monkeytype--results-final)
-      (propertize
-       (format "\n\nRuns(%d) Breakdown:\n\n" (length monkeytype--runs))
-       'face
-       'monkeytype-title))))
+    (let* ((title "\n\nRuns(%d) Breakdown:\n\n")
+           (title (format title (length monkeytype--runs)))
+           (title (propertize title 'face 'monkeytype-title)))
+      (insert (concat (monkeytype--results-final) title))))
 
   (let ((run-index 1))
     (dolist (run (reverse monkeytype--runs))
-      (insert
-       (concat
-        (propertize
-         (format "--(%d)-%s--:\n" run-index (gethash 'started-at run))
-         'face
-         'monkeytype-title)
-        (monkeytype--typed-text run)
-        (monkeytype--results-run (gethash 'entries run))
-        "\n\n"))
+      (let* ((title "--(%d)-%s--:\n")
+             (title (format title run-index (gethash 'started-at run)))
+             (title (propertize title 'face 'monkeytype-title))
+             (run-typed-text (monkeytype--typed-text run))
+             (run-results (monkeytype--results-run (gethash 'entries run))))
+        (insert (concat title run-typed-text run-results "\n\n")))
 
       (setq run-index (1+ run-index))
 
@@ -792,80 +751,53 @@ See: `monkeytype--utils-local-idle-timer'"
 
 Gross-WPM - (ERRORS / MINUTES).
 Also shows SECONDS right next to WPM."
-  (concat
-   (propertize
-    (format
-     "%.2f/%s"
-     (monkeytype--calc-net-wpm words errors minutes)
-     (format-seconds "%.2h:%z%.2m:%.2s" seconds))
-    'face
-    'monkeytype-legend-1)
-   (propertize
-    (format "[%.2f - (" (monkeytype--calc-gross-wpm words minutes))
-    'face
-    'monkeytype-legend-2)
-   (propertize
-    (format "%d" errors)
-    'face
-    (monkeytype--results-get-face (= errors 0)))
-   (propertize
-    (format " / %.2f)]\n" minutes)
-    'face
-    'monkeytype-legend-2)
-   (propertize
-    "WPM = Gross-WPM - (uncorrected-errors / minutes)"
-    'face
-    'monkeytype-legend-2)))
+  (let* ((seconds (format-seconds "%.2h:%z%.2m:%.2s" seconds))
+         (net-wpm (monkeytype--calc-net-wpm words errors minutes))
+         (net-wpm (format "%.2f/%s" net-wpm seconds))
+         (net-wpm (propertize net-wpm 'face 'monkeytype-legend-1))
+         (gross-wpm (monkeytype--calc-gross-wpm words minutes))
+         (gross-wpm (format "[%.2f - (" gross-wpm))
+         (gross-wpm (propertize gross-wpm 'face 'monkeytype-legend-2))
+         (errors-face (monkeytype--results-get-face (= errors 0)))
+         (errors-lable (format "%d" errors))
+         (errors-lable (propertize errors-lable 'face errors-face))
+         (minutes-lable (format " / %.2f)]\n" minutes))
+         (minutes-lable (propertize minutes-lable 'face 'monkeytype-legend-2))
+         (info-label "WPM = Gross-WPM - (uncorrected-errors / minutes)")
+         (info-label (propertize info-label 'face 'monkeytype-legend-2)))
+    (concat net-wpm gross-wpm errors-lable minutes-lable info-label)))
 
 (defun monkeytype--results-gross-wpm (words minutes)
   "Gross WPM performance result.
 
 Gross-WPM = WORDS / MINUTES."
-  (concat
-   (propertize
-    (format "%.2f" (monkeytype--calc-gross-wpm words minutes))
-    'face
-    'monkeytype-legend-1)
-   (propertize
-    "["
-    'face
-    'monkeytype-legend-2)
-   (propertize
-    (format "%.2f" words)
-    'face
-    'monkeytype-results-success)
-   (propertize
-    (format " / %.2f]" minutes)
-    'face
-    'monkeytype-legend-2)
-   (propertize
-    "\nGross-WPM = words / minutes"
-    'face
-    'monkeytype-legend-2)))
+  (let* ((gross-wpm (monkeytype--calc-gross-wpm words minutes))
+         (gross-wpm (format "%.2f" gross-wpm))
+         (gross-wpm (propertize gross-wpm 'face 'monkeytype-legend-1))
+         (open-bracket (propertize "[" 'face 'monkeytype-legend-2))
+         (words-label (format "%.2f" words))
+         (words-label (propertize words-label 'face 'monkeytype-results-success))
+         (minutes-label (format " / %.2f]" minutes))
+         (minutes-label (propertize minutes-label 'face 'monkeytype-legend-2))
+         (help-label "\nGross-WPM = words / minutes")
+         (help-label (propertize help-label 'face 'monkeytype-legend-2)))
+    (concat gross-wpm open-bracket words-label minutes-label help-label)))
 
 (defun monkeytype--results-accuracy (chars correct corrections)
   "Calculate accuracy: ((CORRECT - CORRECTIONS) / CHARS) * 100."
-  (concat
-   (propertize
-    (format "%.2f%%" (monkeytype--calc-accuracy chars correct corrections))
-    'face
-    'monkeytype-legend-1)
-   (propertize
-    (format "[((%.2f - " correct)
-    'face
-    'monkeytype-legend-2)
-   (propertize
-    (format "%d" corrections)
-    'face
-    (monkeytype--results-get-face (= corrections 0)))
-   (propertize
-    (format ") / %.2f) * 100]" chars)
-    'face
-    'monkeytype-legend-2)
-   (propertize
-    "\nAccuracy = ((correct-chars - corrections) / total-chars) * 100"
-    'face
-    'monkeytype-legend-2)))
+  (let* ((acc (monkeytype--calc-accuracy chars correct corrections))
+         (acc (format "%.2f%%" acc))
+         (acc (propertize acc 'face 'monkeytype-legend-1))
+         (correct-lable (format "[((%.2f - " correct))
+         (correct-lable (propertize correct-lable 'face 'monkeytype-legend-2))
+         (corrections-face (monkeytype--results-get-face (= corrections 0)))
+         (corrections-lable (format "%d" corrections))
+         (corrections-lable (propertize corrections-lable 'face corrections-face))
+         (chars-lable (format ") / %.2f) * 100]" chars))
+         (chars-lable (propertize chars-lable 'face 'monkeytype-legend-2))
+         (help-lable "\nAccuracy = ((correct-chars - corrections) / total-chars) * 100")
+         (help-lable (propertize help-lable 'face 'monkeytype-legend-2)))
+    (concat acc correct-lable corrections-lable chars-lable help-lable)))
 
 (defun monkeytype--results-run (run)
   "Performance results for RUN."
@@ -873,22 +805,17 @@ Gross-WPM = WORDS / MINUTES."
          (previous-entry monkeytype--previous-run-last-entry)
          (seconds (gethash 'elapsed-seconds last-entry))
          (minutes (monkeytype--utils-seconds-to-minutes seconds))
-         (entries (if previous-entry
-                      (-
-                       (gethash 'input-index last-entry)
-                       (gethash 'input-index previous-entry))
-                    (gethash 'input-index last-entry)))
-         (errors (if previous-entry
-                     (-
-                      (gethash 'error-count last-entry)
-                      (gethash 'error-count previous-entry))
-                   (gethash 'error-count last-entry)))
-         (corrections (if previous-entry
-                          (-
-                           (gethash 'correction-count last-entry)
-                           (gethash 'correction-count previous-entry))
-                        (gethash 'correction-count last-entry)))
+         (entries (gethash 'input-index last-entry))
+         (errors (gethash 'error-count last-entry))
+         (corrections (gethash 'correction-count last-entry))
          (words (monkeytype--calc-words entries)))
+
+    (when previous-entry
+      (setq entries (- entries (gethash 'input-index previous-entry)))
+      (setq words (monkeytype--calc-words entries))
+      (setq errors (- errors (gethash 'error-count previous-entry)))
+      (setq corrections
+            (- corrections (gethash 'correction-count previous-entry))))
 
     (setq monkeytype--previous-run-last-entry (elt run 0))
 
@@ -1054,32 +981,16 @@ This is unless the char doesn't belong to any word as defined by the
 
 (defun monkeytype--log (run)
   "Log for the RUN."
-  (concat
-   "Log:"
-   (monkeytype--log-header)
-   (mapconcat
-    (lambda (entry) (monkeytype--log-entry entry))
-    (reverse (gethash 'entries run))
-    "\n")
-   "\n"))
+  (let* ((entries (reverse (gethash 'entries run)))
+         (entries (mapconcat #'monkeytype--log-entry entries "\n")))
+    (concat "Log:" (monkeytype--log-header) entries "\n")))
 
 (defun monkeytype--log-header ()
   "Log header."
-  (format
-   "\n|%s|"
-   (mapconcat
-    #'identity
-    '(" I/S Idx "
-      " S/T Chr "
-      " N/WPM   "
-      " N/CPM   "
-      " G/WPM   "
-      " G/CPM   "
-      " Acc %   "
-      " Time    "
-      " Mends   "
-      " Errs    ")
-    "|")))
+  (concat
+   "\n|"
+   "I/S Idx | S/T Chr | N/WPM   | N/CPM   | G/WPM   |"
+   "G/CPM   | Acc %   | Time    | Mends   | Errs    |"))
 
 (defun monkeytype--log-entry (entry)
   "Format ENTRY."
@@ -1438,6 +1349,34 @@ See: `monkeytype-save-mistyped-words' for how word-files are saved.
           (setq words (seq-take words monkeytype-most-mistyped-amount))
           (monkeytype--init (monkeytype--utils-format-words words)))
       (message "Monkeytype: Not enough mistyped words for test."))))
+
+;;;###autoload
+(define-minor-mode monkeytype-mode
+  "Monkeytype mode is a minor mode for speed/touch typing.
+
+\\{monkeytype-mode-map}"
+  :lighter monkeytype-mode-line
+  :keymap
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c C-c p") 'monkeytype-pause)
+    (define-key map (kbd "C-c C-c r") 'monkeytype-resume)
+    (define-key map (kbd "C-c C-c s") 'monkeytype-stop)
+    (define-key map (kbd "C-c C-c t") 'monkeytype-repeat)
+    (define-key map (kbd "C-c C-c f") 'monkeytype-fortune)
+    (define-key map (kbd "C-c C-c m") 'monkeytype-mistyped-words)
+    (define-key map (kbd "C-c C-c h") 'monkeytype-hard-transitions)
+    (define-key map (kbd "C-c C-c a") 'monkeytype-save-mistyped-words)
+    (define-key map (kbd "C-c C-c o") 'monkeytype-save-hard-transitions)
+    map)
+  (if monkeytype-mode
+      (progn
+        (font-lock-mode nil)
+        (buffer-face-mode t)
+        (buffer-face-set 'monkeytype-default)
+        (monkeytype--run-add-hooks)
+        (monkeytype--mode-line-report-status))
+    (font-lock-mode t)
+    (buffer-face-mode nil)))
 
 (provide 'monkeytype)
 
