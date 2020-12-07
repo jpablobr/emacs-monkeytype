@@ -808,7 +808,8 @@ Gross-WPM = WORDS / MINUTES."
          (entries (gethash 'input-index last-entry))
          (errors (gethash 'error-count last-entry))
          (corrections (gethash 'correction-count last-entry))
-         (words (monkeytype--calc-words entries)))
+         (words (monkeytype--calc-words entries))
+         (str-format "%s\n\n%s\n\n%s"))
 
     (when previous-entry
       (setq entries (- entries (gethash 'input-index previous-entry)))
@@ -820,11 +821,11 @@ Gross-WPM = WORDS / MINUTES."
     (setq monkeytype--previous-run-last-entry (elt run 0))
 
     (concat
-     (monkeytype--results-net-wpm words errors minutes seconds)
-     "\n\n"
-     (monkeytype--results-accuracy entries (- entries errors) corrections)
-     "\n\n"
-     (monkeytype--results-gross-wpm words minutes))))
+     (format
+      str-format
+      (monkeytype--results-net-wpm words errors minutes seconds)
+      (monkeytype--results-accuracy entries (- entries errors) corrections)
+      (monkeytype--results-gross-wpm words minutes)))))
 
 (defun monkeytype--results-final ()
   "Final results for typed run(s).
@@ -842,14 +843,12 @@ run."
          (entries (gethash 'input-index last-entry))
          (errors (gethash 'error-count last-entry))
          (corrections (gethash 'correction-count last-entry))
-         (words (monkeytype--calc-words entries)))
-
-    (concat
-     (monkeytype--results-net-wpm words errors minutes total-seconds)
-     "\n\n"
-     (monkeytype--results-accuracy entries (- entries errors) corrections)
-     "\n\n"
-     (monkeytype--results-gross-wpm words minutes))))
+         (words (monkeytype--calc-words entries))
+         (str-format "%s\n\n%s\n\n%s")
+         (net-wpm (monkeytype--results-net-wpm words errors minutes total-seconds))
+         (acc (monkeytype--results-accuracy entries (- entries errors) corrections))
+         (gross-wpm (monkeytype--results-gross-wpm words minutes)))
+    (concat (format str-format net-wpm acc gross-wpm))))
 
 ;;;; Typed Text
 
