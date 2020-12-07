@@ -264,6 +264,8 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
 (defvar-local monkeytype--previous-run-last-entry nil)
 (defvar-local monkeytype--previous-run '())
 
+;;;; Init:
+
 (defun monkeytype--init (text &optional text-file-p)
   "Set up a new buffer for the typing exercise on TEXT.
 TEXT-FILE-P is used to know if the test is text-file based."
@@ -277,29 +279,7 @@ TEXT-FILE-P is used to know if the test is text-file based."
   (insert monkeytype--source-text)
 
   (if text-file-p
-      (if monkeytype--text-file-last-entry
-          (let* ((last-entry monkeytype--text-file-last-entry)
-                 (index (cdr (assoc 'source-index last-entry)))
-                 (input-index (cdr (assoc 'input-index last-entry)))
-                 (errors (cdr (assoc 'error-count last-entry)))
-                 (corrections (cdr (assoc 'correction-count last-entry)))
-                 (end-point (1+ index))
-                 (remaining-counter (- end-point (length text)))
-                 (disabled-prop `(
-                                  read-only t
-                                  rear-nonsticky (read-only)
-                                  front-sticky (read-only)
-                                  face monkeytype-read-only)))
-
-            (setq monkeytype--counter-remaining remaining-counter)
-            (setq monkeytype--counter-entries input-index)
-            (setq monkeytype--counter-input input-index)
-            (setq monkeytype--counter-error errors)
-            (setq monkeytype--counter-correction corrections)
-            (setq monkeytype--counter-ignored-change 0)
-            (add-text-properties 1 end-point disabled-prop)
-            (goto-char end-point))
-        (goto-char 0))
+      (monkeytype--init-text-file text)
     (setq monkeytype--text-file-directory nil)
     (setq monkeytype--text-file-last-entry nil)
     (setq monkeytype--text-file nil)
@@ -313,6 +293,31 @@ TEXT-FILE-P is used to know if the test is text-file based."
 
   (switch-to-buffer monkeytype--typing-buffer)
   (message "Monkeytype: Timer will start when you start typing."))
+
+(defun monkeytype--init-text-file (text)
+  "Configure TEXT for a text-file type of test."
+  (if monkeytype--text-file-last-entry
+      (let* ((last-entry monkeytype--text-file-last-entry)
+             (index (cdr (assoc 'source-index last-entry)))
+             (input-index (cdr (assoc 'input-index last-entry)))
+             (errors (cdr (assoc 'error-count last-entry)))
+             (corrections (cdr (assoc 'correction-count last-entry)))
+             (end-point (1+ index))
+             (remaining-counter (- end-point (length text)))
+             (disabled-props `(
+                              read-only t
+                              rear-nonsticky (read-only)
+                              front-sticky (read-only)
+                              face monkeytype-read-only)))
+        (setq monkeytype--counter-remaining remaining-counter)
+        (setq monkeytype--counter-entries input-index)
+        (setq monkeytype--counter-input input-index)
+        (setq monkeytype--counter-error errors)
+        (setq monkeytype--counter-correction corrections)
+        (setq monkeytype--counter-ignored-change 0)
+        (add-text-properties 1 end-point disabled-props)
+        (goto-char end-point))
+    (goto-char 0)))
 
 ;;;; Utils:
 
