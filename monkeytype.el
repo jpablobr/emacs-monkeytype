@@ -271,6 +271,7 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
 (defvar monkeytype--source-text "")
 (defvar monkeytype--text-file-directory nil)
 (defvar monkeytype--text-file-last-entry nil)
+(defvar monkeytype--text-file-last-run nil)
 (defvar monkeytype--text-file nil)
 
 ;; Status
@@ -702,6 +703,7 @@ See: `monkeytype--utils-local-idle-timer'"
     (setq monkeytype--start-time nil)
     (monkeytype--run-remove-hooks)
     (monkeytype--run-add-to-list)
+    (setq monkeytype--current-run '())
     (when monkeytype--text-file
       (monkeytype--utils-save-run (elt monkeytype--runs 0))))
 
@@ -1121,7 +1123,7 @@ This is unless the char doesn't belong to any word as defined by the
 
 (defvar-local monkeytype--mode-line-current-entry '())
 (defvar-local monkeytype--mode-line-previous-run '())
-(defvar-local monkeytype--mode-line-previous-run-last-entry nil)
+(defvar-local monkeytype--mode-line-previous-entry nil)
 
 (defun monkeytype--mode-line-get-face (successp)
   "Get success or error face based on SUCCESSP."
@@ -1129,60 +1131,51 @@ This is unless the char doesn't belong to any word as defined by the
 
 (defun monkeytype--mode-line-report-status ()
   "Take care of mode-line updating."
-  (setq monkeytype--mode-line-current-entry
-        (elt monkeytype--current-run 0))
-  (setq monkeytype--mode-line-previous-run
-        (elt monkeytype--runs 0))
-
-  (when monkeytype--mode-line-previous-run
-    (setq monkeytype--mode-line-previous-run-last-entry
-          (elt (gethash 'entries monkeytype--mode-line-previous-run) 0)))
-
-  (when (or
-         (not monkeytype--mode-line-current-entry)
-         monkeytype--status-finished)
-    (setq monkeytype--mode-line-current-entry (make-hash-table :test 'equal)))
   (force-mode-line-update))
+
+(defun monkeytype--mode-line-get-current-entry ()
+  "Set current entry for mode-line calculations."
+  (cond ((not monkeytype--current-run)
+         (make-hash-table :test 'equal))
+        (monkeytype--status-finished
+         (make-hash-table :test 'equal))
+        (monkeytype--current-run
+         (elt monkeytype--current-run 0))
+        (t (make-hash-table :test 'equal))))
+
+(defun monkeytype--mode-line-get-previous-entry ()
+  "Set previous entry for mode-line calculations."
+  (cond ((>= (length monkeytype--runs) 1)
+         (elt (gethash 'entries (elt monkeytype--runs 0)) 0))
+        (monkeytype--text-file
+         (when monkeytype--text-file-last-run
+           (map-into (cdr monkeytype--text-file-last-entry) 'hash-table)))))
 
 (defun monkeytype--mode-line-text ()
   "Show status in mode line."
-  (let* ((current-entry monkeytype--mode-line-current-entry)
-         (seconds (gethash 'elapsed-seconds current-entry 0))
-         (minutes (monkeytype--utils-seconds-to-minutes seconds))
-         (previous-last-entry (when monkeytype--mode-line-previous-run
-                                monkeytype--mode-line-previous-run-last-entry))
-         (previous-run-entry-p (and
-                                monkeytype--mode-line-previous-run
-                                (> (gethash 'input-index current-entry 0) 0)))
-         (entries (if previous-run-entry-p
-                      (- (gethash 'input-index current-entry)
-                         (gethash 'input-index previous-last-entry))
-                    (gethash 'input-index current-entry 0)))
-         (errors (if previous-run-entry-p
-                     (-
-                      (gethash 'error-count current-entry)
-                      (gethash 'error-count previous-last-entry))
-                   (gethash 'error-count current-entry 0)))
-         (corrections (if previous-run-entry-p
-                          (-
-                           (gethash 'correction-count current-entry)
-                           (gethash 'correction-count previous-last-entry))
-                        (gethash 'correction-count current-entry 0)))
+  (let* ((net-wpm 0) (gross-wpm 0) (accuracy 0)
+         (current (monkeytype--mode-line-get-current-entry))
+         (previous (monkeytype--mode-line-get-previous-entry))
+         (entries (gethash 'input-index current 0))
+         (errors (gethash 'error-count current 0))
+         (corrections (gethash 'correction-count current 0))
          (words (monkeytype--calc-words entries))
-         (net-wpm (if (> words 1)
-                      (monkeytype--calc-net-wpm words errors minutes)
-                    0))
-         (gross-wpm (if (> words 1)
-                        (monkeytype--calc-gross-wpm words minutes)
-                      0))
-         (accuracy (if (> words 1)
-                       (monkeytype--calc-accuracy
-                        entries
-                        (- entries errors)
-                        corrections)
-                     0))
-         (time (format "%s" (format-seconds "%.2h:%z%.2m:%.2s" seconds))))
+         (seconds (gethash 'elapsed-seconds current 0))
+         (minutes (monkeytype--utils-seconds-to-minutes seconds))
+         (time (format "%s" (format-seconds "%.2h:%z%.2m:%.2s" seconds)))
+         (not-paused (> (gethash 'input-index current 0) 0)))
 
+    (when (and previous not-paused)
+      (setq entries (- entries (gethash 'input-index previous 0)))
+      (setq words (monkeytype--calc-words entries))
+      (setq errors (- errors (gethash 'error-count previous 0)))
+      (setq corrections (- corrections (gethash 'correction-count previous 0))))
+
+    (when (> words 1) ; at least > that 5 chars
+      (setq net-wpm (monkeytype--calc-net-wpm words errors minutes))
+      (setq gross-wpm (monkeytype--calc-gross-wpm words minutes))
+      (setq accuracy
+            (monkeytype--calc-accuracy entries (- entries errors) corrections)))
     (concat
      (propertize "MT[" 'face 'monkeytype-mode-line-normal)
      (propertize (format "%d" net-wpm) 'face 'monkeytype-mode-line-success)
@@ -1373,6 +1366,7 @@ Buffer will be filled with the vale of `fill-column' if
          (last-entry (when entries (elt entries 0)))
          (text (with-temp-buffer (insert-file-contents path) (buffer-string)))
          (text (monkeytype--utils-format-text text)))
+    (setq monkeytype--text-file-last-run last-run)
     (setq monkeytype--text-file-last-entry last-entry)
     (setq monkeytype--text-file-directory dir)
     (setq monkeytype--text-file path)
