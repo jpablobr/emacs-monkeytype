@@ -326,6 +326,7 @@ TEXT-FILE-P is used to know if the test is text-file based."
 (defvar-local monkeytype--mistyped-words '())
 (defvar-local monkeytype--chars-to-words '())
 (defvar-local monkeytype--hard-transitions '())
+(defvar-local monkeytype--idle-timer nil)
 
 (defun monkeytype--utils-nshuffle (sequence)
   "Shuffle given SEQUENCE.
@@ -336,22 +337,10 @@ URL `https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle'"
                           (elt sequence (1- i))))
   sequence)
 
-(defun monkeytype--utils-local-idle-timer (secs repeat function &rest args)
-  "Like `run-with-idle-timer', but always run in `current-buffer'.
-Cancels itself, if this buffer is killed or after 5 SECS.
-REPEAT, FUNCTION and ARGS are passed directly to `run-with-idle-timer'."
-  (let* ((fns (make-symbol "local-idle-timer"))
-         (timer (apply #'run-with-idle-timer secs repeat fns args))
-         (fn `(lambda (&rest args)
-                (if (or
-                     monkeytype--status-paused
-                     monkeytype--status-finished
-                     (not (buffer-live-p ,(current-buffer))))
-                    (cancel-timer ,timer)
-                  (with-current-buffer ,(current-buffer)
-                    (apply (function ,function) args))))))
-    (defalias fns fn)
-    fn))
+(defun monkeytype--utils-idle-timer (secs func)
+  "Idle timer for pausing run after 5 SECS.
+FUNC and ARGS are passed directly to `run-with-idle-timer'."
+  (setq monkeytype--idle-timer (run-with-idle-timer secs nil func)))
 
 (defun monkeytype--utils-file-path (type)
   "Build path for the TYPE of file to be saved."
@@ -625,12 +614,12 @@ SOURCE is the original char."
 (defun monkeytype--process-input-timer-init ()
   "Start the idle timer (to wait 5 seconds before pausing).
 
-See: `monkeytype--utils-local-idle-timer'"
+See: `monkeytype--utils-idle-timer'"
   (unless monkeytype--start-time
     (setq monkeytype--current-run-start-datetime
           (format-time-string "%a-%d-%b-%Y %H:%M:%S"))
     (setq monkeytype--start-time (float-time))
-    (monkeytype--utils-local-idle-timer 5 nil 'monkeytype-pause)))
+    (monkeytype--utils-idle-timer 5 'monkeytype-pause)))
 
 (defun monkeytype--process-input-update-mode-line ()
   "Update `monkeytype-mode-line' by sending it the current entry info."
@@ -647,6 +636,8 @@ See: `monkeytype--utils-local-idle-timer'"
 (defun monkeytype--run-pause ()
   "Pause run by resetting hooks and `monkeytype--start-time'."
   (setq monkeytype--start-time nil)
+
+  (cancel-timer monkeytype--idle-timer)
   (monkeytype--run-remove-hooks)
   (monkeytype--run-add-to-list)
   (when monkeytype--text-file
@@ -666,6 +657,7 @@ See: `monkeytype--utils-local-idle-timer'"
 
   (unless monkeytype--status-paused
     (setq monkeytype--start-time nil)
+    (cancel-timer monkeytype--idle-timer)
     (monkeytype--run-remove-hooks)
     (monkeytype--run-add-to-list)
     (setq monkeytype--current-run '())
