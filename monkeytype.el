@@ -246,7 +246,6 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
 (defvar-local monkeytype--status-paused nil)
 
 ;; Counters
-(defvar-local monkeytype--counter-entries 0)
 (defvar-local monkeytype--counter-input 0)
 (defvar-local monkeytype--counter-error 0)
 (defvar-local monkeytype--counter-correction 0)
@@ -310,7 +309,6 @@ TEXT-FILE-P is used to know if the test is text-file based."
                               front-sticky (read-only)
                               face monkeytype-read-only)))
         (setq monkeytype--counter-remaining remaining-counter)
-        (setq monkeytype--counter-entries input-index)
         (setq monkeytype--counter-input input-index)
         (setq monkeytype--counter-error errors)
         (setq monkeytype--counter-correction corrections)
@@ -532,7 +530,6 @@ DELETE-LENGTH is the amount of deleted chars in case of deletion."
     (when valid-input
       (store-substring monkeytype--progress-tracker source-start tracker)
 
-      (cl-incf monkeytype--counter-entries)
       (cl-decf monkeytype--counter-remaining)
       (unless correctp (cl-incf monkeytype--counter-error))
 
@@ -581,10 +578,8 @@ DELETED is the number of deleted chars before current char input."
 ENTRY-STATE = 1 correctly re-typed char
 ENTRY-STATE = 2 mistyped re-typed char"
   (cond ((= entry-state 1)
-         (cl-decf monkeytype--counter-entries)
          (cl-incf monkeytype--counter-remaining))
         ((= entry-state 2)
-         (cl-decf monkeytype--counter-entries)
          (cl-incf monkeytype--counter-remaining)
          (cl-decf monkeytype--counter-error)
          (cl-incf monkeytype--counter-correction))))
