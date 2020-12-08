@@ -11,6 +11,7 @@ A typing game/tutor inspired by the open source and community driven [monkeytype
         - [To come... (PRs welcome)](#to-come-prs-welcome)
         - [Tips](#tips)
     - [Commands / Key bindings](#commands--key-bindings)
+    - [Directory Structure](#directory-structure)
     - [Customisation](#customisation)
     - [Log](#log)
     - [Install](#install)
@@ -108,6 +109,37 @@ This can then be enabled in your `.emacs` with:
 |             | monkeytype-region-as-words       |
 |             | monkeytype-load-words-from-file  |
 |             | monkeytype-load-text-from-file   |
+
+## Directory Structure
+
+Other than on **text-file** based typing commands, results are not saved - only mistyped words or hard-transitions.
+
+**text-file** based commands read and write files from `~/.monkeytype/text/`, monkeytype expects a text file in that `text/` directory as the source text to build the text for typing and will store meta data in a directory named with the exact same name without the file's extension. The sub-directories are: `json`, `transitions` and `words`. **text-file** based commands store and read files from these directories.
+
+Example directory structure:
+
+```
+$ tree ~/.monkeytype/
+.
++-- text
+|   +-- sample-text
+|   |   +-- json
+|   |   |   +-- tue-08-dec-2020-12-21-56.json
+|   |   |   +-- tue-08-dec-2020-12-30-32.json
+|   |   |   +-- tue-08-dec-2020-12-34-00.json
+|   |   +-- transitions
+|   |   |   +-- tue-08-dec-2020-12-34-15.txt
+|   |   +-- words
+|   |       +-- tue-08-dec-2020-10-35-28.txt
+|   |       +-- tue-08-dec-2020-12-05-17.txt
+|   +-- sample-text.txt
++-- transitions
+|   +-- sat-21-nov-2020-08-02-55.txt
+|   +-- sat-21-nov-2020-08-06-39.txt
++-- words
+    +-- mon-07-dec-2020-22-14-30.txt
+    +-- wed-02-dec-2020-10-38-01.txt
+```
 
 ## Customisation
 
