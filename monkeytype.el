@@ -387,9 +387,8 @@ FUNC and ARGS are passed directly to `run-with-idle-timer'."
 
 (defun monkeytype--utils-save-run (run)
   "Save RUN as JSON format `monkeytype--text-file-directory'."
-  (let* ((dir monkeytype--text-file-directory)
+  (let* ((dir  (concat monkeytype--text-file-directory "json/"))
          (path (concat dir (monkeytype--utils-text-file-name) ".json")))
-    (unless (file-exists-p dir) (make-directory dir))
     (when (> (length (gethash 'entries run)) 0)
       (with-temp-file path (insert (json-encode run))))))
 
@@ -729,7 +728,7 @@ See: `monkeytype--utils-idle-timer'"
 
   (when monkeytype--text-file
     (let* ((path monkeytype--text-file)
-           (dir (concat (string-trim path nil "\\.txt\\'") "/"))
+           (dir (concat (string-trim path nil "\\.txt\\'") "/json"))
            (runs (directory-files dir t "\\.json\\'" nil)))
       (setq monkeytype--runs '())
       (dolist (run runs)
@@ -1291,9 +1290,10 @@ Buffer will be filled with the vale of `fill-column' if
                  (unless (file-exists-p dir) (make-directory dir))
                  (read-file-name "Enter text file for typing:" dir)))
          (dir (concat (string-trim path nil "\\.txt\\'") "/"))
+         (json-dir (concat dir "json/"))
          (runs (progn
-                 (unless (file-exists-p dir) (make-directory dir))
-                 (directory-files dir t "\\.json\\'" nil)))
+                 (unless (file-exists-p json-dir) (make-directory json-dir))
+                 (directory-files json-dir t "\\.json\\'" nil)))
          (last-run (when runs (elt (reverse runs) 0)))
          (last-run (when last-run (json-read-file last-run)))
          (entries (when last-run (cdr (assoc 'entries last-run))))
