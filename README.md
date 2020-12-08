@@ -16,6 +16,7 @@ A typing game/tutor inspired by the open source and community driven [monkeytype
     - [Log](#log)
     - [Install](#install)
     - [Changelog](#changelog)
+        - [0.1.4](#014)
         - [0.1.3](#013)
         - [0.1.2](#012)
         - [0.1.1](#011)
@@ -214,6 +215,31 @@ Or just drop `monkeytype.el` somewhere in your `load-path` and add it to your `.
 ```
 
 ## Changelog
+
+### 0.1.4
+
+**Additions**
+
+- `monkeytype-load-text-from-file`
+- Disable already paused typed section (previous runs) from being able to retype it
+- Add `monkeytype-file-name-format` custom var
+
+**Changes**
+
+- Rename `monkeytype-word-regexp` `monkeytype-excluded-chars-regexp` 
+- Remove face from faces (monkeytype-face- => monkeytype-)
+- Process results asynchronously
+
+**Internal**
+
+- `map` and `async` lib requirements
+- Several face related improvements
+- Remove `monkeytype--counter-entries`
+
+**Fixes**
+
+- Simplify time idler
+- Several code refactorings and reorganisation
 
 ### 0.1.3
 
