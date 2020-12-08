@@ -246,6 +246,15 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
 (defvar-local monkeytype--start-time nil)
 (defvar monkeytype--typing-buffer nil)
 (defvar monkeytype--source-text "")
+(defvar monketype--utils-disabled-props
+  `(
+    read-only t
+    rear-nonsticky (read-only)
+    front-sticky (read-only)
+    face monkeytype-read-only))
+
+;; Text-File
+
 (defvar monkeytype--text-file-directory nil)
 (defvar monkeytype--text-file-last-entry nil)
 (defvar monkeytype--text-file-last-run nil)
@@ -312,18 +321,13 @@ TEXT-FILE-P is used to know if the test is text-file based."
              (errors (cdr (assoc 'error-count last-entry)))
              (corrections (cdr (assoc 'correction-count last-entry)))
              (end-point (1+ index))
-             (remaining-counter (- end-point (length text)))
-             (disabled-props `(
-                              read-only t
-                              rear-nonsticky (read-only)
-                              front-sticky (read-only)
-                              face monkeytype-read-only)))
+             (remaining-counter (- end-point (length text))))
         (setq monkeytype--counter-remaining remaining-counter)
         (setq monkeytype--counter-input input-index)
         (setq monkeytype--counter-error errors)
         (setq monkeytype--counter-correction corrections)
         (setq monkeytype--counter-ignored-change 0)
-        (add-text-properties 1 end-point disabled-props)
+        (add-text-properties 1 end-point monketype--utils-disabled-props)
         (goto-char end-point))
     (goto-char 0)))
 
@@ -335,6 +339,15 @@ TEXT-FILE-P is used to know if the test is text-file based."
 (defvar-local monkeytype--chars-to-words '())
 (defvar-local monkeytype--hard-transitions '())
 (defvar-local monkeytype--idle-timer nil)
+
+(defun monketype--utils-reset-read-only-text-properties ()
+  "Reset text properties entire buffer (even read-only)."
+  ;; Allow removing read-only properties.
+  (setq inhibit-read-only t)
+  ;; Remove all text properties
+  (set-text-properties (point-min) (point-max) nil)
+  ;; Disable inhibit-read-only back again.
+  (setq inhibit-read-only nil))
 
 (defun monkeytype--utils-nshuffle (sequence)
   "Shuffle given SEQUENCE.
@@ -637,24 +650,25 @@ See: `monkeytype--utils-idle-timer'"
 (defun monkeytype--run-pause ()
   "Pause run by resetting hooks and `monkeytype--start-time'."
   (setq monkeytype--start-time nil)
-
   (cancel-timer monkeytype--idle-timer)
   (monkeytype--run-remove-hooks)
   (monkeytype--run-add-to-list)
+
   (when monkeytype--text-file
     (monkeytype--utils-save-run (elt monkeytype--runs 0)))
+
+  (let* ((last-run (elt monkeytype--runs 0))
+         (last-entry (elt (gethash 'entries last-run) 0))
+         (end (1+ (gethash 'source-index last-entry))))
+    (monketype--utils-reset-read-only-text-properties)
+    (add-text-properties 1 end monketype--utils-disabled-props))
+
   (read-only-mode))
 
 (defun monkeytype--run-finish ()
   "Remove typing hooks and print results."
   (setq monkeytype--status-finished t)
-
-  ;; Allow writing for further text processing.
-  (setq inhibit-read-only t)
-  ;; Remove read-only text properties
-  (set-text-properties (point-min) (point-max) nil)
-  ;; Disable inhibit-read-only back again.
-  (setq inhibit-read-only nil)
+  (monketype--utils-reset-read-only-text-properties)
 
   (unless monkeytype--status-paused
     (setq monkeytype--start-time nil)
