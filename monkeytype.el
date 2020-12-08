@@ -371,14 +371,15 @@ FUNC and ARGS are passed directly to `run-with-idle-timer'."
 
 (defun monkeytype--utils-file-path (type)
   "Build path for the TYPE of file to be saved."
-  (unless (file-exists-p monkeytype-directory)
-    (make-directory monkeytype-directory))
-
-  (concat
-   monkeytype-directory
-   (format "%s/" type)
-   (format "%s" (downcase (format-time-string monkeytype-file-name)))
-   ".txt"))
+  (let* ((dir (when monkeytype--text-file
+                (string-trim
+                 monkeytype--text-file "^/.+/" "\\.[[:alnum:]]+\\'")))
+         (path (if dir (concat "text/" dir "/" type) type))
+         (path (concat monkeytype-directory path))
+         (file (format-time-string monkeytype-file-name))
+         (file (format "/%s.txt" (downcase file))))
+    (unless (file-exists-p path) (make-directory path t))
+    (concat path file)))
 
 (defun monkeytype--utils-text-file-name ()
   "Name for the text-file run's JSON file."
@@ -1258,8 +1259,9 @@ See also: `monkeytype-most-mistyped-words'
 
 \\[monkeytype-save-mistyped-words]"
   (interactive)
-  (let ((path (monkeytype--utils-file-path "words"))
-        (words (mapconcat #'identity monkeytype--mistyped-words " ")))
+  (let* ((path "words")
+         (path (monkeytype--utils-file-path path))
+         (words (mapconcat #'identity monkeytype--mistyped-words " ")))
     (with-temp-file path (insert words))
     (message "Monkeytype: Words saved successfully to file: %s" path)))
 
