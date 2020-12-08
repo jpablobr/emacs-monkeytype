@@ -159,7 +159,7 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
   "Amount of words in most mistyped words test."
   :type 'boolean)
 
-(defcustom monkeytype-file-name "%a-%d-%b-%Y-%H-%M-%S"
+(defcustom monkeytype-file-name-format "%a-%d-%b-%Y-%H-%M-%S"
   "Format for time-stamped files for saving."
   :type 'string)
 
@@ -376,14 +376,14 @@ FUNC and ARGS are passed directly to `run-with-idle-timer'."
                  monkeytype--text-file "^/.+/" "\\.[[:alnum:]]+\\'")))
          (path (if dir (concat "text/" dir "/" type) type))
          (path (concat monkeytype-directory path))
-         (file (format-time-string monkeytype-file-name))
+         (file (format-time-string monkeytype-file-name-format))
          (file (format "/%s.txt" (downcase file))))
     (unless (file-exists-p path) (make-directory path t))
     (concat path file)))
 
 (defun monkeytype--utils-text-file-name ()
   "Name for the text-file run's JSON file."
-  (format "%s" (downcase (format-time-string monkeytype-file-name))))
+  (format "%s" (downcase (format-time-string monkeytype-file-name-format))))
 
 (defun monkeytype--utils-save-run (run)
   "Save RUN as JSON format `monkeytype--text-file-directory'."
