@@ -7,7 +7,7 @@
 ;; Version: 0.1.3
 ;; Keywords: games
 ;; URL: https://github.com/jpablobr/emacs-monkeytype
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "25.1") (async "1.9.3"))
 
 ;;; Commentary:
 
@@ -85,6 +85,7 @@
 (require 'subr-x)
 (require 'json)
 (require 'map)
+(require 'async)
 
 ;;;; Customization
 
@@ -684,7 +685,16 @@ See: `monkeytype--utils-idle-timer'"
       (monkeytype--utils-save-run (elt monkeytype--runs 0))))
 
   (setq buffer-read-only nil)
-  (monkeytype--results)
+
+  (async-start
+   `(lambda ()
+      ,(monkeytype--results)
+      (message "Monkeytype: Processing results...")
+      1)
+   `(lambda (e)
+      (if (= 1 e)
+          (message "Monkeytype: Results generated successfully.")
+        (message "Monkeytype: Results generation failed. Error code: %s" e))))
 
   (monkeytype--mode-line-report-status)
   (read-only-mode))
