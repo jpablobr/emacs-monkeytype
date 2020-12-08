@@ -417,9 +417,7 @@ See: `monkeytype--utils-index-chars'"
             (setq word-index (1+ word-index))
             (setq char-index (1+ char-index)))
         (let ((word (cdr (assoc word-index monkeytype--words))))
-          (add-to-list
-           'monkeytype--chars-to-words
-           `(,char-index . ,word))
+          (add-to-list 'monkeytype--chars-to-words `(,char-index . ,word))
           (setq char-index (1+ char-index)))))))
 
 (defun monkeytype--utils-index-chars (run)
@@ -427,15 +425,13 @@ See: `monkeytype--utils-index-chars'"
   (unless monkeytype--previous-last-entry-index
     (setq monkeytype--previous-last-entry-index 0))
 
-  (let* ((first-entry-index monkeytype--previous-last-entry-index)
+  (let* ((start monkeytype--previous-last-entry-index)
          (last-entry (elt (gethash 'entries run) 0))
-         (source-text (substring
-                       monkeytype--source-text
-                       first-entry-index
-                       (gethash 'source-index last-entry)))
+         (end (gethash 'source-index last-entry))
+         (source-text (substring monkeytype--source-text start end))
          (chars (mapcar #'char-to-string source-text))
          (chars-list '())
-         (index first-entry-index))
+         (index start))
     (dolist (char chars)
       (setq index (1+ index))
       (cl-pushnew `(,index . ,char) chars-list))
