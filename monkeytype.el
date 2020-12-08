@@ -92,7 +92,8 @@
 (defgroup monkeytype nil
   "Speed/touch typing."
   :group 'games
-  :tag "Monkeytype")
+  :tag "Monkeytype"
+  :link '(url-link "https://github.com/jpablobr/emacs-monkeytype"))
 
 (defcustom monkeytype-treat-newline-as-space t
   "Allow continuing to the next line by pressing space."
