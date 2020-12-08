@@ -168,8 +168,18 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
   '((t :inherit default))
   "Face for text area.")
 
+(defface monkeytype-dimmed
+  '((((class color) (background light)) :foreground "#999999")
+    (((class color) (background  dark)) :foreground "#666666"))
+  "Face for correctly typed char.")
+
+(defface monkeytype-notice
+  '((((class color) (background light)) :foreground "#B79508")
+    (((class color) (background  dark)) :foreground "#cd950c"))
+  "Face for correctly typed char.")
+
 (defface monkeytype-correct
-  '((t :inherit font-lock-comment-face))
+  '((t :inherit monkeytype-dimmed))
   "Face for correctly typed char.")
 
 (defface monkeytype-error
@@ -190,7 +200,7 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
   "Face for correctly typed correction.")
 
 (defface monkeytype-read-only
-  '((t :inherit region :strike-through t))
+  '((t :inherit monkeytype-dimmed :strike-through t :slant italic))
   "Face for results titles.")
 
 (defface monkeytype-title
@@ -198,11 +208,11 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
   "Face for results titles.")
 
 (defface monkeytype-legend-1
-  '((t :inherit font-lock-warning-face))
+  '((t :inherit monkeytype-notice))
   "Face for results legend 1.")
 
 (defface monkeytype-legend-2
-  '((t :inherit font-lock-doc-face :height 0.9))
+  '((t (:slant italic :height 0.9)))
   "Face for results legend 2.")
 
 (defface monkeytype-results-success
@@ -226,7 +236,7 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
   "Face for mode-line normal text.")
 
 (defface monkeytype-mode-line-info
-  '((t (:foreground "#B7950B")))
+  '((t :inherit monkeytype-notice))
   "Face for mode-line info text.")
 
 ;;;; Init:
