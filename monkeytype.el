@@ -157,6 +157,10 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
   "Amount of words in most mistyped words test."
   :type 'boolean)
 
+(defcustom monkeytype-file-name "%a-%d-%b-%Y-%H-%M-%S"
+  "Format for time-stamped files for saving."
+  :type 'string)
+
 ;;;; Faces
 
 (defgroup monkeytype-faces nil
@@ -371,12 +375,12 @@ FUNC and ARGS are passed directly to `run-with-idle-timer'."
   (concat
    monkeytype-directory
    (format "%s/" type)
-   (format "%s" (downcase (format-time-string "%a-%d-%b-%Y-%H-%M-%S")))
+   (format "%s" (downcase (format-time-string monkeytype-file-name)))
    ".txt"))
 
 (defun monkeytype--utils-text-file-name ()
   "Name for the text-file run's JSON file."
-  (format "%s" (downcase (format-time-string "%a-%d-%b-%Y-%H-%M-%S"))))
+  (format "%s" (downcase (format-time-string monkeytype-file-name))))
 
 (defun monkeytype--utils-save-run (run)
   "Save RUN as JSON format `monkeytype--text-file-directory'."

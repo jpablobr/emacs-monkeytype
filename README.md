@@ -144,6 +144,8 @@ Or set the variables in your `.emacs` file:
  monkeytype-insert-log nil
  ;; Default directory for saving Monkeytype data
  monkeytype-directory "~/.monkeytype"
+ ;; Format for time-stamped files for saving.
+ monkeytype-file-name "%a-%d-%b-%Y-%H-%M-%S"
  ;; Toggle randomise text
  monkeytype-randomize t
  ;; Toggle downcase text
