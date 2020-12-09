@@ -74,6 +74,7 @@ At this point you can either practice mistyped words with `monkeytype-mistyped-w
 ### To come... (PRs welcome)
 
 - Save results / history
+- Mode to allow text/character helping commands (e.g., snippets, smartparens, etc. see: [issue: #2](https://github.com/jpablobr/emacs-monkeytype/issues/2))
 
 ### Tips
 
@@ -226,7 +227,7 @@ Or just drop `monkeytype.el` somewhere in your `load-path` and add it to your `.
 
 **Changes**
 
-- Rename `monkeytype-word-regexp` `monkeytype-excluded-chars-regexp` 
+- Rename `monkeytype-word-regexp` `monkeytype-excluded-chars-regexp`
 - Remove face from faces (monkeytype-face- => monkeytype-)
 - Process results asynchronously
 
