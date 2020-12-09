@@ -1287,12 +1287,12 @@ Buffer will be filled with the vale of `fill-column' if
   (interactive)
   (let* ((dir (concat monkeytype-directory "text/"))
          (path (progn
-                 (unless (file-exists-p dir) (make-directory dir))
+                 (unless (file-exists-p dir) (make-directory dir t))
                  (read-file-name "Enter text file for typing:" dir)))
          (dir (concat (string-trim path nil "\\.txt\\'") "/"))
          (json-dir (concat dir "json/"))
          (runs (progn
-                 (unless (file-exists-p json-dir) (make-directory json-dir))
+                 (unless (file-exists-p json-dir) (make-directory json-dir t))
                  (directory-files json-dir t "\\.json\\'" nil)))
          (last-run (when runs (elt (reverse runs) 0)))
          (last-run (when last-run (json-read-file last-run)))
