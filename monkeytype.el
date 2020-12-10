@@ -1054,10 +1054,6 @@ This is unless the char doesn't belong to any word as defined by the
 
 ;;; Mode-line
 
-(defvar-local monkeytype--mode-line-current-entry '())
-(defvar-local monkeytype--mode-line-previous-run '())
-(defvar-local monkeytype--mode-line-previous-entry nil)
-
 (defun monkeytype--mode-line-get-face (successp)
   "Get success or error face based on SUCCESSP."
   (if successp 'monkeytype-mode-line-success 'monkeytype-mode-line-error))
@@ -1067,11 +1063,18 @@ This is unless the char doesn't belong to any word as defined by the
   (force-mode-line-update))
 
 (defun monkeytype--mode-line-get-current-entry ()
-  "Set current entry for mode-line calculations."
-  (cond ((not monkeytype--current-run)
+  "Set current entry for mode-line calculations.
+
+Possible scenarios:
+1. Either on text-file or not: `monkeytyped--current-run' last entry
+2. status-finished: empty hash (to zero out mode-line numbers)
+3. status-paused: Either on text-file or not: `monkeytype--runs' last run last
+entry, since on paused event current run gets stored in there and
+`monkeytype--current-run' has been set to nil."
+  (cond (monkeytype--status-finished
          (make-hash-table :test 'equal))
-        (monkeytype--status-finished
-         (make-hash-table :test 'equal))
+        (monkeytype--status-paused
+         (elt (gethash 'entries (elt monkeytype--runs 0)) 0))
         (monkeytype--current-run
          (elt monkeytype--current-run 0))
         (t (make-hash-table :test 'equal))))
@@ -1079,10 +1082,21 @@ This is unless the char doesn't belong to any word as defined by the
 (defun monkeytype--mode-line-get-previous-entry ()
   "Set previous entry for mode-line calculations."
   (cond ((>= (length monkeytype--runs) 1)
-         (elt (gethash 'entries (elt monkeytype--runs 0)) 0))
+         ;; After pausing even for the first time it will seem that there's
+         ;; already a previous run since one side-effects of pausing is a run
+         ;; addition to the `monkeytype--runs' list creating a false positive.
+         ;; Hence, on the first pause the previous entry must be nil and the
+         ;; subsequent one ahead of the normal previous entry.
+         (if monkeytype--status-paused
+             (if (> (length monkeytype--runs) 1)
+                 (elt (gethash 'entries (elt monkeytype--runs 1)) 0)
+               (if monkeytype--text-file
+                   (map-into monkeytype--text-file-last-entry 'hash-table)
+                 nil))
+           (elt (gethash 'entries (elt monkeytype--runs 0)) 0)))
         (monkeytype--text-file
          (when monkeytype--text-file-last-run
-           (map-into (cdr monkeytype--text-file-last-entry) 'hash-table)))))
+           (map-into monkeytype--text-file-last-entry 'hash-table)))))
 
 (defun monkeytype--mode-line-text ()
   "Show status in mode line."
@@ -1402,8 +1416,7 @@ See: `monkeytype-save-mistyped-words' for how word-files are saved.
         (font-lock-mode nil)
         (buffer-face-mode t)
         (buffer-face-set 'monkeytype-default)
-        (monkeytype--run-add-hooks)
-        (monkeytype--mode-line-report-status))
+        (monkeytype--run-add-hooks))
     (font-lock-mode t)
     (buffer-face-mode nil)))
 
