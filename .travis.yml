@@ -1,5 +1,4 @@
-language: emacs-lisp
-sudo: no
+language: ruby
 env:
  - EVM_EMACS=emacs-25.1-travis
  - EVM_EMACS=emacs-25.2-travis
