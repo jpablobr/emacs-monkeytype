@@ -733,14 +733,15 @@ See: `monkeytype--utils-idle-timer'"
       (setq monkeytype--runs '())
       (dolist (run runs)
         (let* ((run (json-read-file run))
-              (ht (make-hash-table :test 'equal))
-              (entries (mapcar
-                        (lambda (x) (map-into x 'hash-table))
-                        (cdr (car run)))))
-          (puthash 'started-at (cdr (assoc 'started-at run)) ht)
-          (puthash 'finished-at (cdr (assoc 'finished-at run)) ht)
-          (puthash 'entries entries ht)
-          (add-to-list 'monkeytype--runs ht)))))
+               (run-hash (make-hash-table :test 'equal))
+               (entries (mapcar
+                         (lambda (x)
+                           (map-into x 'hash-table))
+                         (cdr (assoc 'entries run)))))
+          (puthash 'started-at (cdr (assoc 'started-at run)) run-hash)
+          (puthash 'finished-at (cdr (assoc 'finished-at run)) run-hash)
+          (puthash 'entries entries run-hash)
+          (add-to-list 'monkeytype--runs run-hash)))))
 
   (when (> (length monkeytype--runs) 1)
     (let* ((title "\n\nRuns(%d) Breakdown:\n\n")
