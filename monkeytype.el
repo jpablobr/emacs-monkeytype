@@ -507,8 +507,11 @@ See `monkeytype--calc-words' for WORDS."
 (defun monkeytype--calc-net-wpm (words uncorrected-errors minutes)
   "Net WPM is the gross WPM minus the UNCORRECTED-ERRORS by MINUTES.
 
-See `monkeytype--calc-gross-cpm' for gross WPM.
-See `monkeytype--calc-words' for WORDS."
+Since there can be up to five errors for each word (see:
+`monkeytype--calc-words' for WORDS calculation) if net-WPM is negative, return 0
+instead.
+
+See `monkeytype--calc-gross-cpm' for gross WPM."
   (let ((net-wpm (- (monkeytype--calc-gross-wpm words minutes)
                     (/ uncorrected-errors minutes))))
     (if (> 0 net-wpm) 0 net-wpm)))
