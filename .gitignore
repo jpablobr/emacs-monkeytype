@@ -1,4 +1,7 @@
 *.elc
 *~
 
+# Packaging
+.cask
+
 doc/
