@@ -1,4 +1,4 @@
-# Emacs Monkeytype [![Emacs](https://img.shields.io/badge/Emacs-25.1%2B-d24b83.svg)](<https://www.gnu.org/software/emacs/>) [![MELPA](https://melpa.org/packages/monkeytype-badge.svg)](https://melpa.org/#/monkeytype) [![MELPA Stable](https://stable.melpa.org/packages/monkeytype-badge.svg)](https://stable.melpa.org/#/monkeytype)
+# Emacs Monkeytype [![Emacs](https://img.shields.io/badge/Emacs-25.1%2B-d24b83.svg)](<https://www.gnu.org/software/emacs/>) [![Build Status](https://travis-ci.org/jpablobr/emacs-monkeytype.svg?branch=master)] [![MELPA](https://melpa.org/packages/monkeytype-badge.svg)](https://melpa.org/#/monkeytype) [![MELPA Stable](https://stable.melpa.org/packages/monkeytype-badge.svg)](https://stable.melpa.org/#/monkeytype)
 
 A typing game/tutor inspired by the open source and community driven [monkeytype.com](https://monkeytype.com) but for Emacs.
 
