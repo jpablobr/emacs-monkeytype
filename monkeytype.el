@@ -157,7 +157,7 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
 
 (defcustom monkeytype-most-mistyped-amount 100
   "Amount of words in most mistyped words test."
-  :type 'boolean)
+  :type 'integer)
 
 (defcustom monkeytype-file-name-format "%a-%d-%b-%Y-%H-%M-%S"
   "Format for time-stamped files for saving."
