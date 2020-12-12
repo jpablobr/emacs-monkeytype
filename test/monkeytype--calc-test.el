@@ -1,4 +1,11 @@
 ;;; monkeytype--calc-test.el --- Monkeytype: tests  -*- lexical-binding: t; -*-
+;; Copyright (C) 2020 Pablo Barrantes
+;; Author: Pablo Barrantes <xjpablobrx@gmail.com>
+;;; Commentary:
+;; WPM calculation related tests.
+;;; Code:
+
+(require 'monkeytype)
 
 (ert-deftest monkeytype-test-calc-gross-wpm ()
   "Gross WPM: words / minutes"
