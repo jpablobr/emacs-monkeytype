@@ -449,9 +449,9 @@ See: `monkeytype--utils-index-chars'"
          (chars (mapcar #'char-to-string source-text))
          (chars-list '())
          (index start))
-    (dolist (char chars)
-      (setq index (1+ index))
-      (cl-pushnew `(,index . ,char) chars-list))
+    (cl-loop for char in chars do
+             (setq index (1+ index))
+             (cl-pushnew (cons index char) chars-list))
     (setq monkeytype--chars (reverse chars-list))
     (setq monkeytype--previous-last-entry-index
           (gethash 'source-index (elt (gethash 'entries run) 0)))))
