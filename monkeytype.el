@@ -288,8 +288,6 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
 (defvar-local monkeytype--previous-run-last-entry nil)
 (defvar-local monkeytype--previous-run '())
 
-;;;; Init:
-
 (defun monkeytype--init (text &optional text-file-p)
   "Set up a new buffer for the typing exercise on TEXT.
 TEXT-FILE-P is used to know if the test is text-file based."
@@ -876,7 +874,7 @@ run."
          (gross-wpm (monkeytype--results-gross-wpm words minutes)))
     (concat (format str-format net-wpm acc gross-wpm))))
 
-;;;; Typed Text
+;;;; Typed Text:
 
 (defun monkeytype--typed-text-entry-face (correctp &optional correctionp)
   "Return the face for the CORRECTP and/or CORRECTIONP entry."
@@ -1055,7 +1053,7 @@ This is unless the char doesn't belong to any word as defined by the
             correction-count
             (+ error-count correction-count))))
 
-;;; Mode-line
+;;;; Mode-line:
 
 (defun monkeytype--mode-line-get-face (successp)
   "Get success or error face based on SUCCESSP."
