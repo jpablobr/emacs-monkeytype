@@ -416,9 +416,9 @@ FUNC and ARGS are passed directly to `run-with-idle-timer'."
                 monkeytype--source-text
                 monkeytype-excluded-chars-regexp))
          (index 1))
-    (dolist (word words)
-      (add-to-list 'monkeytype--words `(,index . ,word))
-      (setq index (1+ index)))))
+    (cl-loop for word in words do
+             (cl-pushnew (cons index word) monkeytype--words)
+             (setq index (1+ index)))))
 
 (defun monkeytype--utils-index-chars-to-words ()
   "Associate by their index chars to words.
