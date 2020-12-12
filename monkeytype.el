@@ -1389,6 +1389,7 @@ See: `monkeytype-save-mistyped-words' for how word-files are saved.
           (monkeytype--init (monkeytype--utils-format-words words)))
       (message "Monkeytype: Not enough mistyped words for test."))))
 
+;;;; Minor mode:
 (defvar monkeytype-mode-map
   (let ((map (make-sparse-keymap))
         (mappings '("C-c C-c p" monkeytype-pause
