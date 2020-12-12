@@ -428,14 +428,14 @@ See: `monkeytype--utils-index-chars'"
   (let ((chars (mapcar #'char-to-string monkeytype--source-text))
         (word-index 1)
         (char-index 1))
-    (dolist (char chars)
-      (if (string-match monkeytype-excluded-chars-regexp char)
-          (progn
-            (setq word-index (1+ word-index))
-            (setq char-index (1+ char-index)))
-        (let ((word (cdr (assoc word-index monkeytype--words))))
-          (add-to-list 'monkeytype--chars-to-words `(,char-index . ,word))
-          (setq char-index (1+ char-index)))))))
+    (cl-loop for char in chars do
+             (if (string-match monkeytype-excluded-chars-regexp char)
+                 (progn
+                   (setq word-index (1+ word-index))
+                   (setq char-index (1+ char-index)))
+               (let ((word (cdr (assoc word-index monkeytype--words))))
+                 (cl-pushnew (cons char-index word) monkeytype--chars-to-words)
+                 (setq char-index (1+ char-index)))))))
 
 (defun monkeytype--utils-index-chars (run)
   "Index chars for given RUN."
