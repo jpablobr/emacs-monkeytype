@@ -52,7 +52,8 @@
 (ert-deftest monkeytype-test-utils-seconds-to-minutes ()
   "Seconds to minutes."
   (should (equal (monkeytype--utils-seconds-to-minutes 120) 2.0))
-  (should (equal (monkeytype--utils-seconds-to-minutes 20) 0.3333333333333333)))
+  (should
+   (equal (monkeytype--utils-seconds-to-minutes 20) 0.3333333333333333)))
 
 (ert-deftest monkeytype-test-utils-index-words ()
   "alist of for words to index/position in text."
@@ -127,9 +128,11 @@
 (ert-deftest monkeytype-test-utils-format-words ()
   "Words formatting."
   (setq monkeytype-randomize nil)
-  (should (equal "foo bar" (monkeytype--utils-format-words '("Foo" "bar"))))
+  (should
+   (equal "foo bar" (monkeytype--utils-format-words '("Foo" "bar"))))
   (setq monkeytype-downcase nil)
-  (should (equal "Foo bar" (monkeytype--utils-format-words '("Foo" "bar ")))))
+  (should
+   (equal "Foo bar" (monkeytype--utils-format-words '("Foo" "bar ")))))
 
 (ert-deftest monkeytype-test-utils-format-text ()
   "Text formatting."
