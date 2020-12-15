@@ -1125,7 +1125,7 @@ entry, since on paused event current run gets stored in there and
       (setq accuracy
             (monkeytype--calc-accuracy entries (- entries errors) corrections)))
     (concat
-     (propertize "MT[" 'face 'monkeytype-mode-line-normal)
+     (propertize "[" 'face 'monkeytype-mode-line-normal)
      (propertize (format "%d" net-wpm) 'face 'monkeytype-mode-line-success)
      (propertize "/" 'face 'monkeytype-mode-line-normal)
      (propertize (format "%d" gross-wpm) 'face 'monkeytype-mode-line-normal)
