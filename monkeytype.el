@@ -1,4 +1,4 @@
-;;; monkeytype.el --- Mode for speed/touch typing -*- lexical-binding: t; -*-
+;;; monkeytype.el --- Mode for speed typing -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2020 Pablo Barrantes
 
