@@ -1,0 +1,442 @@
+#+title: Emacs Monkeytype
+
+# NOTE: To avoid having this in the info manual, we use HTML rather than Org syntax; it still appears with the GitHub renderer.
+#+begin_html
+<p><a href="https://www.gnu.org/software/emacs/"><img src="https://img.shields.io/badge/Emacs-25.1%2B-d24b83.svg"></a> <a href="https://travis-ci.com/jpablobr/emacs-monkeytype"><img src="https://travis-ci.com/jpablobr/emacs-monkeytype.svg?branch=main"> <a href="https://melpa.org/#/emacs-monkeytype"><img src="https://melpa.org/packages/monkeytype-badge.svg"></a> <a href="https://stable.melpa.org/#/emacs-monkeytype"><img src="https://stable.melpa.org/packages/monkeytype-badge.svg"></a></p>
+#+end_html
+
+A typing game/tutor inspired by the open source and community driven [[monkeytype.com][https://monkeytype.com]] but for Emacs.
+
+* Table of Contents                                       :TOC_4_gh:noexport:
+- [[#usage][Usage]]
+- [[#features][Features]]
+  - [[#to-come-prs-welcome][To come... (PRs welcome)]]
+  - [[#tips][Tips]]
+- [[#commands][Commands]]
+  - [[#key-bindings][Key bindings]]
+  - [[#description][Description]]
+    - [[#monkeytype-pause][monkeytype-pause]]
+    - [[#monkeytype-resume][monkeytype-resume]]
+    - [[#monkeytype-stop][monkeytype-stop]]
+    - [[#monkeytype-repeat][monkeytype-repeat]]
+    - [[#monkeytype-region][monkeytype-region]]
+    - [[#monkeytype-fortune][monkeytype-fortune]]
+    - [[#monkeytype-buffer][monkeytype-buffer]]
+    - [[#monkeytype-mistyped-words][monkeytype-mistyped-words]]
+    - [[#monkeytype-hard-transitions][monkeytype-hard-transitions]]
+    - [[#monkeytype-save-mistyped-words][monkeytype-save-mistyped-words]]
+    - [[#monkeytype-save-hard-transitions][monkeytype-save-hard-transitions]]
+    - [[#monkeytype-load-text-from-file][monkeytype-load-text-from-file]]
+    - [[#monkeytype-load-words-from-file][monkeytype-load-words-from-file]]
+    - [[#monkeytype-region-as-words][monkeytype-region-as-words]]
+    - [[#monkeytype-most-mistyped-words][monkeytype-most-mistyped-words]]
+- [[#directory-structure][Directory Structure]]
+- [[#customisation][Customisation]]
+  - [[#options][Options]]
+  - [[#faces][Faces]]
+- [[#log][Log]]
+- [[#install][Install]]
+- [[#changelog][Changelog]]
+  - [[#014][0.1.4]]
+  - [[#013][0.1.3]]
+  - [[#012][0.1.2]]
+  - [[#011][0.1.1]]
+  - [[#010][0.1.0]]
+- [[#license][License]]
+
+* Usage
+
+Use one of the functions to enter =monkeytype= mode
+([[#monkeytype-region][monkeytype-region]], [[#monkeytype-buffer][monkeytype-buffer]], etc... see
+[[#commands--key-bindings][Commands]] section below).
+
+(Note: You should bind these functions to anything you want in your
+=.emacs=.)
+
+The buffer should look as follows:
+
+#+CAPTION: img
+[[https://github.com/jpablobr/emacs-monkeytype/raw/main/img/monkeytype-paused.png]]
+
+The section inside the red rectangle is Monkeytype's mode-line and the
+following is the fields breakdown:
+
+*MT[N-WPM/G-WPM Accuracy Elapsed-time (words/corrections/errors)]*
+
+Then you can either type all the way to the end or stop/finish
+(=C-c C-C s= / =monkeytype-stop=).
+
+The buffer should look as follows:
+
+#+CAPTION: img
+[[https://github.com/jpablobr/emacs-monkeytype/raw/main/img/monkeytype-results-without-log.png]]
+
+This Results buffer re-renders the typed text highlighting errors and
+either correct or incorrect corrections (highlighted with a different
+background and slightly different colour).
+
+At this point you can either practice mistyped words with
+=monkeytype-mistyped-words= (=C-c C-c m=) or just troubling/hard
+transitions with =monkeytype-hard-transitions= (=C-c C-c h=). You can
+also save them with =monkeytype-save-mistyped-words= or
+=monkeytype-save-hard-transitions= and later on type/practice the most
+mistyped words in history with =monkeytype-most-mistyped-words=.
+
+* Features
+
+- UI [[#customisation][customisation]]
+- Type any text you want
+- Practice mistyped words
+- Mode-line live WPM
+- Pause/Resume/Stop/Save functionality
+- Visual representation of typed text including errors and
+  retries/corrections
+- Auto stop after 5 seconds of no input
+- Optionally randomise practice words/transitions
+- Optionally downcase practice words/transitions
+- Optionally treat newlines as whitespace
+- Optionally text auto-fill
+- Optionally delete trailing whitespace
+- Select a region of text and treat it as words for practice
+- After a test, practice troubling/hard key combinations/transitions
+- Mistyped words or hard transitions can be saved
+- Saved mistyped/transitions/text can be loaded for practice
+- Ability to type most (saved) mistyped words
+- Text for typing can be saved in the =monkeytype-directory= allowing you
+  to resume later on (even after quitting Emacs).
+
+** To come... (PRs welcome)
+
+- [ ] Save results / history
+- [ ] Mode to allow text/character helping commands (e.g., snippets,
+  smartparens, etc. see: [[https://github.com/jpablobr/emacs-monkeytype/issues/2][issue: #2]])
+- [ ] Improve results rendering logic mostly on large texts.
+
+** Tips
+
+- When using =evil-mode= it's useful to automatically enable
+  =evil-insert= (to start typing right away).
+- When using =evil-escape=, =evil-escape-mode= has to be disabled in
+  order to prevent double keystrokes getting registered.
+- Installing
+  [[https://github.com/emacsmirror/centered-cursor-mode][=centered-cursor-mode=]]
+  is useful for auto scrolling/paging in multi-page / long texts.
+
+This can then be enabled in your =.emacs= with:
+
+#+BEGIN_SRC emacs-lisp
+(defun my/monkeytype-mode-hook ()
+  "Hooks for monkeytype-mode."
+  (centered-cursor-mode)
+  (evil-escape-mode -1)
+  (evil-insert -1))
+(add-hook 'monkeytype-mode-hook #'my/monkeytype-mode-hook)
+#+END_SRC
+
+* Commands
+** Key bindings
+
+| Key binding | Function                         |
+|-------------+----------------------------------|
+| C-c C-c f   | monkeytype-fortune               |
+| C-c C-c p   | monkeytype-pause                 |
+| C-c C-c r   | monkeytype-resume                |
+| C-c C-c s   | monkeytype-stop                  |
+| C-c C-c t   | monkeytype-repeat                |
+| C-c C-c m   | monkeytype-mistyped-words        |
+| C-c C-c h   | monkeytype-hard-transitions      |
+| C-c C-c a   | monkeytype-save-mistyped-words   |
+| C-c C-c o   | monkeytype-save-hard-transitions |
+|             | monkeytype-region                |
+|             | monkeytype-buffer                |
+|             | monkeytype-most-mistyped-words   |
+|             | monkeytype-region-as-words       |
+|             | monkeytype-load-words-from-file  |
+|             | monkeytype-load-text-from-file   |
+
+** Description
+
+*** monkeytype-pause
+Pause current run.
+
+On *text-file* based /monkeytypings/ run results will be saved.
+
+*** monkeytype-resume
+Resume current run.
+
+*** monkeytype-stop
+Stop current run.
+
+Stop means to completely finished a run (unless it is a *text-file*
+based run) so Monkeytype will show the processed typed text and the
+WPM results for all the run(s) (if the user paused multiple times) for the typed text.
+
+*** monkeytype-repeat
+Repeat run with same text.
+
+*** monkeytype-region
+/Monkeytype/ region.
+
+*** monkeytype-fortune
+/Monkeytype/ the output of the [[https://en.wikipedia.org/wiki/Fortune_(Unix)][fortune]] command.
+
+*** monkeytype-buffer
+/Monkeytype/ the entire current buffer.
+*** monkeytype-mistyped-words
+On current run, /Monkeytype/ all mistyped words.
+
+*** monkeytype-hard-transitions
+On current run, /Monkeytype/ all mistyped transitions.
+
+*** monkeytype-save-mistyped-words
+Save current run's mistyped words in [[monkeytype-directory][monkeytype-directory's]] ~words~ directory.
+
+These words will be used to get the most mistyped words (See:
+[[#monkeytype-most-mistyped-words][monkeytype-most-mistyped-words]])
+
+*** monkeytype-save-hard-transitions
+Save current run's hard-transitions in [[monkeytype-directory][monkeytype-directory's
+]]~transitions~ directory.
+
+*** monkeytype-load-text-from-file
+This command prompts user to enter the *text-file* to use for /monkeytyping/.
+
+By default it will look for *text-files* in the [[monkeytype-directory]] directory.
+
+If the *text-file* has already been used for /monkeytyping/ it will resume from the
+last position on the last run.
+
+*Notice:* if the file is too big results can take a long while.
+
+*** monkeytype-load-words-from-file
+This command prompts user to enter the *(mistyped)-words* to use for /monkeytyping/.
+
+By default it will look for *(mistyped)-words* in the [[monkeytype-directory]]
+directory.
+
+*** monkeytype-region-as-words
+This command will use the words in the current region and will treat it them
+as *words* for typing so it will also apply the configurable options for words
+to them. See: monkeytype-randomize, monkeytype-downcase,
+monkeytype-words-auto-fill and monkeytype-remove-trailing-whitespace.
+
+*** monkeytype-most-mistyped-words
+This command will load for /monkeytyping/ the top number (defined in
+monkeytype-most-mistyped-amount and defaults to 100) of most mistyped words.
+
+* Directory Structure
+
+Other than on *text-file* based typing commands, results are not saved -
+only mistyped words or hard-transitions.
+
+*text-file* based commands read and write files from
+=~/.monkeytype/text/=, monkeytype expects a text file in that =text/=
+directory as the source text to build the text for typing and will store
+meta data in a directory named with the exact same name without the
+file's extension. The sub-directories are: =json=, =transitions= and
+=words=. *text-file* based commands store and read files from these
+directories.
+
+Example directory structure:
+
+#+BEGIN_EXAMPLE
+$ tree ~/.monkeytype/
+.
++-- text
+|   +-- sample-text
+|   |   +-- json
+|   |   |   +-- tue-08-dec-2020-12-21-56.json
+|   |   |   +-- tue-08-dec-2020-12-30-32.json
+|   |   |   +-- tue-08-dec-2020-12-34-00.json
+|   |   +-- transitions
+|   |   |   +-- tue-08-dec-2020-12-34-15.txt
+|   |   +-- words
+|   |       +-- tue-08-dec-2020-10-35-28.txt
+|   |       +-- tue-08-dec-2020-12-05-17.txt
+|   +-- sample-text.txt
++-- transitions
+|   +-- sat-21-nov-2020-08-02-55.txt
+|   +-- sat-21-nov-2020-08-06-39.txt
++-- words
+    +-- mon-07-dec-2020-22-14-30.txt
+    +-- wed-02-dec-2020-10-38-01.txt
+#+END_EXAMPLE
+
+* Customisation
+
+Run =M-x customize-group RET= =monkeytype RET= or
+=monkeytype-faces RET=.
+
+Or set the variables in your =.emacs= file:
+
+** Options
+
+#+BEGIN_SRC emacs-lisp
+(setq
+  ;; How often to update mode-line
+  monkeytype-mode-line-interval-update 10
+  ;; Use space instead or newline
+  monkeytype-treat-newline-as-space t
+  ;; Minimum amount of transitions for test
+  ;; If not enough repeat them
+  monkeytype-minimum-transitions 50
+  ;; Inserts debugging log, this can take a while
+  ;; if typing text is too long.
+  monkeytype-insert-log nil
+  ;; Default directory for saving Monkeytype data
+  monkeytype-directory "~/.monkeytype"
+  ;; Format for time-stamped files for saving.
+  monkeytype-file-name "%a-%d-%b-%Y-%H-%M-%S"
+  ;; Toggle randomise text
+  monkeytype-randomize t
+  ;; Toggle downcase text
+  monkeytype-dowcase t
+  ;; Amount of words for most mistyped words test
+  monkeytype-most-mistyped-amount 100
+  ;; Toggle auto-fill on typing text
+  monkeytype-auto-fill nil
+  ;; Toggle auto-fill on words related typing text
+  monkeytype-words-auto-fill t
+  ;; Toggle auto deletion of trailing white space
+  monkeytype-delete-trailing-whitespace t
+  ;;; Regexp used to divide and extracts words
+  monkeytype-excluded-chars-regexp "[^[:alnum:]']")
+#+END_SRC
+
+** Faces
+
+#+BEGIN_SRC emacs-lisp
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(monkeytype-default ((t (:inherit default :height 1.7 :width normal))))
+ '(monkeytype-dimmed (...))
+ '(monkeytype-notice (...))
+ '(monkeytype-correct (...))
+ '(monkeytype-error (...))
+ '(monkeytype-correction-error (...))
+ '(monkeytype-correction-correct (...))
+ '(monkeytype-read-only (...))
+ '(monkeytype-title (...))
+ '(monkeytype-legend-1 (...))
+ '(monkeytype-legend-2 (...))
+ '(monkeytype-results-success (...))
+ '(monkeytype-results-error (...))
+ '(monkeytype-mode-line-success (...))
+ '(monkeytype-mode-line-error (...))
+ '(monkeytype-mode-line-normal (...))
+ '(monkeytype-mode-line-info (...)))
+#+END_SRC
+
+* Log
+
+Logging can be enabled for debugging purposes (see =monkeytype-insert-log= customisation).
+
+When enabled it should look as follows:
+
+#+CAPTION: img
+[[https://github.com/jpablobr/emacs-monkeytype/raw/main/img/monkeytype-log.png]]
+
+* Install
+
+From MELPA, =M-x package-install RET monkeytype RET=.
+
+Or just drop =monkeytype.el= somewhere in your =load-path= and add it to
+your =.emacs=:
+
+#+BEGIN_SRC emacs-lisp
+(add-to-list 'load-path "~/emacs.d/vendor")
+(require 'monkeytype)
+#+END_SRC
+
+* Changelog
+:PROPERTIES:
+:TOC:      :depth 0
+:END:
+
+** 0.1.4
+*Additions*
+- =monkeytype-load-text-from-file=
+- Disable already paused typed section (previous runs) from being able
+  to retype it
+- Add =monkeytype-file-name-format= custom var
+
+*Changes*
+- Rename =monkeytype-word-regexp= =monkeytype-excluded-chars-regexp=
+- Remove face from faces (monkeytype-face- => monkeytype-)
+- Process results asynchronously
+
+*Internal*
+- =map= and =async= lib requirements
+- Several face related improvements
+- Remove =monkeytype--counter-entries=
+
+*Fixes*
+- Simplify time idler
+- Several code refactorings and reorganisation
+
+** 0.1.3
+*Additions*
+- Available on MELPA
+- =monkeytype-most-mistyped-words=
+- Toggable option =monkeytype-words-auto-fill=
+- Toggable option =monkeytype-delete-trailing-whitespace=
+
+*Changes*
+-
+
+*Internal*
+- Init text processing rewrite
+
+*Fixes*
+- Fix for misindexing of chars to words
+
+** 0.1.2
+*Additions*
+- =monkeytype-load-words-from-file=
+- =monkeytype-region-as-words=
+- Toggable option =monkeytype-downcase=
+- Toggable option =monkeytype-randomize=
+- =monkeytype-word-regexp=
+
+*Changes*
+- Rename option =monkeytype-downcase-mistype= to =monkeytype-downcase=
+- Removed =async= lib
+
+*Internal*
+- Input processing logic rewrite
+- Several renames and code reorganisation
+
+*Fixes*
+- Skipped text getting counters out of sync
+- =evil-escape= double registering characters
+
+** 0.1.1
+*Additions*
+- Allow to practice mistyped words.
+- Allow to practice hard to type transitions.
+- Allow to save mistyped words or transitions to =~/.monkeytype=
+  directory.
+- Option to auto-fill typing region.
+
+*Changes*
+- Change =monkeytype--mode-line-update-seconds= option to
+  =monkeytype-mode-line>interval-update= to have it work with typed
+  entries (keystrokes) defaulting to 1 (update on each keystroke).
+
+*Internal*
+- Removed =ht= library requirement.
+- Updated Emacs requirement to 25.1.
+- Misc layout improvements.
+
+*Fixes*
+- Have =local-idle-timer= stop on paused or finished status.
+
+** 0.1.0
+Initial release.
+
+* License
+
+GPLv3
