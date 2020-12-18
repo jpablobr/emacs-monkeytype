@@ -108,7 +108,7 @@
   :type 'integer)
 
 (defcustom monkeytype-mode-line '(:eval (monkeytype--mode-line-text))
-  "Monkeytype mode line."
+  "Monkeytype mode-line formatting."
   :type 'sexp
   :risky t)
 
@@ -767,8 +767,8 @@ See: `monkeytype--utils-idle-timer'"
   (goto-char (point-min)))
 
 (defun monkeytype--results-get-face (successp)
-"Get success or error face based on SUCCESSP."
-(if successp 'monkeytype-results-success 'monkeytype-results-error))
+  "Get success or error face based on SUCCESSP."
+  (if successp 'monkeytype-results-success 'monkeytype-results-error))
 
 (defun monkeytype--results-net-wpm (words errors minutes seconds)
   "Net WPM performance result for total WORDS.
