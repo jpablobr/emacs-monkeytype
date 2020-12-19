@@ -299,7 +299,7 @@ TEXT-FILE-P is used to know if the test is text-file based."
         (generate-new-buffer monkeytype--buffer-name))
   (set-buffer monkeytype--typing-buffer)
   (setq monkeytype--source-text text)
-  (setq monkeytype--counter-remaining (length text))
+  (setq monkeytype--counter-remaining (1+ (length text)))
   (setq monkeytype--progress-tracker (make-string (length text) 0))
   (erase-buffer)
   (insert monkeytype--source-text)
@@ -329,7 +329,7 @@ TEXT-FILE-P is used to know if the test is text-file based."
              (errors (cdr (assoc 'error-count last-entry)))
              (corrections (cdr (assoc 'correction-count last-entry)))
              (end-point (1+ index))
-             (remaining-counter (- end-point (length text))))
+             (remaining-counter (1+ (- (length text) end-point ))))
         (setq monkeytype--counter-remaining remaining-counter)
         (setq monkeytype--counter-input input-index)
         (setq monkeytype--counter-error errors)
@@ -563,11 +563,7 @@ DELETE-LENGTH is the amount of deleted chars in case of deletion."
          (correctp (monkeytype--utils-check-same source entry))
          (tracker (if correctp 1 2))
          (face-for-entry (monkeytype--typed-text-entry-face correctp))
-         (valid-input (and
-                       ;; No char entered e.g., a command.
-                       (/= start end)
-                       ;; On abrupt finish source becomes the rest of text.
-                       (<= (length source) 1))))
+         (valid-input (<= (length source) 1)))
 
     (monkeytype--process-input-restabilize start end state delete-length)
 
@@ -578,7 +574,10 @@ DELETE-LENGTH is the amount of deleted chars in case of deletion."
       (unless correctp (cl-incf monkeytype--counter-error))
 
       (set-text-properties start (1+ start) `(face ,face-for-entry))
-      (monkeytype--process-input-add-to-entries source-start entry source)
+
+      (unless (= start end) ; Do not add no-char (e.i., deletion) entries
+        (monkeytype--process-input-add-to-entries source-start entry source))
+
       (monkeytype--process-input-update-mode-line))
 
     (goto-char end)
@@ -594,7 +593,7 @@ DELETED is the number of deleted chars before current char input."
                     (+ source-start monkeytype--counter-remaining)
                     (length monkeytype--source-text)) )
          (correctionp (> state 0))
-         (deleted-text-p (> deleted 0))
+         (deleted-text-p (and (= start end) (> deleted 0)))
          (deleted-end (+ source-start deleted)))
 
     ;; On skips update remaining-counter to reflect current position
@@ -611,8 +610,10 @@ DELETED is the number of deleted chars before current char input."
       ;; Reset tracker back to 0 (i.e, new)
       (store-substring monkeytype--progress-tracker source-start 0))
 
-    ;; Re-insert deleted text
+    ;; Re-insert deleted text and update remaining counter
     (when deleted-text-p
+      (setq monkeytype--counter-remaining
+            (- (length monkeytype--source-text) source-start))
       (insert
        (substring monkeytype--source-text source-start deleted-end)))))
 
