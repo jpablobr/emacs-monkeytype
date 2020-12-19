@@ -30,6 +30,7 @@ A typing game/tutor inspired by the open source and community driven [[monkeytyp
     - [[#monkeytype-load-words-from-file][monkeytype-load-words-from-file]]
     - [[#monkeytype-region-as-words][monkeytype-region-as-words]]
     - [[#monkeytype-most-mistyped-words][monkeytype-most-mistyped-words]]
+    - [[#monkeytype-save-text-from-url][monkeytype-save-text-from-url]]
 - [[#directory-structure][Directory Structure]]
 - [[#customisation][Customisation]]
   - [[#options][Options]]
@@ -102,6 +103,7 @@ mistyped words in history with =monkeytype-most-mistyped-words=.
 - Mistyped words or hard transitions can be saved
 - Saved mistyped/transitions/text can be loaded for practice
 - Ability to type most (saved) mistyped words
+- Download web pages directly to =monkeytype-directory= directory.
 - Text for typing can be saved in the =monkeytype-directory= allowing you
   to resume later on (even after quitting Emacs).
 
@@ -153,6 +155,8 @@ This can then be enabled in your =.emacs= with:
 |             | monkeytype-region-as-words       |
 |             | monkeytype-load-words-from-file  |
 |             | monkeytype-load-text-from-file   |
+|             | monkeytype-save-text-from-url    |
+
 
 ** Description
 
@@ -230,6 +234,12 @@ monkeytype-remove-trailing-whitespace.
 This command will load for /monkeytyping/ the top number (defined in
 monkeytype-most-mistyped-amount and defaults to 100) of most mistyped words.
 
+*** monkeytype-save-text-from-url
+This command allows to save a web page to the
+=monkeytype-directory/text/= directory, converting it to plain text
+(using =pandoc(1)=) and, if the =monkeytype-asciify= option is set to
+true, will ASCII character encode the text (using =iconv(1)=).
+
 * Directory Structure
 
 Other than on *text-file* based typing commands, results are not saved -
@@ -305,8 +315,10 @@ Or set the variables in your =.emacs= file:
   monkeytype-words-auto-fill t
   ;; Toggle auto deletion of trailing white space
   monkeytype-delete-trailing-whitespace t
-  ;;; Regexp used to divide and extracts words
-  monkeytype-excluded-chars-regexp "[^[:alnum:]']")
+  ;; Regexp used to divide and extracts words
+  monkeytype-excluded-chars-regexp "[^[:alnum:]']"
+  ;; Toggle converting downloaded text to ASCII
+  monkeytype-asciify t)
 #+END_SRC
 
 ** Faces

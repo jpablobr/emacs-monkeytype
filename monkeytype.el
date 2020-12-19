@@ -162,6 +162,11 @@ It defaults `fill-column' setting. See: `monkeytype-auto-fill'"
   "Format for time-stamped files for saving."
   :type 'string)
 
+(defcustom monkeytype-asciify t
+  "ASCII character encode downloaded web-pages.
+Iconv(1) must be installed."
+  :type 'boolean)
+
 ;;;; Faces
 
 (defgroup monkeytype-faces nil
@@ -484,6 +489,20 @@ See: `monkeytype-delete-trailing-whitespace'"
     (when monkeytype-auto-fill (fill-region (point-min) (point-max)))
     (when monkeytype-delete-trailing-whitespace (delete-trailing-whitespace))
     (buffer-string)))
+
+
+(defun monkeytype--utils-check-for-iconv ()
+  "Verify that iconv(1) is installed."
+  (when monkeytype-asciify
+    (if (executable-find "iconv")
+        t
+      (error "Monketype Error: Iconv(1) executable not installed"))))
+
+(defun monkeytype--utils-check-for-pandoc ()
+  "Verify that pandoc(1) is installed."
+  (if (executable-find "pandoc")
+      t
+    (error "Monketype Error: pandoc(1) executable not installed")))
 
 ;;;; Calc:
 
@@ -1381,6 +1400,34 @@ See: `monkeytype-save-mistyped-words' for how word-files are saved.
           (setq words (seq-take words monkeytype-most-mistyped-amount))
           (monkeytype--init (monkeytype--utils-format-words words)))
       (message "Monkeytype: Not enough mistyped words for test."))))
+
+
+;;;###autoload
+(defun monkeytype-save-text-from-url (url file-name)
+  "Download URL to `monketype-directory', naming it FILE-NAME.
+
+This function shells out to pandoc(1) which character-encodes in UTF-8
+so some characters might not be desirable for monkeytyping, so the custom
+`monkeytype-asciify' option has be given to optionally allow for
+further character encoding to ASCII (using iconv(1))."
+  (interactive "sURL: \nsName for the text-file:")
+
+  (monkeytype--utils-check-for-pandoc)
+  (let* ((path (concat monkeytype-directory "text/" file-name))
+         (cmd "pandoc")
+         (url-opts (format " -s -r html %s" url))
+         (text-opts " -t plain")
+         (asciify (if (monkeytype--utils-check-for-iconv)
+                      (format
+                       " | iconv -c --to-code=ASCII//TRANSLIT > %s"
+                       path)
+                    (format " -o %s" path))))
+
+    (when (file-exists-p path)
+      (error "Monkeytype Error: File %s already exists" path))
+
+    (shell-command (concat cmd url-opts text-opts asciify))
+    (find-file path)))
 
 ;;;; Minor mode:
 (defvar monkeytype-mode-map
