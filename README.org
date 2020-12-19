@@ -169,7 +169,8 @@ Stop current run.
 
 Stop means to completely finished a run (unless it is a *text-file*
 based run) so Monkeytype will show the processed typed text and the
-WPM results for all the run(s) (if the user paused multiple times) for the typed text.
+WPM results for all the run(s) (if the user paused multiple times) for
+the typed text.
 
 *** monkeytype-repeat
 Repeat run with same text.
@@ -189,7 +190,8 @@ On current run, /Monkeytype/ all mistyped words.
 On current run, /Monkeytype/ all mistyped transitions.
 
 *** monkeytype-save-mistyped-words
-Save current run's mistyped words in [[monkeytype-directory][monkeytype-directory's]] ~words~ directory.
+Save current run's mistyped words in [[monkeytype-directory][monkeytype-directory's]] ~words~
+directory.
 
 These words will be used to get the most mistyped words (See:
 [[#monkeytype-most-mistyped-words][monkeytype-most-mistyped-words]])
@@ -199,26 +201,30 @@ Save current run's hard-transitions in [[monkeytype-directory][monkeytype-direct
 ]]~transitions~ directory.
 
 *** monkeytype-load-text-from-file
-This command prompts user to enter the *text-file* to use for /monkeytyping/.
+This command prompts user to enter the *text-file* to use for
+/monkeytyping/.
 
-By default it will look for *text-files* in the [[monkeytype-directory]] directory.
+By default it will look for *text-files* in the [[monkeytype-directory]]
+directory.
 
-If the *text-file* has already been used for /monkeytyping/ it will resume from the
-last position on the last run.
+If the *text-file* has already been used for /monkeytyping/ it will resume
+from the last position on the last run.
 
 *Notice:* if the file is too big results can take a long while.
 
 *** monkeytype-load-words-from-file
-This command prompts user to enter the *(mistyped)-words* to use for /monkeytyping/.
+This command prompts user to enter the *(mistyped)-words* to use for
+/monkeytyping/.
 
-By default it will look for *(mistyped)-words* in the [[monkeytype-directory]]
-directory.
+By default it will look for *(mistyped)-words* in the
+[[monkeytype-directory]] directory.
 
 *** monkeytype-region-as-words
-This command will use the words in the current region and will treat it them
-as *words* for typing so it will also apply the configurable options for words
-to them. See: monkeytype-randomize, monkeytype-downcase,
-monkeytype-words-auto-fill and monkeytype-remove-trailing-whitespace.
+This command will use the words in the current region and will treat
+it them as *words* for typing so it will also apply the configurable
+options for words to them. See: monkeytype-randomize,
+monkeytype-downcase, monkeytype-words-auto-fill and
+monkeytype-remove-trailing-whitespace.
 
 *** monkeytype-most-mistyped-words
 This command will load for /monkeytyping/ the top number (defined in

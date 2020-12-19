@@ -1365,9 +1365,9 @@ See: `monkeytype-save-mistyped-words' for how word-files are saved.
   (let* ((dir (concat monkeytype-directory "/words"))
          (files (directory-files dir t "\\.txt\\'" nil))
          (words (with-temp-buffer
-                      (dolist (file files)
-                        (insert-file-contents file))
-                      (split-string (buffer-string))))
+                  (dolist (file files)
+                    (insert-file-contents file))
+                  (split-string (buffer-string))))
          (grouped-words (seq-group-by #'identity words))
          (grouped-words (seq-group-by #'length grouped-words))
          (words '()))
