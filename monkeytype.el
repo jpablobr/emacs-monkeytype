@@ -7,7 +7,7 @@
 ;; Version: 0.1.3
 ;; Keywords: games
 ;; URL: https://github.com/jpablobr/emacs-monkeytype
-;; Package-Requires: ((emacs "25.1"))
+;; Package-Requires: ((emacs "25.1") (quick-peek "1.0"))
 
 ;;; Commentary:
 
@@ -61,6 +61,8 @@
 (require 'subr-x)
 (require 'json)
 (require 'map)
+
+(require 'quick-peek)
 
 ;;;; Customization
 
@@ -674,6 +676,13 @@ See: `monkeytype--utils-idle-timer'"
   (setq monkeytype--status-finished t)
   (monketype--utils-reset-read-only-text-properties)
 
+  ;; `monketytype--wpm-peek' updated these vars so they
+  ;; have to be set back to nil for the final results.
+  (setq
+   monkeytype--previous-last-entry-index nil
+   monkeytype--previous-run-last-entry nil
+   monkeytype--previous-run '())
+
   (unless monkeytype--status-paused
     (setq monkeytype--start-time nil)
     (cancel-timer monkeytype--idle-timer)
@@ -1215,6 +1224,10 @@ entry, since on paused event current run gets stored in there and
   (interactive)
   (unless monkeytype--status-finished
     (setq monkeytype--status-paused nil)
+    (when monkeytype--wpm-peek-text
+      (quick-peek-hide)
+      (setq monkeytype--wpm-peek-text nil))
+
     (switch-to-buffer monkeytype--typing-buffer)
 
     ;; `set-buffer-modified-p' has no be set to nil before adding
@@ -1417,6 +1430,25 @@ further character encoding to ASCII (using iconv(1))."
     (setq monkeytype-mode-line '(:eval (monkeytype--mode-line-text))))
   (monkeytype--mode-line-report-status))
 
+(defvar monkeytype--wpm-peek-text nil)
+
+;;;###autoload
+(defun monkeytype-wpm-peek ()
+  "Hide/Show overlay with WPM info."
+  (interactive)
+  (unless (> (quick-peek-hide (point)) 0)
+    (if monkeytype--wpm-peek-text
+        monkeytype--wpm-peek-text
+      (setq monkeytype--wpm-peek-text
+            (let* ((title "%s:\n")
+                   (run (elt monkeytype--runs 0))
+                   (title (format title (gethash 'started-at run)))
+                   (title (propertize title 'face 'monkeytype-title))
+                   (run-typed-text (monkeytype--typed-text run))
+                   (run-results (monkeytype--results-run (gethash 'entries run))))
+              (concat title run-typed-text run-results "\n\n"))))
+    (quick-peek-show monkeytype--wpm-peek-text)))
+
 ;;;; Minor mode:
 (defvar monkeytype-mode-map
   (let ((map (make-sparse-keymap))
@@ -1429,6 +1461,7 @@ further character encoding to ASCII (using iconv(1))."
                     "C-c C-c h" monkeytype-hard-transitions
                     "C-c C-c a" monkeytype-save-mistyped-words
                     "C-c C-c l" monkeytype-toggle-mode-line
+                    "C-c C-c e" monkeytype-wpm-peek
                     "C-c C-c o" monkeytype-save-hard-transitions)))
     (cl-loop for (key fn) on mappings by #'cddr
              do (define-key map (kbd key) fn))
