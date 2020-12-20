@@ -639,7 +639,9 @@ See: `monkeytype--utils-idle-timer'"
 
 (defun monkeytype--process-input-update-mode-line ()
   "Update `monkeytype-mode-line' by sending it the current entry info."
-  (if monkeytype-mode-line-interval-update
+  (if (and
+       monkeytype-mode-line
+       monkeytype-mode-line-interval-update)
       (let* ((entry (elt monkeytype--current-run 0))
              (char-index (if entry (gethash 'source-index entry) 0)))
         (if (and
@@ -1406,6 +1408,15 @@ further character encoding to ASCII (using iconv(1))."
     (shell-command (concat cmd url-opts text-opts asciify))
     (find-file path)))
 
+;;;###autoload
+(defun monkeytype-toggle-mode-line ()
+  "Hide or show WPM results in mode-line."
+  (interactive)
+  (if monkeytype-mode-line
+      (setq monkeytype-mode-line nil)
+    (setq monkeytype-mode-line '(:eval (monkeytype--mode-line-text))))
+  (monkeytype--mode-line-report-status))
+
 ;;;; Minor mode:
 (defvar monkeytype-mode-map
   (let ((map (make-sparse-keymap))
@@ -1417,6 +1428,7 @@ further character encoding to ASCII (using iconv(1))."
                     "C-c C-c m" monkeytype-mistyped-words
                     "C-c C-c h" monkeytype-hard-transitions
                     "C-c C-c a" monkeytype-save-mistyped-words
+                    "C-c C-c l" monkeytype-toggle-mode-line
                     "C-c C-c o" monkeytype-save-hard-transitions)))
     (cl-loop for (key fn) on mappings by #'cddr
              do (define-key map (kbd key) fn))
