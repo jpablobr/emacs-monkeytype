@@ -1099,6 +1099,23 @@ entry, since on paused event current run gets stored in there and
          (when monkeytype--text-file-last-run
            (map-into monkeytype--text-file-last-entry 'hash-table)))))
 
+(defun monkeytype--mode-line-get-previous-run ()
+  "Set previous run for mode-line calculations."
+  (cond ((>= (length monkeytype--runs) 1)
+         ;; After pausing even for the first time it will seem that there's
+         ;; already a previous run since one side-effects of pausing is a run
+         ;; addition to the `monkeytype--runs' list creating a false positive.
+         ;; Hence, on the first pause the previous entry must be nil and the
+         ;; subsequent one ahead of the normal previous entry.
+         (if monkeytype--status-paused
+             (if (> (length monkeytype--runs) 1)
+                 (elt monkeytype--runs 1)
+               (if monkeytype--text-file
+                   monkeytype--text-file-last-run
+                 nil))
+           (elt monkeytype--runs 0)))
+        (monkeytype--text-file monkeytype--text-file-last-run)))
+
 (defun monkeytype--mode-line-text ()
   "Show status in mode line."
   (let* ((net-wpm 0) (gross-wpm 0) (accuracy 0)
@@ -1204,6 +1221,7 @@ entry, since on paused event current run gets stored in there and
   (interactive)
   (setq monkeytype--status-paused t)
   (when monkeytype--start-time (monkeytype--run-pause))
+  (monkeytype-wpm-peek)
   (setq monkeytype--current-run '())
   (unless monkeytype--status-finished
     (message "Monkeytype: Paused ([C-c C-c r] to resume.)")))
@@ -1436,18 +1454,28 @@ further character encoding to ASCII (using iconv(1))."
 (defun monkeytype-wpm-peek ()
   "Hide/Show overlay with WPM info."
   (interactive)
+  (when monkeytype--status-finished
+    (error "Monkeytype Error: Can't peek WPM when already finished"))
+
   (unless (> (quick-peek-hide (point)) 0)
+    (message "Monkeytype: Generating WPM results.")
+
+    (setq monkeytype--previous-run-last-entry
+          (monkeytype--mode-line-get-previous-entry))
+
+    (when  monkeytype--previous-run-last-entry
+      (setq monkeytype--previous-last-entry-index
+            (gethash 'source-index monkeytype--previous-run-last-entry)))
+
+    (setq monkeytype--previous-run (monkeytype--mode-line-get-previous-run))
+
     (if monkeytype--wpm-peek-text
         monkeytype--wpm-peek-text
       (setq monkeytype--wpm-peek-text
-            (let* ((title "%s:\n")
-                   (run (elt monkeytype--runs 0))
-                   (title (format title (gethash 'started-at run)))
-                   (title (propertize title 'face 'monkeytype-title))
-                   (run-typed-text (monkeytype--typed-text run))
+            (let* ((run (elt monkeytype--runs 0))
                    (run-results (monkeytype--results-run (gethash 'entries run))))
-              (concat title run-typed-text run-results "\n\n"))))
-    (quick-peek-show monkeytype--wpm-peek-text)))
+              run-results)))
+    (quick-peek-show monkeytype--wpm-peek-text (point) 'none 'none)))
 
 ;;;; Minor mode:
 (defvar monkeytype-mode-map
