@@ -31,6 +31,7 @@ A typing game/tutor inspired by the open source and community driven [[monkeytyp
     - [[#monkeytype-region-as-words][monkeytype-region-as-words]]
     - [[#monkeytype-most-mistyped-words][monkeytype-most-mistyped-words]]
     - [[#monkeytype-save-text-from-url][monkeytype-save-text-from-url]]
+    - [[#monkeytype-wpm-peek][monkeytype-wpm-peek]]
     - [[#monkeytype-toggle-mode-line][monkeytype-toggle-mode-line]]
 - [[#directory-structure][Directory Structure]]
 - [[#customisation][Customisation]]
@@ -151,6 +152,7 @@ This can then be enabled in your =.emacs= with:
 | C-c C-c a   | monkeytype-save-mistyped-words   |
 | C-c C-c o   | monkeytype-save-hard-transitions |
 | C-c C-c l   | monkeytype-toggle-mode-line      |
+| C-c C-c e   | monkeytype-wpm-peek              |
 |             | monkeytype-region                |
 |             | monkeytype-buffer                |
 |             | monkeytype-most-mistyped-words   |
@@ -242,6 +244,9 @@ This command allows to save a web page to the
 =monkeytype-directory/text/= directory, converting it to plain text
 (using =pandoc(1)=) and, if the =monkeytype-asciify= option is set to
 true, will ASCII character encode the text (using =iconv(1)=).
+
+*** monkeytype-wpm-peek
+This command allows to hide or show the WPM results overlay.
 
 *** monkeytype-toggle-mode-line
 This command allows to hide or show the WPM results in the the
