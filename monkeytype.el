@@ -745,19 +745,24 @@ See: `monkeytype--utils-idle-timer'"
           (add-to-list 'monkeytype--runs run-hash)))))
 
   (when (> (length monkeytype--runs) 1)
-    (let* ((title "\n\nRuns(%d) Breakdown:\n\n")
-           (title (format title (length monkeytype--runs)))
-           (title (propertize title 'face 'monkeytype-title)))
-      (insert (concat (monkeytype--results-final) title))))
+    (let* ((title-1 "Final Results for a Total of %d Runs\n\n")
+           (title-1 (format title-1 (length monkeytype--runs)))
+           (title-1 (propertize title-1 'face 'monkeytype-title))
+           (title-2 "\n\nRuns Breakdown:\n\n")
+           (title-2 (propertize title-2 'face 'monkeytype-title)))
+      (insert (concat title-1 (monkeytype--results-final) title-2))))
 
   (let ((run-index 1))
     (dolist (run (reverse monkeytype--runs))
-      (let* ((title "--(%d)-%s--:\n")
+      (let* ((title "%d) %s:\n")
              (title (format title run-index (gethash 'started-at run)))
+             (title (replace-regexp-in-string "-" " " title))
              (title (propertize title 'face 'monkeytype-title))
+             (title (and (> (length monkeytype--runs) 1) title))
              (run-typed-text (monkeytype--typed-text run))
              (run-results (monkeytype--results-run (gethash 'entries run))))
-        (insert (concat title run-typed-text run-results "\n\n")))
+        (insert
+         (concat title run-results "\n\nTyped Text:\n" run-typed-text)))
 
       (setq run-index (1+ run-index))
 
