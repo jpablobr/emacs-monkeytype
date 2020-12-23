@@ -7,7 +7,7 @@
 ;; Version: 0.1.3
 ;; Keywords: games
 ;; URL: https://github.com/jpablobr/emacs-monkeytype
-;; Package-Requires: ((emacs "25.1") (quick-peek "1.0"))
+;; Package-Requires: ((emacs "25.1") (scrollable-quick-peek "0.1.0"))
 
 ;;; Commentary:
 
@@ -62,7 +62,7 @@
 (require 'json)
 (require 'map)
 
-(require 'quick-peek)
+(require 'scrollable-quick-peek)
 
 ;;;; Customization
 
@@ -232,6 +232,7 @@ Iconv(1) must be installed."
 (defvar-local monkeytype--buffer-name "*Monkeytype*")
 (defvar-local monkeytype--runs '())
 (defvar-local monkeytype--start-time nil)
+(defvar-local monkeytype--wpm-peek-text nil)
 (defvar monkeytype--typing-buffer nil)
 (defvar monkeytype--source-text "")
 (defvar monketype--utils-disabled-props
@@ -1237,6 +1238,7 @@ entry, since on paused event current run gets stored in there and
 
 \\[monkeytype-stop]"
   (interactive)
+  (setq monkeytype--wpm-peek-text nil)
   (monkeytype--run-finish))
 
 ;;;###autoload
@@ -1453,8 +1455,6 @@ further character encoding to ASCII (using iconv(1))."
     (setq monkeytype-mode-line '(:eval (monkeytype--mode-line-text))))
   (monkeytype--mode-line-report-status))
 
-(defvar monkeytype--wpm-peek-text nil)
-
 ;;;###autoload
 (defun monkeytype-wpm-peek ()
   "Hide/Show overlay with WPM info."
@@ -1465,22 +1465,24 @@ further character encoding to ASCII (using iconv(1))."
   (unless (> (quick-peek-hide (point)) 0)
     (message "Monkeytype: Generating WPM results.")
 
-    (setq monkeytype--previous-run-last-entry
-          (monkeytype--mode-line-get-previous-entry))
+    (setq monkeytype--previous-run
+          (monkeytype--mode-line-get-previous-run))
+
+    (when monkeytype--previous-run
+      (setq monkeytype--previous-run-last-entry
+            (monkeytype--mode-line-get-previous-entry)))
 
     (when  monkeytype--previous-run-last-entry
       (setq monkeytype--previous-last-entry-index
             (gethash 'source-index monkeytype--previous-run-last-entry)))
 
-    (setq monkeytype--previous-run (monkeytype--mode-line-get-previous-run))
-
-    (if monkeytype--wpm-peek-text
-        monkeytype--wpm-peek-text
-      (setq monkeytype--wpm-peek-text
-            (let* ((run (elt monkeytype--runs 0))
-                   (run-results (monkeytype--results-run (gethash 'entries run))))
-              run-results)))
-    (quick-peek-show monkeytype--wpm-peek-text (point) 'none 'none)))
+    (unless monkeytype--wpm-peek-text
+      (let* ((run (elt monkeytype--runs 0))
+             (run-typed-text (monkeytype--typed-text run))
+             (run-results (monkeytype--results-run (gethash 'entries run)))
+             (str (concat run-results "\n\nTyped Text:\n" run-typed-text)))
+        (scrollable-quick-peek-show str (point) 10 10))
+      (setq monkeytype--wpm-peek-text t))))
 
 ;;;; Minor mode:
 (defvar monkeytype-mode-map
