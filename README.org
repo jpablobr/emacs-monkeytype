@@ -66,6 +66,13 @@ following is the fields breakdown:
 
 *MT[N-WPM/G-WPM Accuracy Elapsed-time (words/corrections/errors)]*
 
+When pausing a /monkeytype/ *run,* the buffer will also render a
+scrollable overlay with information about the run's performance and
+re-render of the typed text highlighting correction, mistypes, etc.
+
+#+CAPTION: img
+[[https://github.com/jpablobr/emacs-monkeytype/raw/develop/img/scrollable-quick-peek.gif]]
+
 Then you can either type all the way to the end or stop/finish
 (=C-c C-C s= / =monkeytype-stop=).
 
