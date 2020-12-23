@@ -158,7 +158,7 @@ Iconv(1) must be installed."
 
 (defface monkeytype-dimmed
   '((((class color) (background light)) :foreground "#999999")
-    (((class color) (background  dark)) :foreground "#666666"))
+    (((class color) (background  dark)) :foreground "#888888"))
   "Face for correctly typed char.")
 
 (defface monkeytype-notice
