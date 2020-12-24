@@ -18,7 +18,7 @@
 
 ;; - Type any text you want
 ;; - Practice mistyped words
-;; - Mode-line live WPM
+;; - Optional mode-line live WPM
 ;; - Pause/Resume/Stop/Save functionality
 ;; - Visual representation of typed text including errors and
 ;;   retries/corrections
