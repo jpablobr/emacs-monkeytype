@@ -49,37 +49,34 @@ A typing game/tutor inspired by the open source and community driven [[monkeytyp
 
 * Usage
 
-Use one of the functions to enter =monkeytype= mode
-([[#monkeytype-region][monkeytype-region]], [[#monkeytype-buffer][monkeytype-buffer]], etc... see
-[[#commands--key-bindings][Commands]] section below).
+Use one of the functions to enter =monkeytype= mode ([[#monkeytype-region][monkeytype-region]],
+[[#monkeytype-buffer][monkeytype-buffer]], etc... see [[#commands--key-bindings][Commands]] section below).
 
 (Note: You should bind these functions to anything you want in your
 =.emacs=.)
 
-The buffer should look as follows:
-
-#+CAPTION: img
-[[https://github.com/jpablobr/emacs-monkeytype/raw/main/img/monkeytype-paused.png]]
-
-The section inside the red rectangle is Monkeytype's mode-line and the
-following is the fields breakdown:
-
-*MT[N-WPM/G-WPM Accuracy Elapsed-time (words/corrections/errors)]*
-
-When pausing a /monkeytype/ *run,* the buffer will also render a
-scrollable overlay with information about the run's performance and
-re-render of the typed text highlighting correction, mistypes, etc.
+Once started, you can either ~monkeytype-pause~ (=C-c C-c p=) or
+~monkeytype-stop~ (=C-c C-c s=) to finish typing. On pause, the buffer
+should look as follows:
 
 #+CAPTION: img
 [[https://github.com/jpablobr/emacs-monkeytype/raw/develop/img/scrollable-quick-peek.gif]]
 
-Then you can either type all the way to the end or stop/finish
-(=C-c C-C s= / =monkeytype-stop=).
+It renders a scrollable overlay with information about the run's
+performance and a re-render of the typed text highlighting corrections, mistypes, etc.
 
-The buffer should look as follows:
+The mode-line section also shows information about the previous run.
+The fields breakdown is:
+
+*MT[N-WPM/G-WPM Accuracy Elapsed-time (words/corrections/errors)]*
+
+Then you can ~monkeytype-resume~ (=C-c C-c r=) to continue typing and
+either type all the way to the end or ~monkeytype-stop~ (=C-c C-C s)= to finish.
+
+The buffer should then look as follows:
 
 #+CAPTION: img
-[[https://github.com/jpablobr/emacs-monkeytype/raw/main/img/monkeytype-results-without-log.png]]
+[[https://github.com/jpablobr/emacs-monkeytype/raw/develop/img/finished-run-results.png]]
 
 This Results buffer re-renders the typed text highlighting errors and
 either correct or incorrect corrections (highlighted with a different
