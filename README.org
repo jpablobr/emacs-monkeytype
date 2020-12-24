@@ -94,7 +94,7 @@ mistyped words in history with =monkeytype-most-mistyped-words=.
 
 * Features
 
-#+begin_src emacs_lisp
+#+begin_src elisp
 ;; - Type any text you want
 ;; - Practice mistyped words
 ;; - Optional mode-line live WPM
@@ -136,7 +136,7 @@ mistyped words in history with =monkeytype-most-mistyped-words=.
 
 This can then be enabled in your =.emacs= with:
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC elisp
 (defun my/monkeytype-mode-hook ()
   "Hooks for monkeytype-mode."
   (centered-cursor-mode)
@@ -307,7 +307,7 @@ Or set the variables in your =.emacs= file:
 
 ** Options
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC elisp
 (setq
   ;; How often to update mode-line
   monkeytype-mode-line-interval-update 10
@@ -343,7 +343,7 @@ Or set the variables in your =.emacs= file:
 
 ** Faces
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC elisp
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -384,7 +384,7 @@ From MELPA, =M-x package-install RET monkeytype RET=.
 Or just drop =monkeytype.el= somewhere in your =load-path= and add it to
 your =.emacs=:
 
-#+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC elisp
 (add-to-list 'load-path "~/emacs.d/vendor")
 (require 'monkeytype)
 #+END_SRC
