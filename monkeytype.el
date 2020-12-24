@@ -1201,18 +1201,6 @@ entry, since on paused event current run gets stored in there and
    (monkeytype--utils-format-text monkeytype--source-text)))
 
 ;;;###autoload
-(defun monkeytype-dummy-text ()
-  "Dummy text.
-
-\\[monkeytype-dummy-text]"
-  (interactive)
-  (monkeytype--init
-   (monkeytype--utils-format-text
-    (concat
-     "\"I have had a dream past the wit of man to say what dream it was,\n"
-     "says Bottom.\""))))
-
-;;;###autoload
 (defun monkeytype-fortune ()
   "Type fortune.
 
