@@ -254,6 +254,7 @@ Iconv(1) must be installed."
 (defvar-local monkeytype--status-paused nil)
 
 ;; Counters
+(defvar-local monkeytype--counter-chars 0)
 (defvar-local monkeytype--counter-input 0)
 (defvar-local monkeytype--counter-error 0)
 (defvar-local monkeytype--counter-correction 0)
@@ -305,11 +306,13 @@ TEXT-FILE-P is used to know if the test is text-file based."
       (let* ((last-entry monkeytype--text-file-last-entry)
              (index (cdr (assoc 'source-index last-entry)))
              (input-index (cdr (assoc 'input-index last-entry)))
+             (chars (cdr (assoc 'chars last-entry)))
              (errors (cdr (assoc 'error-count last-entry)))
              (corrections (cdr (assoc 'correction-count last-entry)))
              (end-point (1+ index))
              (remaining-counter (1+ (- (length text) end-point ))))
         (setq monkeytype--counter-remaining remaining-counter)
+        (setq monkeytype--counter-chars chars)
         (setq monkeytype--counter-input input-index)
         (setq monkeytype--counter-error errors)
         (setq monkeytype--counter-correction corrections)
@@ -555,6 +558,7 @@ DELETE-LENGTH is the amount of deleted chars in case of deletion."
       (set-text-properties start (1+ start) `(face ,face-for-entry))
 
       (unless (= start end) ; Do not add no-char (e.i., deletion) entries
+        (cl-incf monkeytype--counter-chars)
         (monkeytype--process-input-add-to-entries source-start entry source))
 
       (monkeytype--process-input-update-mode-line))
@@ -599,14 +603,17 @@ DELETED is the number of deleted chars before current char input."
 (defun monkeytype--process-input-rectify-counters (entry-state)
   "Update counters on corrections/re-tries based on the ENTRY-STATE.
 
+ENTRY-STATE = 0 not a correction
 ENTRY-STATE = 1 correctly re-typed char
 ENTRY-STATE = 2 mistyped re-typed char"
-  (cond ((= entry-state 1)
-         (cl-incf monkeytype--counter-remaining))
-        ((= entry-state 2)
-         (cl-incf monkeytype--counter-remaining)
-         (cl-decf monkeytype--counter-error)
-         (cl-incf monkeytype--counter-correction))))
+  (unless (= entry-state 0) ; ignore unless it's a correction
+    (cl-incf monkeytype--counter-remaining)
+    ;; Update corrections counter on correct or incorrect retries.
+    ;; This means that in terms of wpm-accuracy correct or incorrect
+    ;; retries they get counted affecting the score negatively.
+    (cl-incf monkeytype--counter-correction)
+    (when (= entry-state 2)
+      (cl-decf monkeytype--counter-error))))
 
 (defun monkeytype--process-input-add-to-entries (start typed source)
   "Add entry to `monkeytype--current-run'.
@@ -619,6 +626,7 @@ SOURCE is the original char."
         (seconds (format-seconds
                   "%.2h:%z%.2m:%.2s"
                   (monkeytype--utils-elapsed-seconds))))
+    (puthash 'chars monkeytype--counter-chars entry)
     (puthash 'input-index monkeytype--counter-input entry)
     (puthash 'typed-entry typed entry)
     (puthash 'source-entry source entry)
@@ -835,15 +843,15 @@ Gross-WPM = WORDS / MINUTES."
          (previous-entry monkeytype--previous-run-last-entry)
          (seconds (gethash 'elapsed-seconds last-entry))
          (minutes (monkeytype--utils-seconds-to-minutes seconds))
-         (entries (gethash 'input-index last-entry))
+         (char-count (gethash 'chars last-entry))
          (errors (gethash 'error-count last-entry))
          (corrections (gethash 'correction-count last-entry))
-         (words (monkeytype--calc-words entries))
+         (words (monkeytype--calc-words char-count))
          (str-format "%s\n\n%s\n\n%s"))
 
     (when previous-entry
-      (setq entries (- entries (gethash 'input-index previous-entry)))
-      (setq words (monkeytype--calc-words entries))
+      (setq char-count (- char-count (gethash 'chars previous-entry)))
+      (setq words (monkeytype--calc-words char-count))
       (setq errors (- errors (gethash 'error-count previous-entry)))
       (setq corrections
             (- corrections (gethash 'correction-count previous-entry))))
@@ -854,7 +862,10 @@ Gross-WPM = WORDS / MINUTES."
      (format
       str-format
       (monkeytype--results-net-wpm words errors minutes seconds)
-      (monkeytype--results-accuracy entries (- entries errors) corrections)
+      (monkeytype--results-accuracy
+       char-count
+       (- char-count errors)
+       corrections)
       (monkeytype--results-gross-wpm words minutes)))))
 
 (defun monkeytype--results-final ()
@@ -870,13 +881,13 @@ run."
                          last-entries))
          (total-seconds (apply #'+ total-seconds))
          (minutes (monkeytype--utils-seconds-to-minutes total-seconds))
-         (entries (gethash 'input-index last-entry))
+         (char-count (gethash 'chars last-entry))
          (errors (gethash 'error-count last-entry))
          (corrections (gethash 'correction-count last-entry))
-         (words (monkeytype--calc-words entries))
+         (words (monkeytype--calc-words char-count))
          (str-format "%s\n\n%s\n\n%s")
          (net-wpm (monkeytype--results-net-wpm words errors minutes total-seconds))
-         (acc (monkeytype--results-accuracy entries (- entries errors) corrections))
+         (acc (monkeytype--results-accuracy char-count (- char-count errors) corrections))
          (gross-wpm (monkeytype--results-gross-wpm words minutes)))
     (concat (format str-format net-wpm acc gross-wpm))))
 
@@ -1023,7 +1034,8 @@ This is unless the char doesn't belong to any word as defined by the
 
 (defun monkeytype--log-entry (entry)
   "Format ENTRY."
-  (let* ((source-index (gethash 'source-index entry))
+  (let* ((chars (gethash 'chars entry))
+         (source-index (gethash 'source-index entry))
          (typed-entry (gethash 'typed-entry entry))
          (source-entry (gethash 'source-entry entry))
          (typed-entry (if (string= typed-entry "\n") "↵" typed-entry))
@@ -1043,12 +1055,12 @@ This is unless the char doesn't belong to any word as defined by the
             (format "%s %s" input-index source-index)
             (format "%S %s" source-entry propertized-typed-entry)
             (monkeytype--calc-net-wpm
-             (monkeytype--calc-words input-index)
+             (monkeytype--calc-words chars)
              error-count
              minutes)
             (monkeytype--calc-net-cpm input-index error-count minutes)
             (monkeytype--calc-gross-wpm
-             (monkeytype--calc-words input-index)
+             (monkeytype--calc-words chars)
              minutes)
             (monkeytype--calc-gross-cpm input-index minutes)
             (monkeytype--calc-accuracy
@@ -1127,18 +1139,18 @@ entry, since on paused event current run gets stored in there and
   (let* ((net-wpm 0) (gross-wpm 0) (accuracy 0)
          (current (monkeytype--mode-line-get-current-entry))
          (previous (monkeytype--mode-line-get-previous-entry))
-         (entries (gethash 'input-index current 0))
+         (char-count (gethash 'chars current 0))
          (errors (gethash 'error-count current 0))
          (corrections (gethash 'correction-count current 0))
-         (words (monkeytype--calc-words entries))
+         (words (monkeytype--calc-words char-count))
          (seconds (gethash 'elapsed-seconds current 0))
          (minutes (monkeytype--utils-seconds-to-minutes seconds))
          (time (format "%s" (format-seconds "%.2h:%z%.2m:%.2s" seconds)))
          (not-paused (> (gethash 'input-index current 0) 0)))
 
     (when (and previous not-paused)
-      (setq entries (- entries (gethash 'input-index previous 0)))
-      (setq words (monkeytype--calc-words entries))
+      (setq char-count (- char-count (gethash 'chars previous 0)))
+      (setq words (monkeytype--calc-words char-count))
       (setq errors (- errors (gethash 'error-count previous 0)))
       (setq corrections (- corrections (gethash 'correction-count previous 0))))
 
@@ -1146,7 +1158,7 @@ entry, since on paused event current run gets stored in there and
       (setq net-wpm (monkeytype--calc-net-wpm words errors minutes))
       (setq gross-wpm (monkeytype--calc-gross-wpm words minutes))
       (setq accuracy
-            (monkeytype--calc-accuracy entries (- entries errors) corrections)))
+            (monkeytype--calc-accuracy char-count (- char-count errors) corrections)))
     (concat
      (propertize "[" 'face 'monkeytype-mode-line-normal)
      (propertize (format "%d" net-wpm) 'face 'monkeytype-mode-line-success)
