@@ -12,6 +12,7 @@ A typing game/tutor inspired by the open source and community driven [[monkeytyp
 - [[#features][Features]]
   - [[#to-come-prs-welcome][To come... (PRs welcome)]]
   - [[#tips][Tips]]
+- [[#how-is-the-wpm-calculated][How is the WPM calculated?]]
 - [[#commands][Commands]]
   - [[#key-bindings][Key bindings]]
   - [[#description][Description]]
@@ -141,6 +142,15 @@ This can then be enabled in your =.emacs= with:
   (evil-insert -1))
 (add-hook 'monkeytype-mode-hook #'my/monkeytype-mode-hook)
 #+END_SRC
+
+* How is the WPM calculated?
+
+See: https://www.speedtypingonline.com/typing-equations
+
+*Note:* Retyping characters (even when correctly) negatively affects
+your accuracy given the total number of characters increases and the
+words calculation is simply the *total amount of character divided by
+five*. So typing accuracy is king!
 
 * Commands
 ** Key bindings
