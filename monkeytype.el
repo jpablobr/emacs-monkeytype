@@ -243,7 +243,6 @@ Iconv(1) must be installed."
     face monkeytype-read-only))
 
 ;; Text-File
-
 (defvar monkeytype--text-file-directory nil)
 (defvar monkeytype--text-file-last-entry nil)
 (defvar monkeytype--text-file-last-run nil)
@@ -471,7 +470,6 @@ See: `monkeytype-delete-trailing-whitespace'"
     (when monkeytype-auto-fill (fill-region (point-min) (point-max)))
     (when monkeytype-delete-trailing-whitespace (delete-trailing-whitespace))
     (buffer-string)))
-
 
 (defun monkeytype--utils-check-for-iconv ()
   "Verify that iconv(1) is installed."
