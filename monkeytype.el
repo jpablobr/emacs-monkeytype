@@ -89,6 +89,10 @@
   :type 'sexp
   :risky t)
 
+(defcustom monkeytype-colored-mode-line t
+  "Toggle coloured mode-line WPM status."
+  :type 'boolean)
+
 (defcustom monkeytype-mode-line-interval-update 1
   "Number of keystrokes after each mode-line update.
 Reducing the frequency of the updates helps reduce lagging on longer
@@ -1111,8 +1115,8 @@ entry, since on paused event current run gets stored in there and
       (elt (gethash 'entries (elt monkeytype--runs 0)) 0)))
    (monkeytype--text-file monkeytype--text-file-last-entry)))
 
-(defun monkeytype--mode-line-text ()
-  "Show status in mode line."
+(defun monkeytype--mode-line-get-results ()
+  "Get results for current state in typing text."
   (let* ((net-wpm 0) (gross-wpm 0) (accuracy 0)
          (current (monkeytype--mode-line-get-current-entry))
          (previous (monkeytype--mode-line-get-previous-entry))
@@ -1123,7 +1127,8 @@ entry, since on paused event current run gets stored in there and
          (seconds (gethash 'elapsed-seconds current 0))
          (minutes (monkeytype--utils-seconds-to-minutes seconds))
          (time (format "%s" (format-seconds "%.2h:%z%.2m:%.2s" seconds)))
-         (not-paused (> (gethash 'input-index current 0) 0)))
+         (not-paused (> (gethash 'input-index current 0) 0))
+         (results (make-hash-table  :test 'equal)))
 
     (when (and previous not-paused)
       (setq char-count (- char-count (gethash 'chars previous 0)))
@@ -1136,25 +1141,64 @@ entry, since on paused event current run gets stored in there and
       (setq gross-wpm (monkeytype--calc-gross-wpm words minutes))
       (setq accuracy
             (monkeytype--calc-accuracy char-count (- char-count errors) corrections)))
+
+    (puthash 'net-wpm net-wpm results)
+    (puthash 'gross-wpm gross-wpm results)
+    (puthash 'accuracy accuracy results)
+    (puthash 'time time results)
+    (puthash 'words  words results)
+    (puthash 'corrections corrections results)
+    (puthash 'errors errors results)
+    results))
+
+(defun monkeytype--mode-line-colored-text ()
+  "Show coloured version of status in mode line."
+  (let* ((results (monkeytype--mode-line-get-results))
+        (net-wpm (format "%d" (gethash 'net-wpm results)))
+        (gross-wpm (format "%d" (gethash 'gross-wpm results)))
+        (accuracy (format "%d" (gethash 'accuracy results)))
+        (time (gethash 'time results))
+        (words (format "%d" (gethash 'words results)))
+        (corrections (gethash 'corrections results))
+        (errors (gethash 'errors results))
+        (corrections-face (monkeytype--mode-line-get-face
+                           (= corrections 0)))
+        (errors-face (monkeytype--mode-line-get-face
+                      (= errors 0)))
+        (corrections (format "%d" corrections))
+        (errors (format "%d" errors)))
+
     (concat
      (propertize "[" 'face 'monkeytype-mode-line-normal)
-     (propertize (format "%d" net-wpm) 'face 'monkeytype-mode-line-success)
+     (propertize net-wpm 'face 'monkeytype-mode-line-success)
      (propertize "/" 'face 'monkeytype-mode-line-normal)
-     (propertize (format "%d" gross-wpm) 'face 'monkeytype-mode-line-normal)
+     (propertize gross-wpm 'face 'monkeytype-mode-line-normal)
      (propertize " " 'face 'monkeytype-mode-line-normal)
-     (propertize (format "%d " accuracy) 'face 'monkeytype-mode-line-normal)
+     (propertize accuracy 'face 'monkeytype-mode-line-normal)
+     (propertize " " 'face 'monkeytype-mode-line-normal)
      (propertize time 'face 'monkeytype-mode-line-info)
-     (propertize (format " (%d/" words) 'face 'monkeytype-mode-line-normal)
-     (propertize
-      (format "%d" corrections)
-      'face
-      (monkeytype--mode-line-get-face (= corrections 0)))
+     (propertize " (" 'face 'monkeytype-mode-line-normal)
+     (propertize words 'face 'monkeytype-mode-line-normal)
      (propertize "/" 'face 'monkeytype-mode-line-normal)
-     (propertize
-      (format "%d" errors)
-      'face
-      (monkeytype--mode-line-get-face (= errors 0)))
+     (propertize corrections 'face corrections-face)
+     (propertize "/" 'face 'monkeytype-mode-line-normal)
+     (propertize errors 'face errors-face)
      (propertize ")]" 'face 'monkeytype-mode-line-normal))))
+
+(defun monkeytype--mode-line-text ()
+  "Show status in mode line."
+  (if monkeytype-colored-mode-line
+      (monkeytype--mode-line-colored-text)
+    (let ((results (monkeytype--mode-line-get-results)))
+      (format
+       "[%d/%d %d %s (%d/%d/%d)]"
+       (gethash 'net-wpm results)
+       (gethash 'gross-wpm results)
+       (gethash 'accuracy results)
+       (gethash 'time results)
+       (gethash 'words results)
+       (gethash 'corrections results)
+       (gethash 'errors results)))))
 
 ;;;; Interactive:
 
