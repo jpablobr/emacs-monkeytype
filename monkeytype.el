@@ -245,7 +245,6 @@ Iconv(1) must be installed."
 ;; Text-File
 (defvar monkeytype--text-file-directory nil)
 (defvar monkeytype--text-file-last-entry nil)
-(defvar monkeytype--text-file-last-run nil)
 (defvar monkeytype--text-file nil)
 
 ;; Status
@@ -303,11 +302,11 @@ TEXT-FILE-P is used to know if the test is text-file based."
   "Configure TEXT for a text-file type of test."
   (if monkeytype--text-file-last-entry
       (let* ((last-entry monkeytype--text-file-last-entry)
-             (index (cdr (assoc 'source-index last-entry)))
-             (input-index (cdr (assoc 'input-index last-entry)))
-             (chars (cdr (assoc 'chars last-entry)))
-             (errors (cdr (assoc 'error-count last-entry)))
-             (corrections (cdr (assoc 'correction-count last-entry)))
+             (index (gethash 'source-index last-entry))
+             (input-index (gethash 'input-index last-entry))
+             (chars (gethash 'chars last-entry))
+             (errors (gethash 'error-count last-entry))
+             (corrections (gethash 'correction-count last-entry))
              (end-point (1+ index))
              (remaining-counter (1+ (- (length text) end-point ))))
         (setq monkeytype--counter-remaining remaining-counter)
@@ -1098,39 +1097,19 @@ entry, since on paused event current run gets stored in there and
 
 (defun monkeytype--mode-line-get-previous-entry ()
   "Set previous entry for mode-line calculations."
-  (cond ((>= (length monkeytype--runs) 1)
-         ;; After pausing even for the first time it will seem that there's
-         ;; already a previous run since one side-effects of pausing is a run
-         ;; addition to the `monkeytype--runs' list creating a false positive.
-         ;; Hence, on the first pause the previous entry must be nil and the
-         ;; subsequent one ahead of the normal previous entry.
-         (if monkeytype--status-paused
-             (if (> (length monkeytype--runs) 1)
-                 (elt (gethash 'entries (elt monkeytype--runs 1)) 0)
-               (if monkeytype--text-file
-                   (map-into monkeytype--text-file-last-entry 'hash-table)
-                 nil))
-           (elt (gethash 'entries (elt monkeytype--runs 0)) 0)))
-        (monkeytype--text-file
-         (when monkeytype--text-file-last-run
-           (map-into monkeytype--text-file-last-entry 'hash-table)))))
-
-(defun monkeytype--mode-line-get-previous-run ()
-  "Set previous run for mode-line calculations."
-  (cond ((>= (length monkeytype--runs) 1)
-         ;; After pausing even for the first time it will seem that there's
-         ;; already a previous run since one side-effects of pausing is a run
-         ;; addition to the `monkeytype--runs' list creating a false positive.
-         ;; Hence, on the first pause the previous entry must be nil and the
-         ;; subsequent one ahead of the normal previous entry.
-         (if monkeytype--status-paused
-             (if (> (length monkeytype--runs) 1)
-                 (elt monkeytype--runs 1)
-               (if monkeytype--text-file
-                   monkeytype--text-file-last-run
-                 nil))
-           (elt monkeytype--runs 0)))
-        (monkeytype--text-file monkeytype--text-file-last-run)))
+  (cond
+   ((>= (length monkeytype--runs) 1)
+    ;; After pausing even for the first time it will seem that there's
+    ;; already a previous run since one side-effects of pausing is a run
+    ;; addition to the `monkeytype--runs' list creating a false positive.
+    ;; Hence, on the first pause the previous entry must be nil and the
+    ;; subsequent one ahead of the normal previous entry.
+    (if monkeytype--status-paused
+        (if (> (length monkeytype--runs) 1)
+            (elt (gethash 'entries (elt monkeytype--runs 1)) 0)
+          (if monkeytype--text-file monkeytype--text-file-last-entry nil))
+      (elt (gethash 'entries (elt monkeytype--runs 0)) 0)))
+   (monkeytype--text-file monkeytype--text-file-last-entry)))
 
 (defun monkeytype--mode-line-text ()
   "Show status in mode line."
@@ -1341,9 +1320,9 @@ Buffer will be filled with the vale of `fill-column' if
          (last-run (when last-run (json-read-file last-run)))
          (entries (when last-run (cdr (assoc 'entries last-run))))
          (last-entry (when entries (elt entries 0)))
+         (last-entry (when last-entry (map-into last-entry 'hash-table)))
          (text (with-temp-buffer (insert-file-contents path) (buffer-string)))
          (text (monkeytype--utils-format-text text)))
-    (setq monkeytype--text-file-last-run last-run)
     (setq monkeytype--text-file-last-entry last-entry)
     (setq monkeytype--text-file-directory dir)
     (setq monkeytype--text-file path)
@@ -1463,12 +1442,8 @@ further character encoding to ASCII (using iconv(1))."
   (unless (> (quick-peek-hide (point)) 0)
     (message "Monkeytype: Generating WPM results.")
 
-    (setq monkeytype--previous-run
-          (monkeytype--mode-line-get-previous-run))
-
-    (when monkeytype--previous-run
-      (setq monkeytype--previous-run-last-entry
-            (monkeytype--mode-line-get-previous-entry)))
+    (setq monkeytype--previous-run-last-entry
+          (monkeytype--mode-line-get-previous-entry))
 
     (when  monkeytype--previous-run-last-entry
       (setq monkeytype--previous-last-entry-index
