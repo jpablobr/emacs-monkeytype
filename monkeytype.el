@@ -220,7 +220,7 @@ Iconv(1) must be installed."
   "Face for mode-line error text.")
 
 (defface monkeytype-mode-line-normal
-  '((t :inherit mode-line-buffer-id))
+  '((t :inherit default))
   "Face for mode-line normal text.")
 
 (defface monkeytype-mode-line-info
