@@ -274,24 +274,22 @@ Iconv(1) must be installed."
 (defvar-local monkeytype--previous-run-last-entry nil)
 (defvar-local monkeytype--previous-run '())
 
-(defun monkeytype--init (text &optional text-file-p)
+(defun monkeytype (text &optional fn)
   "Set up a new buffer for the typing exercise on TEXT.
 TEXT-FILE-P is used to know if the test is text-file based."
   (setq monkeytype--typing-buffer
         (generate-new-buffer monkeytype--buffer-name))
+
   (set-buffer monkeytype--typing-buffer)
+  (erase-buffer)
+
   (setq monkeytype--source-text text)
   (setq monkeytype--counter-remaining (1+ (length text)))
   (setq monkeytype--progress-tracker (make-string (length text) 0))
-  (erase-buffer)
-  (insert monkeytype--source-text)
 
-  (if text-file-p
-      (monkeytype--init-text-file text)
-    (setq monkeytype--text-file-directory nil)
-    (setq monkeytype--text-file-last-entry nil)
-    (setq monkeytype--text-file nil)
-    (goto-char 0))
+  (insert monkeytype--source-text)
+  (goto-char 0)
+  (when fn (funcall fn))
 
   ;; `set-buffer-modified-p' has no be set to nil before adding the
   ;; change hooks for them to work, so it has to happen right before
@@ -301,27 +299,6 @@ TEXT-FILE-P is used to know if the test is text-file based."
 
   (switch-to-buffer monkeytype--typing-buffer)
   (message "Monkeytype: Timer will start when you start typing."))
-
-(defun monkeytype--init-text-file (text)
-  "Configure TEXT for a text-file type of test."
-  (if monkeytype--text-file-last-entry
-      (let* ((last-entry monkeytype--text-file-last-entry)
-             (index (gethash 'source-index last-entry))
-             (input-index (gethash 'input-index last-entry))
-             (chars (gethash 'chars last-entry))
-             (errors (gethash 'error-count last-entry))
-             (corrections (gethash 'correction-count last-entry))
-             (end-point (1+ index))
-             (remaining-counter (1+ (- (length text) end-point ))))
-        (setq monkeytype--counter-remaining remaining-counter)
-        (setq monkeytype--counter-chars chars)
-        (setq monkeytype--counter-input input-index)
-        (setq monkeytype--counter-error errors)
-        (setq monkeytype--counter-correction corrections)
-        (setq monkeytype--counter-ignored-change 0)
-        (add-text-properties 1 end-point monketype--utils-disabled-props)
-        (goto-char end-point))
-    (goto-char 0)))
 
 ;;;; Utils:
 
@@ -689,6 +666,9 @@ See: `monkeytype--utils-idle-timer'"
   ;; `monketytype--wpm-peek' updated these vars so they
   ;; have to be set back to nil for the final results.
   (setq
+   monkeytype--text-file-directory nil
+   monkeytype--text-file-last-entry nil
+   monkeytype--text-file nil
    monkeytype--previous-last-entry-index nil
    monkeytype--previous-run-last-entry nil
    monkeytype--previous-run '())
@@ -1208,7 +1188,7 @@ entry, since on paused event current run gets stored in there and
 
 \\[monkeytype-region]"
   (interactive "r")
-  (monkeytype--init
+  (monkeytype
    (monkeytype--utils-format-text
     (buffer-substring-no-properties start end))))
 
@@ -1218,7 +1198,7 @@ entry, since on paused event current run gets stored in there and
 
 \\[monkeytype-repeat]"
   (interactive)
-  (monkeytype--init
+  (monkeytype
    (monkeytype--utils-format-text monkeytype--source-text)))
 
 ;;;###autoload
@@ -1236,7 +1216,7 @@ entry, since on paused event current run gets stored in there and
 
 \\[monkeytype-buffer]"
   (interactive)
-  (monkeytype--init
+  (monkeytype
    (monkeytype--utils-format-text
     (buffer-substring-no-properties (point-min) (point-max)))))
 
@@ -1293,7 +1273,7 @@ entry, since on paused event current run gets stored in there and
 \\[monkeytype-mistyped-words]"
   (interactive)
   (if (> (length monkeytype--mistyped-words) 0)
-      (monkeytype--init
+      (monkeytype
        (monkeytype--utils-format-words monkeytype--mistyped-words))
     (message "Monkeytype: No word-errors. ([C-c C-c t] to repeat.)")))
 
@@ -1310,7 +1290,7 @@ entry, since on paused event current run gets stored in there and
         (cl-loop repeat append-times do
                  (setq final-list
                        (append final-list monkeytype--hard-transitions)))
-        (monkeytype--init
+        (monkeytype
          (monkeytype--utils-format-words
           (mapconcat #'identity final-list " "))))
     (message "Monkeytype: No transition-errors. ([C-c C-c t] to repeat.)")))
@@ -1365,12 +1345,38 @@ Buffer will be filled with the vale of `fill-column' if
          (entries (when last-run (cdr (assoc 'entries last-run))))
          (last-entry (when entries (elt entries 0)))
          (last-entry (when last-entry (map-into last-entry 'hash-table)))
-         (text (with-temp-buffer (insert-file-contents path) (buffer-string)))
-         (text (monkeytype--utils-format-text text)))
+         (text (monkeytype--utils-format-text
+                (with-temp-buffer
+                  (insert-file-contents path)
+                  (buffer-string)))))
+
     (setq monkeytype--text-file-last-entry last-entry)
     (setq monkeytype--text-file-directory dir)
     (setq monkeytype--text-file path)
-    (monkeytype--init text t)))
+
+    (monkeytype
+     text
+     (when last-entry
+      (lambda ()
+        (monkeytype-load-text-from-file-start text last-entry))))))
+
+(defun monkeytype-load-text-from-file-start (text entry)
+  "Allow resuming/continuing typing TEXT by setting vars to last ENTRY."
+  (let* ((index (gethash 'source-index entry))
+         (input-index (gethash 'input-index entry))
+         (chars (gethash 'chars entry))
+         (errors (gethash 'error-count entry))
+         (corrections (gethash 'correction-count entry))
+         (end-point (1+ index))
+         (remaining-counter (1+ (- (length text) end-point ))))
+    (setq monkeytype--counter-remaining remaining-counter)
+    (setq monkeytype--counter-chars chars)
+    (setq monkeytype--counter-input input-index)
+    (setq monkeytype--counter-error errors)
+    (setq monkeytype--counter-correction corrections)
+    (setq monkeytype--counter-ignored-change 0)
+    (add-text-properties 1 end-point monketype--utils-disabled-props)
+    (goto-char end-point)))
 
 ;;;###autoload
 (defun monkeytype-load-words-from-file ()
@@ -1391,7 +1397,7 @@ Buffer will be filled with the vale of `fill-column' if
                   (buffer-string)))
          (words (split-string words monkeytype-excluded-chars-regexp t))
          (words (monkeytype--utils-format-words words)))
-    (monkeytype--init words)))
+    (monkeytype words)))
 
 ;;;###autoload
 (defun monkeytype-region-as-words (start end)
@@ -1409,7 +1415,7 @@ Buffer will be filled with the vale of `fill-column' if
   (let* ((text (buffer-substring-no-properties start end))
          (text (split-string text monkeytype-excluded-chars-regexp t))
          (text (monkeytype--utils-format-words text)))
-    (monkeytype--init text)))
+    (monkeytype text)))
 
 ;;;###autoload
 (defun monkeytype-most-mistyped-words ()
@@ -1436,7 +1442,7 @@ See: `monkeytype-save-mistyped-words' for how word-files are saved.
     (if (> (length words) monkeytype-most-mistyped-amount)
         (progn
           (setq words (seq-take words monkeytype-most-mistyped-amount))
-          (monkeytype--init (monkeytype--utils-format-words words)))
+          (monkeytype (monkeytype--utils-format-words words)))
       (message "Monkeytype: Not enough mistyped words for test."))))
 
 
