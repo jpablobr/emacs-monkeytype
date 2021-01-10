@@ -989,8 +989,13 @@ This is unless the char doesn't belong to any word as defined by the
 (defun monkeytype--typed-text (run)
   "Typed text for RUN."
   (monkeytype--utils-index-chars run)
-  (monkeytype--utils-index-words)
-  (monkeytype--utils-index-chars-to-words)
+
+  (unless monkeytype--words
+    (monkeytype--utils-index-words))
+
+  (unless monkeytype--chars-to-words
+    (monkeytype--utils-index-chars-to-words))
+
   (format
    "\n%s\n\n"
    (monkeytype--typed-text-to-string
