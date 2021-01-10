@@ -41,6 +41,7 @@ A typing game/tutor inspired by the open source and community driven [[monkeytyp
 - [[#log][Log]]
 - [[#install][Install]]
 - [[#changelog][Changelog]]
+  - [[#015][0.1.5]]
   - [[#014][0.1.4]]
   - [[#013][0.1.3]]
   - [[#012][0.1.2]]
@@ -400,6 +401,25 @@ your =.emacs=:
 :PROPERTIES:
 :TOC:      :depth 0
 :END:
+
+** 0.1.5
+*Additions*
+- =monkeytype-wpm-peek=
+- =monketype-toggle-mode-line=
+- =monkeytype-save-text-from-url=
+- Display results and typed text on pause
+- Allow to toggle colour and non-colour mode-line
+
+*Changes*
+- Remove =monkeytype-dummy-text=
+
+*Internal*
+- Improve logic for getting previous runs entries
+- Refactor =monkeytype--init= / rename function just =monkeytype=
+- Add Travis CI integration
+
+*Fixes*
+- Word/Char count should include retypes
 
 ** 0.1.4
 *Additions*
